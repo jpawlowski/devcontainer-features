@@ -46,8 +46,9 @@ See the relevant Feature's README for supported options.
 ```
 
 The `:latest` version annotation is added implicitly if omitted. To pin to a specific package version
-([example](https://github.com/jpawlowski/devcontainer-features/pkgs/container/features/powershell-extended/versions)), append it to the end of the
-Feature. Features follow semantic versioning conventions, so you can pin to a major version `:2`, minor version `:2.0`, or patch version `:2.0.0` by specifying the appropriate label.
+([example](https://github.com/jpawlowski/devcontainer-features/pkgs/container/features/powershell-extended/versions)), append
+it to the end of the Feature. Features follow semantic versioning conventions, so you can pin to a major version `:2`, minor
+version `:2.0`, or patch version `:2.0.0` by specifying the appropriate label.
 
 ```jsonc
 "features": {
@@ -62,6 +63,5 @@ Feature. Features follow semantic versioning conventions, so you can pin to a ma
 This repository will accept improvement and bug fix contributions related to the
 [current set of maintained Features](./src).
 
-🤝 You can read more about how to contribute in [`CONTRIBUTING.md`]. ❤️
-
-[`CONTRIBUTING.md`]: CONTRIBUTING.md
+Learn more about [how to create a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
+at the GitHub documentation page.
