@@ -1,11 +1,11 @@
 ## Advanced Resource Installation Options
 
 This is a re-write of the original [ghcr.io/devcontainers/features/powershell](https://ghcr.io/devcontainers/features/powershell)
-package. Is uses [Microsoft.PowerShell.PSResourceGet](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.psresourceget/)
+package. It uses [Microsoft.PowerShell.PSResourceGet](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.psresourceget/)
 instead of [PowerShellGet](https://learn.microsoft.com/en-us/powershell/gallery/overview) to install resources, which is
 included with PowerShell since version 7.4.0.
 
-The new configuration options support an advanced format for 3rd party installation repositories as well enhanced version
+The new configuration options support an advanced syntax for 3rd party installation repositories as well as enhanced version
 defintion, including version ranges and pre-releases.
 
 ### Setting a version for `resources`
