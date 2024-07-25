@@ -1,0 +1,61 @@
+{
+    "id": "powershell-extended",
+    "legacyIds": [
+      "powershell"
+    ],
+    "version": "2.0.0",
+    "name": "PowerShell Extended [PSResourceGet / NuGet Versioning]",
+    "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/powershell",
+    "description": "Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options.",
+    "options": {
+        "version": {
+            "type": "string",
+            "proposals": [
+                "latest",
+                "7.4",
+                "7.3"
+            ],
+            "default": "latest",
+            "description": "Select or enter a version of PowerShell."
+        },
+        "installMethod": {
+            "type": "string",
+            "enum": [
+                "package",
+                "github"
+            ],
+            "default": "package",
+            "description": "Select the installation method for PowerShell. If you choose `package`, PowerShell will be installed using the package manager with a fallback to 'github'. If you choose `github`, PowerShell will be installed from GitHub releases."
+        },
+        "updatePSResourceGet": {
+          "type": "boolean",
+          "default": true,
+          "description": "Update `Microsoft.PowerShell.PSResourceGet` module to the latest version."
+        },
+        "repositories": {
+            "type": "string",
+            "default": "",
+            "description": "Optional semicolon separated list of PowerShell repositories to register. To set a specific name for a repository, use the format `name=url`, otherwise the name will be the base URL. See feature documentation for more information about advanced installation options."
+        },
+        "resources": {
+            "type": "string",
+            "default": "",
+            "description": "Optional semicolon separated list of PowerShell resources to install. If you need to install a specific version, use `@` to specify the version (e.g. `Az.Accounts@3.1.0`). See feature documentation for more information about advanced installation options."
+        },
+        "profileURLAllUsersAllHosts": {
+            "type": "string",
+            "default": "",
+            "description": "Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts)."
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.powershell"
+            ]
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}

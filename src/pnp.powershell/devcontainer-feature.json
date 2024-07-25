@@ -1,0 +1,44 @@
+{
+  "name": "PnP PowerShell",
+  "id": "pnp.powershell",
+  "version": "1.0.0",
+  "description": "PnP PowerShell is a cross-platform PowerShell module that allows users on any platform to manage various configuration settings of Microsoft 365.",
+  "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/pnp.powershell",
+  "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
+  "keywords": [
+    "microsoft",
+    "powershell",
+    "microsoft-teams",
+    "sharepoint",
+    "sharepoint-online",
+    "microsoft-graph",
+    "microsoft-365",
+    "microsoft365",
+    "m365",
+    "pnp"
+  ],
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": [
+        "latest"
+      ],
+      "default": "latest",
+      "description": "Set the version of PnP.PowerShell to install."
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "adamwojcikit.pnp-powershell-extension"
+      ]
+    }
+  },
+  "dependsOn": {
+      "ghcr.io/jpawlowski/devcontainer-features/powershell-extended": {}
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils",
+    "ghcr.io/jpawlowski/devcontainer-features/powershell-extended"
+  ]
+}

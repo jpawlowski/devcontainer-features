@@ -1,0 +1,48 @@
+{
+  "install_powershell_fallback_test": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell": {}
+    }
+  },
+  "install_powershell_profile": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell": {
+        "profileURLAllUsersAllHosts": "https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/test/powershell/Test-Profile.ps1"
+      }
+    }
+  },
+  "register_repositories": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell": {
+        "repositories": "PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^40"
+      }
+    }
+  },
+  "install_resources": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell": {
+        "resources": "Az.Accounts; Az.Resources"
+      }
+    }
+  },
+  "install_resources_version": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell": {
+        "resources": "Az.Accounts@3.0.0; Az.Resources@7.2.0"
+      }
+    }
+  },
+  "install_resources_version_range": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell": {
+        "resources": "Az.Accounts@[3.0,3.1); Az.Resources@[6.16,6.17)"
+      }
+    }
+  }
+}

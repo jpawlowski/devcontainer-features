@@ -1,0 +1,68 @@
+{
+  "name": "CLI for Microsoft 365",
+  "id": "cli-microsoft365",
+  "version": "1.0.0",
+  "description": "CLI for Microsoft 365 is a cross-platform CLI that allows users on any platform to manage various configuration settings of Microsoft 365.",
+  "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/cli-microsoft365",
+  "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
+  "keywords": [
+    "microsoft",
+    "cli",
+    "azure",
+    "sharepoint",
+    "sharepoint-online",
+    "microsoft-entra",
+    "spfx",
+    "sharepoint-framework",
+    "microsoft-graph",
+    "microsoft-teams",
+    "microsoft-power-automate",
+    "microsoft-power-apps",
+    "microsoft-planner",
+    "microsoft-viva",
+    "microsoft-365",
+    "microsoft365",
+    "m365",
+    "pnp"
+  ],
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": [
+        "latest"
+      ],
+      "default": "latest",
+      "description": "Set the version of the CLI to install."
+    },
+    "commandCompletion": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable command completion in Bash, Zsh and Fish."
+    },
+    "commandCompletionPS": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable command completion in PowerShell."
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "adamwojcikit.cli-for-microsoft-365-extension"
+      ]
+    }
+  },
+  "dependsOn": {
+    "ghcr.io/devcontainers/features/node": {}
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils",
+    "ghcr.io/devcontainers/features/node",
+    "ghcr.io/devcontainers/features/powershell",
+    "ghcr.io/jpawlowski/devcontainer-features/powershell-extended",
+    "ghcr.io/devcontainers-contrib/features/fish-apt-get"
+  ],
+  "containerEnv": {
+    "CLIMICROSOFT365_ENV": "docker"
+  }
+}
