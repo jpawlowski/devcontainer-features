@@ -50,13 +50,13 @@ if ! type pwsh >/dev/null 2>&1; then
             currentVersion=$(pwsh -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet).Version.ToString()")
             latestVersion=$(pwsh -NoProfile -Command "(Find-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -AllVersions | Sort-Object { [version]\$_.Version } -Descending | Select-Object -First 1).Version.ToString()")
             if version_compare 'gt' "$latestVersion" "$currentVersion"; then
+                echo "Updating Microsoft.PowerShell.PSResourceGet"
                 pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet"
-                echo "Updated Microsoft.PowerShell.PSResourceGet"
             fi
         else
             # Installing Microsoft.PowerShell.PSResourceGet
-            pwsh -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted" || exit 1
-            echo "Installed Microsoft.PowerShell.PSResourceGet"
+            echo "Installing Microsoft.PowerShell.PSResourceGet"
+            pwsh -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted" || exit 1
         fi
     fi
 else
@@ -296,8 +296,8 @@ if [ "$POWERSHELL_RESOURCES" != '' ]; then
         echo "---------------------------"
         echo ""
 
-        echo "Install-PSResource -Verbose $args"
-        pwsh -NoProfile -Command "$prefs; Install-PSResource $args"
+        echo "Install-PSResource $args"
+        pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose $args"
     done
 fi
 
