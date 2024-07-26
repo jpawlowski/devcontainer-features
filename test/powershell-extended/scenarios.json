@@ -5,6 +5,14 @@
       "powershell-extended": {}
     }
   },
+  "install_powershell_defaultshell": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell-extended": {
+        "setAsDefaultShell": true
+      }
+    }
+  },
   "install_powershell_profile": {
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
