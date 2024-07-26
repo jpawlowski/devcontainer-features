@@ -19,7 +19,8 @@ Installs PowerShell on AMD64 and ARM64 machines, and optional additional resourc
 |-----|-----|-----|-----|
 | version | Select or enter a version of PowerShell. | string | latest |
 | installMethod | Select the installation method for PowerShell. If you choose `package`, PowerShell will be installed using the package manager with a fallback to 'github'. If you choose `github`, PowerShell will be installed from GitHub releases. | string | package |
-| updatePSResourceGet | Update `Microsoft.PowerShell.PSResourceGet` module to the latest version. | boolean | true |
+| updatePSResourceGet | Update built-in [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources. | string | release |
+| updatePSReadLine | Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version. | string | release |
 | repositories | Optional semicolon separated list of PowerShell repositories to register. To set a specific name for a repository, use the format `name=url`, otherwise the name will be the base URL. See feature documentation for more information about advanced installation options. | string | - |
 | resources | Optional semicolon separated list of PowerShell resources to install. If you need to install a specific version, use `@` to specify the version (e.g. `Az.Accounts@3.1.0`). See feature documentation for more information about advanced installation options. | string | - |
 | profileURLAllUsersAllHosts | Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts). | string | - |
