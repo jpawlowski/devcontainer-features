@@ -17,7 +17,7 @@
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell": {
-        "repositories": "PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^40"
+        "repositories": "PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^60"
       }
     }
   },
