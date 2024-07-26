@@ -66,6 +66,7 @@ Resource repositories are automatically created using their domain, unless they 
 
 > **IMPORTANT:** Please note that multiple items must be separated using a semicolon (`;`).
 > The comma is reserved to be used within version ranges as explained above.
+> For example: `Az@12.1.0; Microsoft.Graph@2.20.0`
 
 ### Setting resource `repositories`
 
@@ -87,6 +88,7 @@ Note that every repository you explicitly set in the configuration will automati
 
 > **IMPORTANT:** Please note that multiple items must be separated using a semicolon (`;`).
 > It follows the principle used to separate items in the `resources` option.
+> For example: `PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^60`
 
 
 ---
