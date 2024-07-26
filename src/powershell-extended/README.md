@@ -38,7 +38,7 @@ instead of [PowerShellGet](https://learn.microsoft.com/en-us/powershell/gallery/
 included with PowerShell since version 7.4.0.
 
 The new configuration options support an advanced syntax for 3rd party installation repositories as well as enhanced version
-defintion, including version ranges and pre-releases.
+definition, including version ranges and pre-releases.
 
 ### Setting a version for `resources`
 
