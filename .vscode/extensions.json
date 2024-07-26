@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "editorconfig.editorconfig",
+      "github.vscode-github-actions",
+      "DavidAnson.vscode-markdownlint",
+      "github.vscode-github-actions",
+      "ms-vscode-remote.remote-containers"
+    ]
+}
