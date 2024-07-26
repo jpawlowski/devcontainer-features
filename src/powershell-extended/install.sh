@@ -74,7 +74,7 @@ if ! type pwsh >/dev/null 2>&1; then
         echo "[root] Set default shell to pwsh"
         if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
             echo "[$_REMOTE_USER] Set default shell to pwsh"
-            su "$_REMOTE_USER" bash -c "chsh -s \"$(command -v pwsh)\""
+            chsh "$_REMOTE_USER" -s "$(command -v pwsh)"
         fi
     fi
 else
