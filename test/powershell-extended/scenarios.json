@@ -5,18 +5,11 @@
       "powershell-extended": {}
     }
   },
-  "install_powershell_defaultshell": {
-    "image": "mcr.microsoft.com/devcontainers/base:debian",
-    "features": {
-      "powershell-extended": {
-        "setAsDefaultShell": true
-      }
-    }
-  },
   "install_powershell_profile": {
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell-extended": {
+        "setAsDefaultShell": true,
         "profileURLAllUsersAllHosts": "https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/test/powershell-extended/Test-Profile.ps1"
       }
     }
