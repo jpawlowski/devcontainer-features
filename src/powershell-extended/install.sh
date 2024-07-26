@@ -69,9 +69,8 @@ if ! type pwsh >/dev/null 2>&1; then
 
     # If default shell is requested, set it
     if [ "$POWERSHELL_SET_DEFAULT_SHELL" = 'true' ]; then
-        echo "Setting default shell to pwsh"
-        chsh -s "$(command -v pwsh)"
         echo "[root] Set default shell to pwsh"
+        chsh -s "$(command -v pwsh)"
         if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
             echo "[$_REMOTE_USER] Set default shell to pwsh"
             chsh "$_REMOTE_USER" -s "$(command -v pwsh)"
@@ -105,7 +104,7 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
                 pwsh -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
                 if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                     echo "[$_REMOTE_USER] Set PSGallery as trusted repository"
-                    su "$_REMOTE_USER" /bin/bash -c "pwsh -NoProfile -Command \"$prefs; Set-PSResourceRepository -Name PSGallery -Trusted\""
+                    sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
                 fi
 
             elif [[ "$repoPrio" =~ ^[0-9]+$ ]] && [ "$repoPrio" -ge 0 ] && [ "$repoPrio" -le 100 ]; then
@@ -114,7 +113,7 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
                 pwsh -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
                 if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                     echo "[$_REMOTE_USER] Set PSGallery as trusted repository and update priority to '$repoPrio'"
-                    su "$_REMOTE_USER" /bin/bash -c "pwsh -NoProfile -Command \"$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio\""
+                    sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
                 fi
             else
                 echo "Invalid priority for 'PSGallery': $repoPrio"
@@ -164,7 +163,7 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
             pwsh -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
             if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                 echo "[$_REMOTE_USER] Register-PSResourceRepository $repoargs"
-                su "$_REMOTE_USER" /bin/bash -c "pwsh -NoProfile -Command \"$prefs; Register-PSResourceRepository $repoargs\""
+                sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
             fi
 
             # Add to list of repositories
@@ -284,7 +283,7 @@ if [ "$POWERSHELL_RESOURCES" != '' ]; then
                 pwsh -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
                 if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                     echo "[$_REMOTE_USER] Register-PSResourceRepository $repoargs"
-                    su "$_REMOTE_USER" /bin/bash -c "pwsh -NoProfile -Command \"$prefs; Register-PSResourceRepository $repoargs\""
+                    sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
                 fi
 
                 # Add to list of repositories
