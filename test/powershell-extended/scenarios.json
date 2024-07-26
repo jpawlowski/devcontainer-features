@@ -9,7 +9,8 @@
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell-extended": {
-        "setAsDefaultShell": true,
+        "setUserDefaultShell": true,
+        "setRootDefaultShell": true,
         "profileURLAllUsersAllHosts": "https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/test/powershell-extended/Test-Profile.ps1"
       }
     }

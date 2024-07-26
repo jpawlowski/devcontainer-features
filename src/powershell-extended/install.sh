@@ -68,13 +68,13 @@ if ! type pwsh >/dev/null 2>&1; then
     fi
 
     # If default shell is requested, set it
-    if [ "$POWERSHELL_SET_DEFAULT_SHELL" = 'true' ]; then
+    if [ "$POWERSHELL_ROOT_DEFAULT_SHELL" = 'true' ]; then
         echo "[root] Set default shell to pwsh"
         chsh -s "$(command -v pwsh)"
-        if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
-            echo "[$_REMOTE_USER] Set default shell to pwsh"
-            chsh "$_REMOTE_USER" -s "$(command -v pwsh)"
-        fi
+    fi
+    if [ "$POWERSHELL_USER_DEFAULT_SHELL" = 'true' ] && [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
+        echo "[$_REMOTE_USER] Set default shell to pwsh"
+        chsh "$_REMOTE_USER" -s "$(command -v pwsh)"
     fi
 else
     echo "PowerShell is already installed."

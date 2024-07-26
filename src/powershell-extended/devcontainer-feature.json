@@ -47,10 +47,15 @@
           "default": "release",
           "description": "Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version."
         },
-        "setAsDefaultShell": {
+        "setUserDefaultShell": {
             "type": "boolean",
             "default": false,
-            "description": "Set PowerShell as the default shell."
+            "description": "Set PowerShell as the default shell for non-root user."
+        },
+        "setRootDefaultShell": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set PowerShell as the default shell for root."
         },
         "repositories": {
             "type": "string",
