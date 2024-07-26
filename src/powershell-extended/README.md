@@ -51,7 +51,7 @@ resource name syntax:
 #### Version Examples
 
 | Notation                                     | Description                                                                                                                            |
-|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | `Az`                                         | Installs the latest version.                                                                                                           |
 | `Az@12.1.0`                                  | Install exactly version 12.1.0.                                                                                                        |
 | `Az@[12.1.0,]`                               | Installs any version equal or greater than 12.1.0.                                                                                     |
@@ -77,19 +77,19 @@ To register a resource repository (or change PSGallery default repository), you 
 
 #### Resource Repository Examples
 
-| Notation                            | Description                           | Resulting Repository Name |
-|-------------------------------------|---------------------------------------|---------------------------|
-| `https://example.com/api/v2`        | Minimum example.                      | `example.com`             |
-| `https://example.com/api/v2^40`     | Explicitly set priority to 40.        | `example.com`             |
-| `MyRepo=https://example.com/api/v2` | Setting an explicit repository name.  | `MyRepo`                  |
-| `PSGallery^60`                      | Decrease priority of PSGallery to 60. | `PSGallery`               |
-| `PSGallery`                         | Set PSGallery as trusted.             | `PSGallery`               |
+| Notation                                    | Description                                                  | Resulting Repository Name |
+| ------------------------------------------- | ------------------------------------------------------------ | ------------------------- |
+| `https://example.com/api/v2`                | Minimum example.                                             | `example.com`             |
+| `MyRepo=https://example.com/api/v2`         | Setting an explicit repository name.                         | `MyRepo`                  |
+| `https://www.poshtestgallery.com/api/v2^70` | Add PowerShell Test Gallery with a decreased priority of 70. | `www.poshtestgallery.com` |
+| `PSGallery^60`                              | Decrease priority of PSGallery to 60.                        | `PSGallery`               |
+| `PSGallery`                                 | Set PSGallery as trusted.                                    | `PSGallery`               |
 
 Note that every repository you explicitly set in the configuration will automatically be configured as a **trusted resource**.
 
 > **IMPORTANT:** Please note that multiple items must be separated using a semicolon (`;`).
 > It follows the principle used to separate items in the `resources` option.
-> For example: `PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^60`
+> For example: `PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^70`
 
 
 ---
