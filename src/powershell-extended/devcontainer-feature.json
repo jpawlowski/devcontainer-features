@@ -28,9 +28,24 @@
             "description": "Select the installation method for PowerShell. If you choose `package`, PowerShell will be installed using the package manager with a fallback to 'github'. If you choose `github`, PowerShell will be installed from GitHub releases."
         },
         "updatePSResourceGet": {
-          "type": "boolean",
-          "default": true,
-          "description": "Update `Microsoft.PowerShell.PSResourceGet` module to the latest version."
+          "type": "string",
+          "enum": [
+            "none",
+            "release",
+            "prerelease"
+          ],
+          "default": "release",
+          "description": "Update [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources."
+        },
+        "updatePSReadLine": {
+          "type": "string",
+          "enum": [
+            "none",
+            "release",
+            "prerelease"
+          ],
+          "default": "release",
+          "description": "Update [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version."
         },
         "repositories": {
             "type": "string",

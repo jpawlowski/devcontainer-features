@@ -43,20 +43,31 @@ if ! type pwsh >/dev/null 2>&1; then
         install_using_github
     fi
 
-    if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" = 'true' ]; then
-
+    if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" != 'none' ]; then
         if [ "$POWERSHELL_VERSION" = 'latest' ] || ! version_compare 'ge' "$POWERSHELL_VERSION" '7.4.0'; then
             # Update Microsoft.PowerShell.PSResourceGet
+            prerelease=""
+            if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" = 'prerelease' ]; then
+                prerelease="-Prerelease"
+            fi
             currentVersion=$(pwsh -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet).Version.ToString()")
-            latestVersion=$(pwsh -NoProfile -Command "(Find-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -AllVersions | Sort-Object { [version]\$_.Version } -Descending | Select-Object -First 1).Version.ToString()")
+            if [ -n "$prerelease" ]; then
+                latestVersion=$(pwsh -NoProfile -Command "(Find-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -AllVersions | Sort-Object { [semver]\$_.Version } -Descending | Select-Object -First 1).Version.ToString()")
+            else
+                latestVersion=$(pwsh -NoProfile -Command "(Find-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -AllVersions | Where-Object { -not \$_.Version.Contains('-') } | Sort-Object { [semver]\$_.Version } -Descending | Select-Object -First 1).Version.ToString()")
+            fi
             if version_compare 'gt' "$latestVersion" "$currentVersion"; then
                 echo "Updating Microsoft.PowerShell.PSResourceGet"
-                pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet"
+                pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet $prerelease"
             fi
         else
             # Installing Microsoft.PowerShell.PSResourceGet
+            prerelease=""
+            if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" = 'prerelease' ]; then
+                prerelease="-AllowPrerelease"
+            fi
             echo "Installing Microsoft.PowerShell.PSResourceGet"
-            pwsh -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted" || exit 1
+            pwsh -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber $prerelease; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted"
         fi
     fi
 else
@@ -299,6 +310,25 @@ if [ "$POWERSHELL_RESOURCES" != '' ]; then
         echo "Install-PSResource $args"
         pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose $args"
     done
+fi
+
+# If PSReadLine update is requested, check and update
+if [ -n "$POWERSHELL_UPDATE_PSREADLINE" ]; then
+    prerelease=""
+    if [ "$POWERSHELL_UPDATE_PSREADLINE" = 'prerelease' ]; then
+        prerelease="-Prerelease"
+    fi
+
+    currentVersion=$(pwsh -NoProfile -Command "(Get-Module -ListAvailable -Name PSReadLine).Version.ToString()")
+    if [ -n "$prerelease" ]; then
+        latestVersion=$(pwsh -NoProfile -Command "(Find-Module -Name PSReadLine -Repository PSGallery -AllVersions | Sort-Object { [semver]\$_.Version } -Descending | Select-Object -First 1).Version.ToString()")
+    else
+        latestVersion=$(pwsh -NoProfile -Command "(Find-Module -Name PSReadLine -Repository PSGallery -AllVersions | Where-Object { -not \$_.Version.Contains('-') } | Sort-Object { [semver]\$_.Version } -Descending | Select-Object -First 1).Version.ToString()")
+    fi
+    if version_compare 'gt' "$latestVersion" "$currentVersion"; then
+        echo "Updating PSReadLine"
+        pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name PSReadLine -Version '$latestVersion' $prerelease"
+    fi
 fi
 
 # If URL for PowerShell profile is provided, download it to '/opt/microsoft/powershell/7/profile.ps1'
