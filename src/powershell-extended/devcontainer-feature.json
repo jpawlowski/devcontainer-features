@@ -3,7 +3,7 @@
     "legacyIds": [
       "powershell"
     ],
-    "version": "2.0.1",
+    "version": "2.0.2",
     "name": "PowerShell Extended [PSResourceGet / NuGet Versioning]",
     "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/powershell",
     "description": "Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options.",
@@ -35,7 +35,7 @@
             "prerelease"
           ],
           "default": "release",
-          "description": "Update [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources."
+          "description": "Update built-in [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources."
         },
         "updatePSReadLine": {
           "type": "string",
@@ -45,7 +45,7 @@
             "prerelease"
           ],
           "default": "release",
-          "description": "Update [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version."
+          "description": "Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version."
         },
         "repositories": {
             "type": "string",
