@@ -66,6 +66,17 @@ if ! type pwsh >/dev/null 2>&1; then
             pwsh -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber $prerelease; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted"
         fi
     fi
+
+    # If default shell is requested, set it
+    if [ "$POWERSHELL_SET_DEFAULT_SHELL" = 'true' ]; then
+        echo "Setting default shell to pwsh"
+        chsh -s "$(command -v pwsh)"
+        echo "[root] Set default shell to pwsh"
+        if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
+            echo "[$_REMOTE_USER] Set default shell to pwsh"
+            su "$_REMOTE_USER" bash -c "chsh -s \"$(command -v pwsh)\""
+        fi
+    fi
 else
     echo "PowerShell is already installed."
 fi
@@ -324,7 +335,7 @@ if [ -n "$POWERSHELL_UPDATE_PSREADLINE" ]; then
 fi
 
 # If URL for PowerShell profile is provided, download it to '/opt/microsoft/powershell/7/profile.ps1'
-if [ -n "$POWERSHELL_PROFILE_URL" ]; then
+if [ "$POWERSHELL_PROFILE_URL" != '' ]; then
     # Get profile path from currently installed pwsh
     profilePath=$(pwsh -NoProfile -Command "\$PROFILE.AllUsersAllHosts")
 
