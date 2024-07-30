@@ -73,6 +73,9 @@
             "description": "Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts)."
         }
     },
+    "containerEnv": {
+        "PSModuleAnalysisCachePath": "/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache"
+    },
     "customizations": {
         "vscode": {
             "extensions": [
