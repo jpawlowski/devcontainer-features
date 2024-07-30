@@ -4,17 +4,18 @@
 
 set -e
 
+if [ "$(id -u)" -ne 0 ]; then
+    echo -e 'Script must be run as root. Use sudo, su, or add "USER root" to your Dockerfile before running this script.'
+    exit 1
+fi
+
 # load common functions
 # shellcheck source=/dev/null
 source "$(dirname "$0")/lib.sh" # Input variables are exported from here
 
 # Clean up
 rm -rf /var/lib/apt/lists/*
-
-if [ "$(id -u)" -ne 0 ]; then
-    echo -e 'Script must be run as root. Use sudo, su, or add "USER root" to your Dockerfile before running this script.'
-    exit 1
-fi
+export POWERSHELL_TELEMETRY_OPTOUT=1
 
 # Define PowerShell preferences
 prefs="\$ProgressPreference='SilentlyContinue'; \$InformationPreference='Continue'; \$VerbosePreference='SilentlyContinue'; \$ConfirmPreference='None'; \$ErrorActionPreference='Stop';"
@@ -43,6 +44,19 @@ if ! type pwsh >/dev/null 2>&1; then
         install_using_github
     fi
 
+    # Wait for PSModuleAnalysisCachePath to be created
+    # Also avoids issues where the PSGallery repository cannot be found (yet)
+    pwsh \
+        -NoLogo \
+        -NoProfile \
+        -Command " \
+            \$ErrorActionPreference = 'Stop' ; \
+            \$ProgressPreference = 'SilentlyContinue' ; \
+            while(!(Test-Path -Path \$env:PSModuleAnalysisCachePath)) {  \
+                Write-Host "'Waiting for $env:PSModuleAnalysisCachePath'" ; \
+                Start-Sleep -Seconds 6 ; \
+            }"
+
     if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" != 'none' ]; then
         if [ "$POWERSHELL_VERSION" = 'latest' ] || ! version_compare "$POWERSHELL_VERSION" 'ge' '7.4.0'; then
             # Update Microsoft.PowerShell.PSResourceGet
@@ -50,11 +64,11 @@ if ! type pwsh >/dev/null 2>&1; then
             if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" = 'prerelease' ]; then
                 prerelease="-Prerelease"
             fi
-            currentVersion=$(pwsh -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet).Version.ToString()")
-            latestVersion=$(pwsh -NoProfile -Command "(Find-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
+            currentVersion=$(pwsh -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet).Version.ToString()")
+            latestVersion=$(pwsh -NoLogo -NoProfile -Command "(Find-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
             if version_compare "$latestVersion" 'gt' "$currentVersion"; then
                 echo "Updating Microsoft.PowerShell.PSResourceGet"
-                pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet $prerelease"
+                pwsh -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet $prerelease"
             fi
         else
             # Installing Microsoft.PowerShell.PSResourceGet
@@ -63,7 +77,7 @@ if ! type pwsh >/dev/null 2>&1; then
                 prerelease="-AllowPrerelease"
             fi
             echo "Installing Microsoft.PowerShell.PSResourceGet"
-            pwsh -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber $prerelease; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted"
+            pwsh -NoLogo -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber $prerelease; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted"
         fi
     fi
 
@@ -81,7 +95,7 @@ else
 fi
 
 # Get existing repositories
-IFS=';' read -r -a repos <<<"$(pwsh -NoProfile -Command "(Get-PSResourceRepository).Uri.OriginalString -join ';'")"
+IFS=';' read -r -a repos <<<"$(pwsh -NoLogo -NoProfile -Command "(Get-PSResourceRepository).Uri.OriginalString -join ';'")"
 
 # If PowerShell repositories are requested, loop through and register
 if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
@@ -101,7 +115,7 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
             if [ -z "$repoPrio" ]; then
                 # Set PSGallery to trusted only
                 echo "[root] Set PSGallery as trusted repository"
-                pwsh -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
+                pwsh -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
                 if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                     echo "[$_REMOTE_USER] Set PSGallery as trusted repository"
                     sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
@@ -110,7 +124,7 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
             elif [[ "$repoPrio" =~ ^[0-9]+$ ]] && [ "$repoPrio" -ge 0 ] && [ "$repoPrio" -le 100 ]; then
                 # Update priority and set to trusted
                 echo "[root] Set PSGallery as trusted repository and update priority to '$repoPrio'"
-                pwsh -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
+                pwsh -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
                 if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                     echo "[$_REMOTE_USER] Set PSGallery as trusted repository and update priority to '$repoPrio'"
                     sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
@@ -160,7 +174,7 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
 
             # Register repository
             echo "[root] Register-PSResourceRepository $repoargs"
-            pwsh -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
+            pwsh -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
             if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                 echo "[$_REMOTE_USER] Register-PSResourceRepository $repoargs"
                 sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
@@ -280,7 +294,7 @@ if [ "$POWERSHELL_RESOURCES" != '' ]; then
 
                 # Register repository
                 echo "[root] Register-PSResourceRepository $repoargs"
-                pwsh -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
+                pwsh -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
                 if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != 'root' ]; then
                     echo "[$_REMOTE_USER] Register-PSResourceRepository $repoargs"
                     sudo -H -u "$_REMOTE_USER" "$(command -v pwsh)" -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
@@ -314,7 +328,7 @@ if [ "$POWERSHELL_RESOURCES" != '' ]; then
         echo ""
 
         echo "Install-PSResource $args"
-        pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose $args"
+        pwsh -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose $args"
     done
 fi
 
@@ -325,18 +339,18 @@ if [ -n "$POWERSHELL_UPDATE_PSREADLINE" ]; then
         prerelease="-Prerelease"
     fi
 
-    currentVersion=$(pwsh -NoProfile -Command "(Get-Module -ListAvailable -Name PSReadLine).Version.ToString()")
-    latestVersion=$(pwsh -NoProfile -Command "(Find-PSResource -Name PSReadLine -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
+    currentVersion=$(pwsh -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name PSReadLine).Version.ToString()")
+    latestVersion=$(pwsh -NoLogo -NoProfile -Command "(Find-PSResource -Name PSReadLine -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
     if version_compare "$latestVersion" 'gt' "$currentVersion"; then
         echo "Updating PSReadLine"
-        pwsh -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name PSReadLine $prerelease"
+        pwsh -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name PSReadLine $prerelease"
     fi
 fi
 
 # If URL for PowerShell profile is provided, download it to '/opt/microsoft/powershell/7/profile.ps1'
 if [ "$POWERSHELL_PROFILE_URL" != '' ]; then
     # Get profile path from currently installed pwsh
-    profilePath=$(pwsh -NoProfile -Command "\$PROFILE.AllUsersAllHosts")
+    profilePath=$(pwsh -NoLogo -NoProfile -Command "\$PROFILE.AllUsersAllHosts")
 
     # If file is not existing yet, download it
     if [ ! -f "$profilePath" ]; then
