@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         features:
+          - cascadia-code
           - cli-microsoft365
           - pnp.powershell
           - powershell-extended
@@ -39,8 +40,6 @@ jobs:
     strategy:
       matrix:
         features:
-          - cli-microsoft365
-          - pnp.powershell
           - powershell-extended
     steps:
       - uses: actions/checkout@v4

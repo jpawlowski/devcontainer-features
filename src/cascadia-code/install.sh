@@ -57,26 +57,42 @@ elif [ "${USERNAME}" = "none" ] || ! id -u "${USERNAME}" >/dev/null 2>&1; then
     USERNAME=root
 fi
 
+apt_get_update() {
+    if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
+        echo "Running apt-get update..."
+        apt-get update -y
+    fi
+}
+yum_update() {
+    if [ "$(find /var/cache/yum/* | wc -l)" = "0" ]; then
+        echo "Running yum update..."
+        yum makecache fast
+    fi
+}
+check_packages() {
+    case $ADJUSTED_ID in
+    debian)
+        if ! dpkg -s "$@" > /dev/null 2>&1; then
+            apt_get_update
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get -y install --no-install-recommends "$@"
+        fi
+        ;;
+    rhel)
+        if ! rpm -q "$@" > /dev/null 2>&1; then
+            yum_update
+            yum -y install "$@"
+        fi
+        ;;
+    esac
+}
+
+# Install required packages
+check_packages ca-certificates curl jq unzip
+
 # Install fontconfig if it is not already installed
 if [ "${INSTALL_FONTCONFIG}" = "true" ]; then
-    if ! command -v fc-cache >/dev/null 2>&1; then
-        echo "Installing Fontconfig"
-        case $ADJUSTED_ID in
-        debian)
-            apt-get update
-            export DEBIAN_FRONTEND=noninteractive
-            apt-get install --no-install-recommends -y fontconfig
-            apt-get clean -y
-            rm -rf /var/lib/apt/lists/*
-            ;;
-        rhel)
-            yum install -y fontconfig
-            yum clean all
-            ;;
-        esac
-    else
-        echo "Fontconfig is already installed."
-    fi
+    check_packages fontconfig
 fi
 
 # Install Cascadia Code
@@ -90,18 +106,19 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
     mkdir -p "${FONT_BASE_DIR}"
     chown -R "${USERNAME}" "${FONT_BASE_DIR}"
     if [ "${FONT_VERSION}" = "latest" ]; then
-        FONT_VERSION=$(curl -s "https://api.github.com/repos/microsoft/cascadia-code/releases/latest" | jq -r '.tag_name')
+        FONT_VERSION=$(curl -fsSL "https://api.github.com/repos/microsoft/cascadia-code/releases/latest" | jq -r '.tag_name')
     fi
 
     FONT_URL="https://github.com/microsoft/cascadia-code/releases/download/${FONT_VERSION}/CascadiaCode-${FONT_VERSION#v}.zip"
     curl -fsSL "${FONT_URL}" -o "/tmp/CascadiaCode-${FONT_VERSION}.zip"
     unzip -q "/tmp/CascadiaCode-${FONT_VERSION}.zip" -d "/tmp/CascadiaCode-${FONT_VERSION}"
+    ls -la "/tmp/CascadiaCode-${FONT_VERSION}"
 
     if [ "${FONT_VARIABLE_TTF}" = "true" ]; then
         TTF_DIR="${FONT_BASE_DIR}/ttf"
         mkdir -p "${TTF_DIR}"
         chown "${USERNAME}" "${TTF_DIR}"
-        cp -f "/tmp/CascadiaCode-${FONT_VERSION}/ttf/*.ttf" "${TTF_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/" -name "*.ttf" -exec cp -fv {} "${TTF_DIR}" \;
         echo "Cascadia Code (Variable TTF) installed."
     fi
 
@@ -109,7 +126,7 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
         WOFF2_DIR="${FONT_BASE_DIR}/woff2"
         mkdir -p "${WOFF2_DIR}"
         chown "${USERNAME}" "${WOFF2_DIR}"
-        cp -f "/tmp/CascadiaCode-${FONT_VERSION}/woff2/*.woff2" "${WOFF2_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/" -name "*.woff2" -exec cp -fv {} "${WOFF2_DIR}" \;
         echo "Cascadia Code (Variable WOFF2) installed."
     fi
 
@@ -117,7 +134,7 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
         TTF_DIR="${FONT_BASE_DIR}/ttf/static"
         mkdir -p "${TTF_DIR}"
         chown "${USERNAME}" "${TTF_DIR}"
-        cp -f "/tmp/CascadiaCode-${FONT_VERSION}/ttf/static/*.ttf" "${TTF_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/static/" -name "*.ttf" -exec cp -fv {} "${TTF_DIR}" \;
         echo "Cascadia Code (Static TTF) installed."
     fi
 
@@ -125,7 +142,7 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
         OTF_DIR="${FONT_BASE_DIR}/otf/static"
         mkdir -p "${OTF_DIR}"
         chown "${USERNAME}" "${OTF_DIR}"
-        cp -f "/tmp/CascadiaCode-${FONT_VERSION}/otf/static/*.otf" "${OTF_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/otf/static/"*.otf -exec cp -fv {} "${OTF_DIR}" \;
         echo "Cascadia Code (Static OTF) installed."
     fi
 
@@ -133,7 +150,7 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
         WOFF2_DIR="${FONT_BASE_DIR}/woff2/static"
         mkdir -p "${WOFF2_DIR}"
         chown "${USERNAME}" "${WOFF2_DIR}"
-        cp -f "/tmp/CascadiaCode-${FONT_VERSION}/woff2/static/*.woff2" "${WOFF2_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/static/" -name "*.woff2" -exec cp -fv {} "${WOFF2_DIR}" \;
         echo "Cascadia Code (Static WOFF2) installed."
     fi
 
