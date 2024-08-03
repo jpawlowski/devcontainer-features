@@ -1,0 +1,51 @@
+{
+  "name": "Cascadia Code Font",
+  "id": "cascadia-code",
+  "version": "1.0.0",
+  "description": "Installs the Cascadia Code font.",
+  "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/cascadia-code",
+  "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
+  "keywords": [
+    "font"
+  ],
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": [
+        "latest"
+      ],
+      "default": "latest",
+      "description": "Set the version of the font to install."
+    },
+    "installFontconfig":{
+      "type": "boolean",
+      "default": true,
+      "description": "Set to true to install Font Configuration."
+    },
+    "installVariableTTF": {
+      "type": "boolean",
+      "default": true,
+      "description": "Set to true to install the variable TTF version of the font."
+    },
+    "installVariableWOFF2": {
+      "type": "boolean",
+      "default": true,
+      "description": "Set to true to install the variable WOFF2 version of the font."
+    },
+    "installStaticTTF": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set to true to install the static TTF version of the font."
+    },
+    "installStaticOTF": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set to true to install the static OTF version of the font."
+    },
+    "installStaticWOFF2": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set to true to install the static WOFF2 version of the font."
+    }
+  }
+}
