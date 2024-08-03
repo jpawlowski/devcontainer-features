@@ -29,7 +29,7 @@
     },
     "installVariableWOFF2": {
       "type": "boolean",
-      "default": true,
+      "default": false,
       "description": "Set to true to install the variable WOFF2 version of the font."
     },
     "installStaticTTF": {
