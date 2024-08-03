@@ -118,40 +118,40 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
     if [ "${FONT_VARIABLE_TTF}" = "true" ]; then
         TTF_DIR="${FONT_BASE_DIR}/ttf"
         mkdir -p "${TTF_DIR}"
-        chown "${USERNAME}" "${TTF_DIR}"
         find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/" -maxdepth 1 -name "*.ttf" -exec cp -fv {} "${TTF_DIR}" \;
+        chown -R "${USERNAME}" "${TTF_DIR}"
         echo "Cascadia Code (Variable TTF) installed."
     fi
 
     if [ "${FONT_VARIABLE_WOFF2}" = "true" ]; then
         WOFF2_DIR="${FONT_BASE_DIR}/woff2"
         mkdir -p "${WOFF2_DIR}"
-        chown "${USERNAME}" "${WOFF2_DIR}"
         find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/" -maxdepth 1 -name "*.woff2" -exec cp -fv {} "${WOFF2_DIR}" \;
+        chown -R "${USERNAME}" "${WOFF2_DIR}"
         echo "Cascadia Code (Variable WOFF2) installed."
     fi
 
     if [ "${FONT_STATIC_TTF}" = "true" ]; then
         TTF_DIR="${FONT_BASE_DIR}/ttf/static"
         mkdir -p "${TTF_DIR}"
-        chown "${USERNAME}" "${TTF_DIR}"
         find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/static/" -maxdepth 1 -name "*.ttf" -exec cp -fv {} "${TTF_DIR}" \;
+        chown -R "${USERNAME}" "${TTF_DIR}"
         echo "Cascadia Code (Static TTF) installed."
     fi
 
     if [ "${FONT_STATIC_OTF}" = "true" ]; then
         OTF_DIR="${FONT_BASE_DIR}/otf/static"
         mkdir -p "${OTF_DIR}"
-        chown "${USERNAME}" "${OTF_DIR}"
         find "/tmp/CascadiaCode-${FONT_VERSION}/otf/static/" -maxdepth 1 -name "*.otf" -exec cp -fv {} "${OTF_DIR}" \;
+        chown -R "${USERNAME}" "${OTF_DIR}"
         echo "Cascadia Code (Static OTF) installed."
     fi
 
     if [ "${FONT_STATIC_WOFF2}" = "true" ]; then
         WOFF2_DIR="${FONT_BASE_DIR}/woff2/static"
         mkdir -p "${WOFF2_DIR}"
-        chown "${USERNAME}" "${WOFF2_DIR}"
         find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/static/" -maxdepth 1 -name "*.woff2" -exec cp -fv {} "${WOFF2_DIR}" \;
+        chown -R "${USERNAME}" "${WOFF2_DIR}"
         echo "Cascadia Code (Static WOFF2) installed."
     fi
 
