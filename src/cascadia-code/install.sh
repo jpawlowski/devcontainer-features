@@ -104,7 +104,9 @@ fi
 if [ ! -d "${FONT_BASE_DIR}" ]; then
     umask 0002
     mkdir -p "${FONT_BASE_DIR}"
-    chown -R "${USERNAME}" "${FONT_BASE_DIR}"
+    if [ "${USERNAME}" != "root" ]; then
+        chown -R "${USERNAME}" "/home/${USERNAME}/.local"
+    fi
     if [ "${FONT_VERSION}" = "latest" ]; then
         FONT_VERSION=$(curl -fsSL "https://api.github.com/repos/microsoft/cascadia-code/releases/latest" | jq -r '.tag_name')
     fi
