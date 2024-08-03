@@ -17,10 +17,11 @@ You may learn about Features at [containers.dev](https://containers.dev/implemen
 
 Below are the features currently available in this repository:
 
-| Feature Name        | Description                                                                                                                                                                         |               Documentation                |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------: |
-| CLI Microsoft 365   | CLI for Microsoft 365 is a cross-platform CLI that allows users on any platform to manage various configuration settings of Microsoft 365.                                          | [📚 Link](./src/cli-microsoft365/) |
-| PnP.PowerShell      | PnP PowerShell is a cross-platform PowerShell module that allows users on any platform to manage various configuration settings of Microsoft 365.                                   | [📚 Link](./src/pnp.powershell/) |
+| Feature Name        | Description                                                                                                                                                                         | Documentation                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------- |
+| Cascadia Code       | Cascadia Code font.                                                                                                                                                                 | [📚 Link](./src/cascadia-code/)       |
+| CLI Microsoft 365   | CLI for Microsoft 365 is a cross-platform CLI that allows users on any platform to manage various configuration settings of Microsoft 365.                                          | [📚 Link](./src/cli-microsoft365/)    |
+| PnP.PowerShell      | PnP PowerShell is a cross-platform PowerShell module that allows users on any platform to manage various configuration settings of Microsoft 365.                                   | [📚 Link](./src/pnp.powershell/)      |
 | PowerShell Extended | Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options. | [📚 Link](./src/powershell-extended/) |
 
 'Features' are self-contained units of installation code and development container configuration. Features are designed
