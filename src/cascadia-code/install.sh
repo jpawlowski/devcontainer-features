@@ -112,7 +112,6 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
     FONT_URL="https://github.com/microsoft/cascadia-code/releases/download/${FONT_VERSION}/CascadiaCode-${FONT_VERSION#v}.zip"
     curl -fsSL "${FONT_URL}" -o "/tmp/CascadiaCode-${FONT_VERSION}.zip"
     unzip -q "/tmp/CascadiaCode-${FONT_VERSION}.zip" -d "/tmp/CascadiaCode-${FONT_VERSION}"
-    ls -la "/tmp/CascadiaCode-${FONT_VERSION}"
 
     if [ "${FONT_VARIABLE_TTF}" = "true" ]; then
         TTF_DIR="${FONT_BASE_DIR}/ttf"
