@@ -17,11 +17,11 @@ Installs the Cascadia Code font.
 |-----|-----|-----|-----|
 | version | Set the version of the font to install. | string | latest |
 | installFontconfig | Set to true to install Font Configuration. | boolean | true |
-| installVariableTTF | Set to true to install the variable TTF version of the font. | boolean | true |
-| installVariableWOFF2 | Set to true to install the variable WOFF2 version of the font. | boolean | false |
-| installStaticTTF | Set to true to install the static TTF version of the font. | boolean | false |
+| installStaticTTF | Set to true to install the static TTF version of the font. | boolean | true |
 | installStaticOTF | Set to true to install the static OTF version of the font. | boolean | false |
 | installStaticWOFF2 | Set to true to install the static WOFF2 version of the font. | boolean | false |
+| installVariableTTF | Set to true to install the variable TTF version of the font. | boolean | false |
+| installVariableWOFF2 | Set to true to install the variable WOFF2 version of the font. | boolean | false |
 
 
 
