@@ -97,15 +97,16 @@ fi
 
 # Install Cascadia Code
 if [ "${USERNAME}" = "root" ]; then
-    FONT_BASE_DIR="/usr/share/fonts/cascadia-code"
+    FONT_BASE_DIR="/usr/share/fonts"
 else
-    FONT_BASE_DIR="/home/${USERNAME}/.local/share/fonts/cascadia-code"
+    FONT_BASE_DIR="/home/${USERNAME}/.local/share/fonts"
 fi
-if [ ! -d "${FONT_BASE_DIR}" ]; then
-    umask 0002
+if [!  -d "${FONT_BASE_DIR}" ] || [ -z "$(find "${FONT_BASE_DIR}" -type d -name "cascadia-code" -print -quit)" ]; then
     mkdir -p "${FONT_BASE_DIR}"
     if [ "${USERNAME}" != "root" ]; then
-        chown -R "${USERNAME}" "/home/${USERNAME}/.local"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_BASE_DIR}"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_BASE_DIR%/*}"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_BASE_DIR%/*/*}"
     fi
     if [ "${FONT_VERSION}" = "latest" ]; then
         FONT_VERSION=$(curl -fsSL "https://api.github.com/repos/microsoft/cascadia-code/releases/latest" | jq -r '.tag_name')
@@ -116,42 +117,47 @@ if [ ! -d "${FONT_BASE_DIR}" ]; then
     unzip -q "/tmp/CascadiaCode-${FONT_VERSION}.zip" -d "/tmp/CascadiaCode-${FONT_VERSION}"
 
     if [ "${FONT_VARIABLE_TTF}" = "true" ]; then
-        TTF_DIR="${FONT_BASE_DIR}/ttf"
-        mkdir -p "${TTF_DIR}"
-        find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/" -maxdepth 1 -name "*.ttf" -exec cp -fv {} "${TTF_DIR}" \;
-        chown -R "${USERNAME}" "${TTF_DIR}"
+        FONT_DIR="${FONT_BASE_DIR}/truetype/cascadia-code"
+        mkdir -p "${FONT_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/" -maxdepth 1 -name "*.ttf" -exec cp -fv {} "${FONT_DIR}" \;
+        chown -R "${USERNAME}":"${USERNAME}" "${FONT_DIR}"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_DIR%/*}"
         echo "Cascadia Code (Variable TTF) installed."
     fi
 
     if [ "${FONT_VARIABLE_WOFF2}" = "true" ]; then
-        WOFF2_DIR="${FONT_BASE_DIR}/woff2"
-        mkdir -p "${WOFF2_DIR}"
-        find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/" -maxdepth 1 -name "*.woff2" -exec cp -fv {} "${WOFF2_DIR}" \;
-        chown -R "${USERNAME}" "${WOFF2_DIR}"
+        FONT_DIR="${FONT_BASE_DIR}/woff2/cascadia-code"
+        mkdir -p "${FONT_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/" -maxdepth 1 -name "*.woff2" -exec cp -fv {} "${FONT_DIR}" \;
+        chown -R "${USERNAME}":"${USERNAME}" "${FONT_DIR}"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_DIR%/*}"
         echo "Cascadia Code (Variable WOFF2) installed."
     fi
 
     if [ "${FONT_STATIC_TTF}" = "true" ]; then
-        TTF_DIR="${FONT_BASE_DIR}/ttf/static"
-        mkdir -p "${TTF_DIR}"
-        find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/static/" -maxdepth 1 -name "*.ttf" -exec cp -fv {} "${TTF_DIR}" \;
-        chown -R "${USERNAME}" "${TTF_DIR}"
+        FONT_DIR="${FONT_BASE_DIR}/truetype/cascadia-code"
+        mkdir -p "${FONT_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/ttf/static/" -maxdepth 1 -name "*.ttf" -exec cp -fv {} "${FONT_DIR}" \;
+        chown -R "${USERNAME}":"${USERNAME}" "${FONT_DIR}"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_DIR%/*}"
         echo "Cascadia Code (Static TTF) installed."
     fi
 
     if [ "${FONT_STATIC_OTF}" = "true" ]; then
-        OTF_DIR="${FONT_BASE_DIR}/otf/static"
-        mkdir -p "${OTF_DIR}"
-        find "/tmp/CascadiaCode-${FONT_VERSION}/otf/static/" -maxdepth 1 -name "*.otf" -exec cp -fv {} "${OTF_DIR}" \;
-        chown -R "${USERNAME}" "${OTF_DIR}"
+        FONT_DIR="${FONT_BASE_DIR}/otf/cascadia-code"
+        mkdir -p "${FONT_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/otf/static/" -maxdepth 1 -name "*.otf" -exec cp -fv {} "${FONT_DIR}" \;
+        chown -R "${USERNAME}":"${USERNAME}" "${FONT_DIR}"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_DIR%/*}"
         echo "Cascadia Code (Static OTF) installed."
     fi
 
     if [ "${FONT_STATIC_WOFF2}" = "true" ]; then
-        WOFF2_DIR="${FONT_BASE_DIR}/woff2/static"
-        mkdir -p "${WOFF2_DIR}"
-        find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/static/" -maxdepth 1 -name "*.woff2" -exec cp -fv {} "${WOFF2_DIR}" \;
-        chown -R "${USERNAME}" "${WOFF2_DIR}"
+        FONT_DIR="${FONT_BASE_DIR}/woff2/cascadia-code"
+        mkdir -p "${FONT_DIR}"
+        find "/tmp/CascadiaCode-${FONT_VERSION}/woff2/static/" -maxdepth 1 -name "*.woff2" -exec cp -fv {} "${FONT_DIR}" \;
+        chown -R "${USERNAME}":"${USERNAME}" "${FONT_DIR}"
+        chown "${USERNAME}":"${USERNAME}" "${FONT_DIR%/*}"
         echo "Cascadia Code (Static WOFF2) installed."
     fi
 
