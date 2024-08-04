@@ -1,6 +1,6 @@
 {
   "name": "GitHub Codespace dotfiles",
-  "id": "codespaces-dotfiles",
+  "id": "codespace-dotfiles",
   "version": "1.0.0",
   "description": "Install your dotfiles repository into GitHub Codespaces from your `devcontainer.json`. This feature will not do anything outside of GitHub Codespaces and will leave the dotfile setup to the [VS Code builtin personalization option](https://code.visualstudio.com/docs/devcontainers/containers#_personalizing-with-dotfile-repositories).",
   "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/codespace-dotfiles",
