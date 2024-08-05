@@ -8,9 +8,9 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-if [ -f /workspaces/.codespaces/shared/.env ]; then
-    # shellcheck disable=SC1091
-    source /workspaces/.codespaces/shared/.env
+# Regular Codespace environment variables are not available during build time
+if [ -f /workspaces/.codespaces ]; then
+    CODESPACES='true'
 fi
 
 USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
