@@ -7,7 +7,7 @@ set -e
 source dev-container-features-test-lib
 
 # Extension-specific tests
-check "installation checkmark" [ -f /home/vscode/.local/share/jpawlowski.codespace-dotfiles/installed ] && exit 0 || exit 1
+check "installation checkmark" [ -f /home/vscode/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled ] && exit 0 || exit 1
 
 # Report result
 reportResults

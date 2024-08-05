@@ -132,7 +132,7 @@ USERNAME="${USERNAME}"
 USERHOME="${USERHOME}"
 
 # Only run once
-if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ] || [ -f "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/installed" ]; then
+if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ] || [ -f "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled" ]; then
     exit 0
 fi
 
@@ -195,7 +195,7 @@ fi
 
 # Mark codespace-dotfiles as installed
 mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles"
-date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/installed"
+date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled"
 EOF
 
 chmod +x /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh
