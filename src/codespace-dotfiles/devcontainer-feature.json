@@ -24,10 +24,19 @@
     "installCommand": {
       "type": "string",
       "default": "",
-      "description": "The command to run after cloning the dotfiles repository. Defaults to run the first file of `install.sh`, `install`, `bootstrap.sh`, `bootstrap`, `setup.sh` and `setup` found in the dotfiles repository's root folder."
+      "description": "The command to run after cloning the dotfiles repository. Defaults to run the first file of `install.sh`, `install`, `bootstrap.sh`, `bootstrap`, `setup.sh` and `setup` found in the dotfiles repository's root folder. If none of these files are found, then the `installFallbackMethod` will be used."
+    },
+    "installFallbackMethod": {
+      "type": "string",
+      "enum": [
+        "symlink",
+        "copy"
+      ],
+      "default": "symlink",
+      "description": "The method to use if no install command is found. Defaults to `symlink`. This will symlink or copy any files or folders in your dotfiles repository starting with . to the codespace's ~ or $HOME directory."
     }
   },
-  "postCreateCommand": "/usr/local/share/jpawlowski.codespace-dotfiles/install.sh",
+  "postStartCommand": "/usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh",
   "installsAfter": [
     "ghcr.io/devcontainers/features/common-utils",
     "ghcr.io/devcontainers/features/git",

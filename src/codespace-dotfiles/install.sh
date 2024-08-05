@@ -3,57 +3,14 @@
 set -e
 
 USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
-REPO="${REPOSITORY:-""}"
+DOTFILES_REPOSITORY="${REPOSITORY:-""}"
 TARGET_PATH="${TARGETPATH:-"~/dotfiles"}"
 INSTALL_COMMAND="${INSTALLCOMMAND:-""}"
+INSTALL_FALLBACK_METHOD="${INSTALLFALLBACKMETHOD:-"symlink"}"
 
 # Ensure that the script is run as root
 if [ "$(id -u)" -ne 0 ]; then
     echo -e 'Script must be run as root. Use sudo, su, or add "USER root" to your Dockerfile before running this script.'
-    exit 1
-fi
-
-generate_dummy_postCreateCommand() {
-    mkdir -p /usr/local/share/jpawlowski.codespace-dotfiles
-    cat > /usr/local/share/jpawlowski.codespace-dotfiles/install.sh << EOF
-#!/bin/bash
-
-# Dummy postCreateCommand to comply with devcontainer.json
-EOF
-    chmod +x /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
-}
-
-if [ ! "${FORCE}" = "true" ]; then
-    # Only run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions
-    if [ ! "${CODESPACES}" = "true" ] && [ ! "${GITHUB_ACTIONS}" = "true" ]; then
-        echo 'Skipping dotfiles installation: This script is only meant to be run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions. Use native devcontainer personalization instead.'
-        generate_dummy_postCreateCommand
-        exit 0
-    fi
-
-    # Additional check for Codespace prebuild
-    if [ "${GITHUB_ACTIONS}" = "true" ] && [ -n "${CODESPACE_NAME}" ]; then
-        echo 'Detected Codespace prebuild in GitHub Actions.'
-        # Proceed with the installation
-    elif [ "${CODESPACES}" = "true" ]; then
-        echo 'Running in GitHub Codespaces.'
-        # Proceed with the installation
-    else
-        echo 'Skipping dotfiles installation: Not in a Codespace or Codespace prebuild.'
-        generate_dummy_postCreateCommand
-        exit 0
-    fi
-
-    # If dotfiles are already installed by Codespaces, skip the installation
-    if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
-        echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
-        generate_dummy_postCreateCommand
-        exit 0
-    fi
-fi
-
-if [ -z "${REPO}" ]; then
-    echo "dotfiles repository must be provided."
     exit 1
 fi
 
@@ -79,55 +36,110 @@ elif [ "${USERNAME}" = "none" ] || ! id -u "${USERNAME}" >/dev/null 2>&1; then
     USERNAME=root
 fi
 
+generate_dummy_postStartCommand() {
+    mkdir -p /usr/local/share/devcontainers/features/codespace-dotfiles
+    cat > /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh << EOF
+#!/bin/bash
+
+# Dummy postStartCommand to comply with devcontainer.json
+EOF
+    chmod +x /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh
+}
+
+# If dotfiles are already installed by Codespaces, skip the installation
+if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
+    echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
+    generate_dummy_postStartCommand
+    exit 0
+fi
+
+if [ ! "${FORCE}" = "true" ]; then  # FORCE is only used for testing outside of Codespaces
+    # Only run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions
+    if [ ! "${CODESPACES}" = "true" ] && [ ! "${GITHUB_ACTIONS}" = "true" ]; then
+        echo 'Skipping codespace-dotfiles installation: This script is only meant to be run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions. Use native devcontainer personalization instead.'
+        generate_dummy_postStartCommand
+        exit 0
+    fi
+
+    # Additional check for Codespace prebuild
+    if [ "${GITHUB_ACTIONS}" = "true" ] && [ -n "${CODESPACE_NAME}" ]; then
+        echo 'Detected Codespace prebuild in GitHub Actions.'
+        # Proceed with the installation
+    elif [ "${CODESPACES}" = "true" ]; then
+        echo 'Running in GitHub Codespaces.'
+        # Proceed with the installation
+    else
+        echo 'Skipping codespace-dotfiles installation: Not in a Codespace or Codespace prebuild.'
+        generate_dummy_postStartCommand
+        exit 0
+    fi
+fi
+
+if [ -z "${REPO}" ]; then
+    echo "dotfiles Git repository must be provided."
+    exit 1
+fi
+
+# If repo does not begin with https:// or git://, assume it is a GitHub repo
+if [[ ! "${REPO}" =~ ^https:// && ! "${REPO}" =~ ^git:// ]]; then
+    REPO="https://github.com/${REPO}"
+fi
+if [[ ! "${REPO}" =~ \.git$ ]]; then
+    REPO="${REPO}.git"
+fi
+
 # Expand TARGET_PATH if it starts with ~
 if [[ "${TARGET_PATH}" == ~* ]]; then
     # shellcheck disable=SC2016
     TARGET_PATH="$(su - "${USERNAME}" -c 'echo ${HOME}')${TARGET_PATH:1}"
 fi
 
-# If the target path already exists, skip the installation
-if [ ! -d "${TARGET_PATH}" ]; then
-    # If repo does not begin with https:// or git://, assume it is a GitHub repo
-    if [[ ! "${REPO}" =~ ^https:// && ! "${REPO}" =~ ^git:// ]]; then
-        REPO="https://github.com/${REPO}"
-    fi
-    if [[ ! "${REPO}" =~ \.git$ ]]; then
-        REPO="${REPO}.git"
-    fi
+# Ensure that the target path is within the user's home directory
+USERHOME=$(eval echo ~"\${USERNAME}")
+if [[ ! "${TARGET_PATH}" =~ ^${USERHOME} ]]; then
+    echo "Target path must be within the user's home directory."
+    exit 1
+fi
 
-    echo "Cloning dotfiles from ${REPO} to ${TARGET_PATH} ..."
-    su - "${USERNAME}" -c "mkdir -p \"${TARGET_PATH}\" && git clone \"${REPO}\" \"${TARGET_PATH}\""
-    ls -la "${TARGET_PATH}"
+# Ensure that the install command is in the root of the dotfiles repository
+if [[ "${INSTALL_COMMAND}" == */* ]]; then
+    echo "Install script ${INSTALL_COMMAND} must be in the root of the dotfiles repository."
+    exit 1
+fi
 
-    if [[ "${INSTALL_COMMAND}" == */* ]]; then
-        echo "Install script ${INSTALL_COMMAND} must be in the root of the dotfiles repository."
-        exit 1
-    fi
-
-    # Generate postCreateCommand to finalize dotfiles installation
-    mkdir -p /usr/local/share/jpawlowski.codespace-dotfiles
-    cat > /usr/local/share/jpawlowski.codespace-dotfiles/install.sh << EOF
+# Generate postStartCommand script to finalize dotfiles installation
+mkdir -p /usr/local/share/devcontainers/features/codespace-dotfiles
+cat > /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh << EOF
 #!/bin/bash
+
+# Install Codespace dotfiles in user context
+# Generated $(date -u +"%Y-%m-%dT%H:%M:%SZ") by devcontainer-features/codespace-dotfiles/install.sh
 
 set -e
 
 # Static values
-INSTALL_COMMAND="${INSTALL_COMMAND}"
+DOTFILES_REPOSITORY="${DOTFILES_REPOSITORY}"
 TARGET_PATH="${TARGET_PATH}"
+INSTALL_COMMAND="${INSTALL_COMMAND}"
+INSTALL_FALLBACK_METHOD="${INSTALL_FALLBACK_METHOD}"
 USERNAME="${USERNAME}"
-USER_HOME=$(eval echo ~"\${USERNAME}")
+USERHOME="${USERHOME}"
 
-if [ -f "\${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles/installed" ]; then
-    echo "dotfiles already installed on \$(cat \${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles/installed)."
+# Only run once
+if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ] || [ -f "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/installed" ]; then
     exit 0
 fi
 
-# If dotfiles are already installed by Codespaces, skip the installation
-if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
-    echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
-    rm -rf "\${TARGET_PATH}"
-    exit 0
+# If the target path already exists, throw an error
+if [ -d "\${TARGET_PATH}" ]; then
+    echo "codespace-dotfiles setup: Target path \${TARGET_PATH} already exists."
+    exit 1
 fi
+
+# Clone the dotfiles repository
+echo "Cloning dotfiles from \${DOTFILES_REPOSITORY} to '\${TARGET_PATH}' ..."
+mkdir -p "\${TARGET_PATH}"
+git clone "\${DOTFILES_REPOSITORY}" "\${TARGET_PATH}"
 
 # Find install command if not provided
 if [ -z "\${INSTALL_COMMAND}" ]; then
@@ -144,30 +156,47 @@ fi
 if [ -n "\${INSTALL_COMMAND}" ]; then
     if [ -f "\${TARGET_PATH}/\${INSTALL_COMMAND}" ]; then
         echo "Running dotfiles install script \${INSTALL_COMMAND} ..."
-        cd \${TARGET_PATH}
+        cd "\${TARGET_PATH}"
         chmod +x \${INSTALL_COMMAND}
         ./\${INSTALL_COMMAND}
     else
         echo "Install script \${INSTALL_COMMAND} not found in dotfiles repository."
         exit 1
     fi
+elif [ "\${INSTALL_FALLBACK_METHOD}" = "copy" ]; then
+    echo "No install script found in dotfiles repository."
+    echo "Copying dotfiles to home directory ..."
+    shopt -s dotglob nullglob
+    files=("\${TARGET_PATH}/.[^.]*")
+    if [ \${#files[@]} -gt 0 ]; then
+        cp -fav "\${files[@]}" ~/
+    fi
+    shopt -u dotglob nullglob
+elif [ "\${INSTALL_FALLBACK_METHOD}" = "symlink" ]; then
+    echo "No install script found in dotfiles repository."
+    echo "Symlinking dotfiles to home directory ..."
+    shopt -s dotglob nullglob
+    files=("\${TARGET_PATH}/.[^.]*")
+    if [ \${#files[@]} -gt 0 ]; then
+        ln -sfnv "\${files[@]}" ~/
+    fi
+    shopt -u dotglob nullglob
 else
-    echo "No install script found in dotfiles repository. Copying dotfiles to home directory ..."
-    bash -c 'shopt -s dotglob nullglob; files=(\${TARGET_PATH}/.[^.]*); if [ \${#files[@]} -gt 0 ]; then cp -fav "\${files[@]}" ~/; fi'
+    echo "No install script found in dotfiles repository."
+    echo "No fallback method specified."
+    exit 1
 fi
 
-# Mark dotfiles as installed
-mkdir -p "\${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles"
-date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles/installed"
+# Mark codespace-dotfiles as installed
+mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles"
+date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/installed"
 EOF
-    chmod +x /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
-    echo "postCreateCommand generated at /usr/local/share/jpawlowski.codespace-dotfiles/install.sh to finalize dotfiles installation:"
 
-    echo ">>>>>>>>>>>>>>>> /usr/local/share/jpawlowski.codespace-dotfiles/install.sh >>>>>>>>>>>>>>"
-    cat /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
-    echo "<<<<<<<<<<<<<<<< /usr/local/share/jpawlowski.codespace-dotfiles/install.sh <<<<<<<<<<<<<<"
-else
-    echo "dotfiles already installed at ${TARGET_PATH}."
-fi
+chmod +x /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh
+echo "postCreateCommand generated at /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh to finalize dotfiles installation:"
+
+echo ">>>>>>>>>>>>>>>> /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh >>>>>>>>>>>>>>"
+cat /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh
+echo "<<<<<<<<<<<<<<<< /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh <<<<<<<<<<<<<<"
 
 echo "Done!"
