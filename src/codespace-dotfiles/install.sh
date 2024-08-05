@@ -8,11 +8,6 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# Regular Codespace environment variables are not available during build time
-if [ -f /workspaces/.codespaces ]; then
-    CODESPACES='true'
-fi
-
 USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
 USERHOME="${USERHOME:-"${_REMOTE_USER_HOME:-"automatic"}"}"
 DOTFILES_REPOSITORY="${REPOSITORY:-""}"
@@ -73,15 +68,6 @@ if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
     exit 0
 fi
 
-if [ "${CODESPACES}" = 'true' ] || [ "${FORCE}" = 'true' ]; then # FORCE is only used for testing outside of Codespaces
-    echo 'Running in GitHub Codespaces.'
-    # Proceed with the installation
-else
-    echo 'Skipping codespace-dotfiles installation: This script is only meant to be run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions. Use native devcontainer personalization instead.'
-    generate_dummy_postStartCommand
-    exit 0
-fi
-
 if [ -z "${DOTFILES_REPOSITORY}" ]; then
     echo "dotfiles Git repository must be provided."
     exit 1
@@ -131,8 +117,16 @@ INSTALL_FALLBACK_METHOD="${INSTALL_FALLBACK_METHOD}"
 USERNAME="${USERNAME}"
 USERHOME="${USERHOME}"
 
-# Only run once
-if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ] || [ -f "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled" ]; then
+# Only run in Codespaces and only once
+if [ ! -d "/workspaces/.codespaces" ] || [ -f "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled" ]; then
+    exit 0
+fi
+
+# Skip if dotfiles are already installed by GitHub Codespaces themselves
+if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
+    echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
+    mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles"
+    date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled"
     exit 0
 fi
 
