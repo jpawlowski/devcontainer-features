@@ -54,6 +54,9 @@ if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
 fi
 
 if [ ! "${FORCE}" = "true" ]; then  # FORCE is only used for testing outside of Codespaces
+    echo "---- Following environment variables are set: ----"
+    env
+    echo "--------------------------------------------------"
     # Only run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions
     if [ ! "${CODESPACES}" = "true" ] && [ ! "${GITHUB_ACTIONS}" = "true" ]; then
         echo 'Skipping codespace-dotfiles installation: This script is only meant to be run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions. Use native devcontainer personalization instead.'
