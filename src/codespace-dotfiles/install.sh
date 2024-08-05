@@ -51,23 +51,6 @@ elif [ "${USERNAME}" = "none" ] || ! id -u "${USERNAME}" >/dev/null 2>&1; then
     fi
 fi
 
-generate_dummy_postStartCommand() {
-    mkdir -p /usr/local/share/devcontainers/features/codespace-dotfiles
-    cat > /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh << EOF
-#!/bin/bash
-
-# Dummy postStartCommand to comply with devcontainer.json
-EOF
-    chmod +x /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh
-}
-
-# If dotfiles are already installed by Codespaces, skip the installation
-if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
-    echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
-    generate_dummy_postStartCommand
-    exit 0
-fi
-
 if [ -z "${DOTFILES_REPOSITORY}" ]; then
     echo "dotfiles Git repository must be provided."
     exit 1
@@ -153,12 +136,16 @@ if [ -z "\${INSTALL_COMMAND}" ]; then
 fi
 
 # Run the install script
+mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles"
+INSTALL_LOG="\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/install.log"
 if [ -n "\${INSTALL_COMMAND}" ]; then
     if [ -f "\${TARGET_PATH}/\${INSTALL_COMMAND}" ]; then
         echo "Running dotfiles install script \${INSTALL_COMMAND} ..."
         cd "\${TARGET_PATH}"
         chmod +x \${INSTALL_COMMAND}
-        ./\${INSTALL_COMMAND}
+
+        # Run the install command in a non-interactive login bash subshell and log the output
+        bash -l -c "./\${INSTALL_COMMAND}" | tee -a "\${INSTALL_LOG}"
     else
         echo "Install script \${INSTALL_COMMAND} not found in dotfiles repository."
         exit 1
@@ -169,7 +156,7 @@ elif [ "\${INSTALL_FALLBACK_METHOD}" = "copy" ]; then
     shopt -s dotglob nullglob
     files=("\${TARGET_PATH}/.[^.]*")
     if [ \${#files[@]} -gt 0 ]; then
-        cp -fav "\${files[@]}" ~/
+        cp -fav "\${files[@]}" ~/ | tee -a "\${INSTALL_LOG}"
     fi
     shopt -u dotglob nullglob
 elif [ "\${INSTALL_FALLBACK_METHOD}" = "symlink" ]; then
@@ -178,7 +165,7 @@ elif [ "\${INSTALL_FALLBACK_METHOD}" = "symlink" ]; then
     shopt -s dotglob nullglob
     files=("\${TARGET_PATH}/.[^.]*")
     if [ \${#files[@]} -gt 0 ]; then
-        ln -sfnv "\${files[@]}" ~/
+        ln -sfnv "\${files[@]}" ~/ | tee -a "\${INSTALL_LOG}"
     fi
     shopt -u dotglob nullglob
 else
@@ -188,7 +175,6 @@ else
 fi
 
 # Mark codespace-dotfiles as installed
-mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles"
 date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled"
 EOF
 
