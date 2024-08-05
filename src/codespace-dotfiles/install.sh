@@ -82,17 +82,17 @@ else
     exit 0
 fi
 
-if [ -z "${REPO}" ]; then
+if [ -z "${DOTFILES_REPOSITORY}" ]; then
     echo "dotfiles Git repository must be provided."
     exit 1
 fi
 
 # If repo does not begin with https:// or git://, assume it is a GitHub repo
-if [[ ! "${REPO}" =~ ^https:// && ! "${REPO}" =~ ^git:// ]]; then
-    REPO="https://github.com/${REPO}"
+if [[ ! "${DOTFILES_REPOSITORY}" =~ ^https:// && ! "${DOTFILES_REPOSITORY}" =~ ^git:// ]]; then
+    DOTFILES_REPOSITORY="https://github.com/${DOTFILES_REPOSITORY}"
 fi
-if [[ ! "${REPO}" =~ \.git$ ]]; then
-    REPO="${REPO}.git"
+if [[ ! "${DOTFILES_REPOSITORY}" =~ \.git$ ]]; then
+    DOTFILES_REPOSITORY="${DOTFILES_REPOSITORY}.git"
 fi
 
 # Expand TARGET_PATH if it starts with ~
