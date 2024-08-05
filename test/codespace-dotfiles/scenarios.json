@@ -1,0 +1,11 @@
+{
+  "install_codespace-dotfiles": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "codespace-dotfiles": {
+        "repository": "https://github.com/workoho/devcontainer-dotfiles.git",
+        "force": true
+      }
+    }
+  }
+}

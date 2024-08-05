@@ -13,10 +13,35 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# Only run in GitHub Codespaces
-if [ -z "${CODESPACES}" ]; then
-    echo -e "\033[31mSkipping dotfiles installation: This script is only meant to be run in GitHub Codespaces. Use native devcontainer personalization instead.\033[0m"
-    exit 0
+generate_dummy_postCreateCommand() {
+    mkdir -p /usr/local/share/jpawlowski.codespace-dotfiles
+    cat > /usr/local/share/jpawlowski.codespace-dotfiles/install.sh << EOF
+#!/bin/bash
+
+# Dummy postCreateCommand to avoid issues with Codespaces
+EOF
+    chmod +x /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
+}
+
+if [ ! "${FORCE}" = "true" ]; then
+    # Only run in GitHub Codespaces
+    if [ ! "${CODESPACES}" = "true" ]; then
+        echo -e "Skipping dotfiles installation: This script is only meant to be run in GitHub Codespaces. Use native devcontainer personalization instead."
+        generate_dummy_postCreateCommand
+        exit 0
+    fi
+
+    # If dotfiles are already installed by Codespaces, skip the installation
+    if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
+        echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
+        generate_dummy_postCreateCommand
+        exit 0
+    fi
+fi
+
+if [ -z "${REPO}" ]; then
+    echo "dotfiles repository must be provided."
+    exit 1
 fi
 
 # Ensure that login shells get the correct path if the user updated the PATH using ENV.
@@ -41,25 +66,10 @@ elif [ "${USERNAME}" = "none" ] || ! id -u "${USERNAME}" >/dev/null 2>&1; then
     USERNAME=root
 fi
 
-if [ -z "${REPO}" ]; then
-    echo "dotfiles repository must be provided."
-    exit 1
-fi
-
-# If dotfiles are already installed by Codespaces, skip the installation
-if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
-    echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
-
-    # Generate dummy postCreateCommand to finalize dotfiles installation
-    mkdir -p /usr/local/share/jpawlowski.codespace-dotfiles
-    tee /usr/local/share/jpawlowski.codespace-dotfiles/install.sh > /dev/null << EOF
-#!/bin/bash
-
-# Dummy postCreateCommand to avoid issues with Codespaces
-EOF
-    chmod +x /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
-
-    exit 0
+# Expand TARGET_PATH if it starts with ~
+if [[ "${TARGET_PATH}" == ~* ]]; then
+    # shellcheck disable=SC2016
+    TARGET_PATH="$(su - "${USERNAME}" -c 'echo ${HOME}')${TARGET_PATH:1}"
 fi
 
 # If the target path already exists, skip the installation
@@ -73,9 +83,8 @@ if [ ! -d "${TARGET_PATH}" ]; then
     fi
 
     echo "Cloning dotfiles from ${REPO} to ${TARGET_PATH} ..."
-    mkdir -p ${TARGET_PATH}
-    git clone ${REPO} ${TARGET_PATH}
-    chown -R ${USERNAME}:${USERNAME} ${TARGET_PATH}
+    su - "${USERNAME}" -c "mkdir -p \"${TARGET_PATH}\" && git clone \"${REPO}\" \"${TARGET_PATH}\""
+    ls -la "${TARGET_PATH}"
 
     if [[ "${INSTALL_COMMAND}" == */* ]]; then
         echo "Install script ${INSTALL_COMMAND} must be in the root of the dotfiles repository."
@@ -84,7 +93,7 @@ if [ ! -d "${TARGET_PATH}" ]; then
 
     # Generate postCreateCommand to finalize dotfiles installation
     mkdir -p /usr/local/share/jpawlowski.codespace-dotfiles
-    tee /usr/local/share/jpawlowski.codespace-dotfiles/install.sh > /dev/null << EOF
+    cat > /usr/local/share/jpawlowski.codespace-dotfiles/install.sh << EOF
 #!/bin/bash
 
 set -e
@@ -93,9 +102,10 @@ set -e
 INSTALL_COMMAND="${INSTALL_COMMAND}"
 TARGET_PATH="${TARGET_PATH}"
 USERNAME="${USERNAME}"
+USER_HOME=$(eval echo ~"\${USERNAME}")
 
-if [ -f "/usr/local/share/jpawlowski.codespace-dotfiles/installed" ]; then
-    echo "dotfiles already installed on $(cat /usr/local/share/jpawlowski.codespace-dotfiles/installed)."
+if [ -f "\${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles/installed" ]; then
+    echo "dotfiles already installed on \$(cat \${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles/installed)."
     exit 0
 fi
 
@@ -121,21 +131,28 @@ fi
 if [ -n "\${INSTALL_COMMAND}" ]; then
     if [ -f "\${TARGET_PATH}/\${INSTALL_COMMAND}" ]; then
         echo "Running dotfiles install script \${INSTALL_COMMAND} ..."
-        su -m "\${USERNAME}" bash -c "cd \${TARGET_PATH} && chmod +x \${INSTALL_COMMAND} && ./\${INSTALL_COMMAND}"
+        cd \${TARGET_PATH}
+        chmod +x \${INSTALL_COMMAND}
+        ./\${INSTALL_COMMAND}
     else
         echo "Install script \${INSTALL_COMMAND} not found in dotfiles repository."
         exit 1
     fi
 else
     echo "No install script found in dotfiles repository. Copying dotfiles to home directory ..."
-    su "\${USERNAME}" bash -c 'shopt -s dotglob nullglob; files=(\${TARGET_PATH}/.[^.]*); if [ \${#files[@]} -gt 0 ]; then cp -fav "\${files[@]}" ~/; fi'
+    bash -c 'shopt -s dotglob nullglob; files=(\${TARGET_PATH}/.[^.]*); if [ \${#files[@]} -gt 0 ]; then cp -fav "\${files[@]}" ~/; fi'
 fi
 
 # Mark dotfiles as installed
-date -u +"%Y-%m-%dT%H:%M:%SZ" > /usr/local/share/jpawlowski.codespace-dotfiles/installed
+mkdir -p "\${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles"
+date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USER_HOME}/.local/share/jpawlowski.codespace-dotfiles/installed"
 EOF
     chmod +x /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
-    echo "postCreateCommand generated at /usr/local/share/jpawlowski.codespace-dotfiles/install.sh to finalize dotfiles installation."
+    echo "postCreateCommand generated at /usr/local/share/jpawlowski.codespace-dotfiles/install.sh to finalize dotfiles installation:"
+
+    echo ">>>>>>>>>>>>>>>> /usr/local/share/jpawlowski.codespace-dotfiles/install.sh >>>>>>>>>>>>>>"
+    cat /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
+    echo "<<<<<<<<<<<<<<<< /usr/local/share/jpawlowski.codespace-dotfiles/install.sh <<<<<<<<<<<<<<"
 else
     echo "dotfiles already installed at ${TARGET_PATH}."
 fi

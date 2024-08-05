@@ -28,6 +28,7 @@ elif [[ "${ID}" = "rhel" || "${ID}" = "fedora" || "${ID}" = "mariner" || "${ID_L
     if [[ "${ID}" = "rhel" ]] || [[ "${ID}" = *"alma"* ]] || [[ "${ID}" = *"rocky"* ]]; then
         VERSION_CODENAME="rhel${MAJOR_VERSION_ID}"
     else
+        # shellcheck disable=SC2034  # Unused variables left for readability
         VERSION_CODENAME="${ID}${MAJOR_VERSION_ID}"
     fi
 else
@@ -101,7 +102,7 @@ if [ "${USERNAME}" = "root" ]; then
 else
     FONT_BASE_DIR="/home/${USERNAME}/.local/share/fonts"
 fi
-if [!  -d "${FONT_BASE_DIR}" ] || [ -z "$(find "${FONT_BASE_DIR}" -type d -name "cascadia-code" -print -quit)" ]; then
+if [ ! -d "${FONT_BASE_DIR}" ] || [ -z "$(find "${FONT_BASE_DIR}" -type d -name "cascadia-code" -print -quit)" ]; then
     mkdir -p "${FONT_BASE_DIR}"
     if [ "${USERNAME}" != "root" ]; then
         chown "${USERNAME}":"${USERNAME}" "${FONT_BASE_DIR}"
