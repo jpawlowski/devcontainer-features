@@ -2,17 +2,23 @@
 
 set -e
 
-USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
-DOTFILES_REPOSITORY="${REPOSITORY:-""}"
-TARGET_PATH="${TARGETPATH:-"~/dotfiles"}"
-INSTALL_COMMAND="${INSTALLCOMMAND:-""}"
-INSTALL_FALLBACK_METHOD="${INSTALLFALLBACKMETHOD:-"symlink"}"
-
 # Ensure that the script is run as root
 if [ "$(id -u)" -ne 0 ]; then
     echo -e 'Script must be run as root. Use sudo, su, or add "USER root" to your Dockerfile before running this script.'
     exit 1
 fi
+
+if [ -f /workspaces/.codespaces/shared/.env ]; then
+    # shellcheck disable=SC1091
+    source /workspaces/.codespaces/shared/.env
+fi
+
+USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
+USERHOME="${USERHOME:-"${_REMOTE_USER_HOME:-"automatic"}"}"
+DOTFILES_REPOSITORY="${REPOSITORY:-""}"
+TARGET_PATH="${TARGETPATH:-"~/dotfiles"}"
+INSTALL_COMMAND="${INSTALLCOMMAND:-""}"
+INSTALL_FALLBACK_METHOD="${INSTALLFALLBACKMETHOD:-"symlink"}"
 
 # Ensure that login shells get the correct path if the user updated the PATH using ENV.
 rm -f /etc/profile.d/00-restore-env.sh
@@ -22,18 +28,32 @@ chmod +x /etc/profile.d/00-restore-env.sh
 # Determine the appropriate non-root user
 if [ "${USERNAME}" = "auto" ] || [ "${USERNAME}" = "automatic" ]; then
     USERNAME=""
+    USERHOME=""
     POSSIBLE_USERS=("vscode" "node" "codespace" "$(awk -v val=1000 -F ":" '$3==val{print $1}' /etc/passwd)")
     for CURRENT_USER in "${POSSIBLE_USERS[@]}"; do
         if id -u "${CURRENT_USER}" >/dev/null 2>&1; then
             USERNAME=${CURRENT_USER}
+            USERHOME=$(su - "${USERNAME}" -c 'echo ${HOME}')
             break
         fi
     done
     if [ "${USERNAME}" = "" ]; then
-        USERNAME=root
+        if [ -n "${_CONTAINER_USER}" ] && id -u "${_CONTAINER_USER}" >/dev/null 2>&1; then
+            USERNAME="${_CONTAINER_USER}"
+            USERHOME="${_CONTAINER_USER_HOME}"
+        else
+            USERNAME='root'
+            USERHOME='/root'
+        fi
     fi
 elif [ "${USERNAME}" = "none" ] || ! id -u "${USERNAME}" >/dev/null 2>&1; then
-    USERNAME=root
+    if [ -n "${_CONTAINER_USER}" ] && id -u "${_CONTAINER_USER}" >/dev/null 2>&1; then
+        USERNAME="${_CONTAINER_USER}"
+        USERHOME="${_CONTAINER_USER_HOME}"
+    else
+        USERNAME='root'
+        USERHOME='/root'
+    fi
 fi
 
 generate_dummy_postStartCommand() {
@@ -53,29 +73,13 @@ if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
     exit 0
 fi
 
-if [ ! "${FORCE}" = "true" ]; then  # FORCE is only used for testing outside of Codespaces
-    echo "---- Following environment variables are set: ----"
-    env
-    echo "--------------------------------------------------"
-    # Only run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions
-    if [ ! "${CODESPACES}" = "true" ] && [ ! "${GITHUB_ACTIONS}" = "true" ]; then
-        echo 'Skipping codespace-dotfiles installation: This script is only meant to be run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions. Use native devcontainer personalization instead.'
-        generate_dummy_postStartCommand
-        exit 0
-    fi
-
-    # Additional check for Codespace prebuild
-    if [ "${GITHUB_ACTIONS}" = "true" ] && [ -n "${CODESPACE_NAME}" ]; then
-        echo 'Detected Codespace prebuild in GitHub Actions.'
-        # Proceed with the installation
-    elif [ "${CODESPACES}" = "true" ]; then
-        echo 'Running in GitHub Codespaces.'
-        # Proceed with the installation
-    else
-        echo 'Skipping codespace-dotfiles installation: Not in a Codespace or Codespace prebuild.'
-        generate_dummy_postStartCommand
-        exit 0
-    fi
+if [ "${CODESPACES}" = 'true' ] || [ "${FORCE}" = 'true' ]; then # FORCE is only used for testing outside of Codespaces
+    echo 'Running in GitHub Codespaces.'
+    # Proceed with the installation
+else
+    echo 'Skipping codespace-dotfiles installation: This script is only meant to be run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions. Use native devcontainer personalization instead.'
+    generate_dummy_postStartCommand
+    exit 0
 fi
 
 if [ -z "${REPO}" ]; then
@@ -94,11 +98,10 @@ fi
 # Expand TARGET_PATH if it starts with ~
 if [[ "${TARGET_PATH}" == ~* ]]; then
     # shellcheck disable=SC2016
-    TARGET_PATH="$(su - "${USERNAME}" -c 'echo ${HOME}')${TARGET_PATH:1}"
+    TARGET_PATH="${USERHOME}${TARGET_PATH:1}"
 fi
 
 # Ensure that the target path is within the user's home directory
-USERHOME=$(eval echo ~"\${USERNAME}")
 if [[ ! "${TARGET_PATH}" =~ ^${USERHOME} ]]; then
     echo "Target path must be within the user's home directory."
     exit 1
