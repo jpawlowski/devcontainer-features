@@ -18,15 +18,28 @@ generate_dummy_postCreateCommand() {
     cat > /usr/local/share/jpawlowski.codespace-dotfiles/install.sh << EOF
 #!/bin/bash
 
-# Dummy postCreateCommand to avoid issues with Codespaces
+# Dummy postCreateCommand to comply with devcontainer.json
 EOF
     chmod +x /usr/local/share/jpawlowski.codespace-dotfiles/install.sh
 }
 
 if [ ! "${FORCE}" = "true" ]; then
-    # Only run in GitHub Codespaces
-    if [ ! "${CODESPACES}" = "true" ]; then
-        echo -e "Skipping dotfiles installation: This script is only meant to be run in GitHub Codespaces. Use native devcontainer personalization instead."
+    # Only run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions
+    if [ ! "${CODESPACES}" = "true" ] && [ ! "${GITHUB_ACTIONS}" = "true" ]; then
+        echo 'Skipping dotfiles installation: This script is only meant to be run in GitHub Codespaces or during a Codespace prebuild in GitHub Actions. Use native devcontainer personalization instead.'
+        generate_dummy_postCreateCommand
+        exit 0
+    fi
+
+    # Additional check for Codespace prebuild
+    if [ "${GITHUB_ACTIONS}" = "true" ] && [ -n "${CODESPACE_NAME}" ]; then
+        echo 'Detected Codespace prebuild in GitHub Actions.'
+        # Proceed with the installation
+    elif [ "${CODESPACES}" = "true" ]; then
+        echo 'Running in GitHub Codespaces.'
+        # Proceed with the installation
+    else
+        echo 'Skipping dotfiles installation: Not in a Codespace or Codespace prebuild.'
         generate_dummy_postCreateCommand
         exit 0
     fi
