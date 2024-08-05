@@ -8,10 +8,11 @@
     </td>
 </tr></table>
 
-Welcome to yet another DevContainer Features repository! This repository extends the official [`ghcr.io/devcontainers/features`](https://github.com/orgs/devcontainers/packages?repo_name=features) main repository
-and contains a collection of features to enhance your development environment within a [DevContainer](https://containers.dev/).
+Welcome to yet another DevContainer Features repository! This repository extends the official [`ghcr.io/devcontainers/features`](https://github.com/orgs/devcontainers/packages?repo_name=features)
+main repository and contains a collection of features to enhance your development environment within a [DevContainer](https://containers.dev/).
 
-You may learn about Features at [containers.dev](https://containers.dev/implementors/features/), which is the website for the dev container specification.
+You may learn about Features at [containers.dev](https://containers.dev/implementors/features/), which is the website for
+the dev container specification.
 
 ## Features
 
@@ -21,6 +22,7 @@ Below are the features currently available in this repository:
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------- |
 | Cascadia Code       | Cascadia Code font.                                                                                                                                                                 | [📚 Link](./src/cascadia-code/)       |
 | CLI Microsoft 365   | CLI for Microsoft 365 is a cross-platform CLI that allows users on any platform to manage various configuration settings of Microsoft 365.                                          | [📚 Link](./src/cli-microsoft365/)    |
+| Codespace Dotfiles  | Install dotfiles in Codespaces using `devcontainers.json`.                                                                                                                          | [📚 Link](./src/codespace-dotfiles/)  |
 | PnP.PowerShell      | PnP PowerShell is a cross-platform PowerShell module that allows users on any platform to manage various configuration settings of Microsoft 365.                                   | [📚 Link](./src/pnp.powershell/)      |
 | PowerShell Extended | Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options. | [📚 Link](./src/powershell-extended/) |
 
@@ -29,7 +31,8 @@ to install atop a wide-range of base container images.
 
 ## Usage
 
-To reference a Feature from this repository, add the desired Features to a `devcontainer.json`. Each Feature has a `README.md` that shows how to reference the Feature and which options are available for that Feature.
+To reference a Feature from this repository, add the desired Features to a `devcontainer.json`. Each Feature has a `README.md`
+that shows how to reference the Feature and which options are available for that Feature.
 
 The example below installs the`powershell-extended` feature declared in the [`./src`](./src) directory of this
 repository.

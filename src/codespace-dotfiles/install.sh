@@ -145,6 +145,7 @@ if [ -n "\${INSTALL_COMMAND}" ]; then
         chmod +x \${INSTALL_COMMAND}
 
         # Run the install command in a non-interactive login bash subshell and log the output
+        exec 0</dev/null
         bash -l -c "./\${INSTALL_COMMAND}" | tee -a "\${INSTALL_LOG}"
     else
         echo "Install script \${INSTALL_COMMAND} not found in dotfiles repository."
