@@ -4,12 +4,12 @@ This feature installs a `postStartCommand` element that will install your dotfil
 It will only install in case no dotfiles were installed already as configured in the GitHub users' Codespaces profile settings.
 
 Note that when using Codespaces prebuilds, this feature will only prepare the `postStartCommand`, but the actual dotfile
-cloning and installation will happen during the first start of the users Codespace.
+cloning and installation will happen during the first start of the users' Codespace.
 
 ## Installing in Codespaces and Dev Containers
 
-When this feature is installed on Dev Containers instead of GitHub Codespaces, the feature will install an empty dummy
-`postStartCommand`. That means it will be harmless to such containers and will leave the dotfile setup to the
+When this feature is installed on Dev Containers instead of GitHub Codespaces, no dotfiles will be installed. That means
+it will be harmless to such containers and will leave the dotfile setup to the
 [native `dotfiles.repository` configuration setting](https://code.visualstudio.com/docs/devcontainers/containers#_personalizing-with-dotfile-repositories).
 
 This allows to use the same `devcontainer.json` file for GitHub Codespaces and Dev Containers with both definitions in parallel.
