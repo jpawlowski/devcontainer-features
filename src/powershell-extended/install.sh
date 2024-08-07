@@ -21,7 +21,7 @@ export POWERSHELL_TELEMETRY_OPTOUT=1
 prefs="\$ProgressPreference='SilentlyContinue'; \$InformationPreference='Continue'; \$VerbosePreference='SilentlyContinue'; \$ConfirmPreference='None'; \$ErrorActionPreference='Stop';"
 
 # Install PowerShell if not already installed
-if ! type pwsh >/dev/null 2>&1; then
+if ! command -v pwsh >/dev/null 2>&1; then
     if [ "$POWERSHELL_INSTALLATION_METHOD" = 'package' ]; then
         export DEBIAN_FRONTEND=noninteractive
 
@@ -363,6 +363,6 @@ fi
 
 # Clean up
 apt-get clean -y
-rm -rf /var/lib/apt/lists/*
+rm -rf /var/lib/apt/lists/* /root/.cache
 
 echo "Done!"

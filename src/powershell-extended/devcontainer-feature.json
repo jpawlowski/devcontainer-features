@@ -3,7 +3,7 @@
     "legacyIds": [
       "powershell"
     ],
-    "version": "2.0.1",
+    "version": "2.0.2",
     "name": "PowerShell Extended [PSResourceGet / NuGet Versioning]",
     "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/powershell-extended",
     "description": "Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options.",
@@ -74,7 +74,7 @@
         }
     },
     "containerEnv": {
-        "PSModuleAnalysisCachePath": "/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache"
+        "POWERSHELL_DISTRIBUTION_CHANNEL": "PSDocker-DevContainer-Feature"
     },
     "customizations": {
         "vscode": {

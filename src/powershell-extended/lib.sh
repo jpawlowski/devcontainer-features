@@ -10,6 +10,7 @@ export POWERSHELL_USER_DEFAULT_SHELL="${SETUSERDEFAULTSHELL:-"false"}"
 export POWERSHELL_ROOT_DEFAULT_SHELL="${SETROOTDEFAULTSHELL:-"false"}"
 export POWERSHELL_PROFILE_URL="${PROFILEURLALLUSERSALLHOSTS:-""}"
 
+export PSModuleAnalysisCachePath="${PSModuleAnalysisCachePath:-"/root/.cache/powershell"}"
 export MICROSOFT_GPG_KEYS_URI="https://packages.microsoft.com/keys/microsoft.asc"
 export POWERSHELL_ARCHIVE_ARCHITECTURES="amd64 arm64"
 export POWERSHELL_ARCHIVE_VERSION_CODENAMES="bionic focal bullseye jammy bookworm noble"
@@ -165,7 +166,6 @@ function get_github_api_repo_url() {
     local url=$1
     echo "${url/https:\/\/github.com/https:\/\/api.github.com\/repos}/releases/latest"
 }
-
 
 function install_prev_pwsh() {
     pwsh_url=$1
