@@ -102,7 +102,7 @@
     "VSCODE_TERMINAL_COMPLETION_PSFZF": "false",
     "VSCODE_TERMINAL_ICONS": "true",
     "VSCODE_TERMINAL_Z": "true",
-    "POSH_DISABLE_UPGRADE_NOTICE": "false"
+    "POSH_DISABLE_UPGRADE_NOTICE": "true"
   },
   "customizations": {
     "vscode": {
