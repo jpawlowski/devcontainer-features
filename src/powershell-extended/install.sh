@@ -100,7 +100,7 @@ if ! command -v pwsh >/dev/null 2>&1; then
             \$ErrorActionPreference = 'Stop' ; \
             \$ProgressPreference = 'SilentlyContinue' ; \
             while(!(Test-Path -Path \$env:PSModuleAnalysisCachePath)) {  \
-                Write-Host "'Waiting for $env:PSModuleAnalysisCachePath'" ; \
+                Write-Host "Waiting for \$env:PSModuleAnalysisCachePath" ; \
                 Start-Sleep -Seconds 6 ; \
             }"
 
@@ -415,7 +415,7 @@ if [ ! -f "$globalProfilePath" ]; then
 fi
 
 # If Oh My Posh installation is requested, install it
-if [ "$INSTALL_OH_MY_POSH" = 'true' ]; then
+if [ "$INSTALL_OHMYPOSH" = 'true' ]; then
     group_name=$(id -gn "${USERNAME}")
     if [ "${USERNAME}" = "root" ]; then
         user_home="/root"

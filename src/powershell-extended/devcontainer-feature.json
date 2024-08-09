@@ -1,100 +1,117 @@
 {
-    "id": "powershell-extended",
-    "legacyIds": [
-      "powershell"
-    ],
-    "version": "2.0.2",
-    "name": "PowerShell Extended [PSResourceGet / NuGet Versioning]",
-    "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/powershell-extended",
-    "description": "Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options.",
-    "options": {
-        "version": {
-            "type": "string",
-            "proposals": [
-                "latest",
-                "7.4",
-                "7.3"
-            ],
-            "default": "latest",
-            "description": "Select or enter a version of PowerShell."
-        },
-        "installMethod": {
-            "type": "string",
-            "enum": [
-                "package",
-                "github"
-            ],
-            "default": "package",
-            "description": "Select the installation method for PowerShell. If you choose `package`, PowerShell will be installed using the package manager with a fallback to 'github'. If you choose `github`, PowerShell will be installed from GitHub releases."
-        },
-        "updatePSResourceGet": {
-          "type": "string",
-          "enum": [
-            "none",
-            "release",
-            "prerelease"
-          ],
-          "default": "release",
-          "description": "Update built-in [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources."
-        },
-        "updatePSReadLine": {
-          "type": "string",
-          "enum": [
-            "none",
-            "release",
-            "prerelease"
-          ],
-          "default": "release",
-          "description": "Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version."
-        },
-        "setUserDefaultShell": {
-            "type": "boolean",
-            "default": false,
-            "description": "Change default shell for non-root user to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
-        },
-        "setRootDefaultShell": {
-          "type": "boolean",
-          "default": false,
-          "description": "Change default shell for root to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
-        },
-        "repositories": {
-            "type": "string",
-            "default": "",
-            "description": "Optional semicolon separated list of PowerShell repositories to register. To set a specific name for a repository, use the format `name=url`, otherwise the name will be the base URL. See feature documentation for more information about advanced installation options."
-        },
-        "resources": {
-            "type": "string",
-            "default": "",
-            "description": "Optional semicolon separated list of PowerShell resources to install. If you need to install a specific version, use `@` to specify the version (e.g. `Az.Accounts@3.1.0`). See feature documentation for more information about advanced installation options."
-        },
-        "installOhMyPosh": {
-          "type": "boolean",
-          "default": true,
-          "description": "Install Oh My Posh?"
-        },
-        "installOhMyPoshConfig": {
-          "type": "boolean",
-          "default": true,
-          "description": "Allow installing the default dev container profile templates?"
-        },
-        "profileURLAllUsersAllHosts": {
-            "type": "string",
-            "default": "",
-            "description": "Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts)."
-        }
+  "id": "powershell-extended",
+  "legacyIds": [
+    "powershell"
+  ],
+  "version": "2.0.2",
+  "name": "PowerShell Extended [PSResourceGet / NuGet Versioning]",
+  "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/powershell-extended",
+  "description": "Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options.",
+  "options": {
+    "version": {
+      "type": "string",
+      "proposals": [
+        "latest",
+        "7.4",
+        "7.3"
+      ],
+      "default": "latest",
+      "description": "Select or enter a version of PowerShell."
     },
-    "containerEnv": {
-        "POWERSHELL_DISTRIBUTION_CHANNEL": "PSDocker-DevContainer-Feature",
-        "POSH_THEME_NAME": "devcontainers.minimal"
+    "installMethod": {
+      "type": "string",
+      "enum": [
+        "package",
+        "github"
+      ],
+      "default": "package",
+      "description": "Select the installation method for PowerShell. If you choose `package`, PowerShell will be installed using the package manager with a fallback to 'github'. If you choose `github`, PowerShell will be installed from GitHub releases."
     },
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "ms-vscode.powershell"
-            ]
-        }
+    "updatePSResourceGet": {
+      "type": "string",
+      "enum": [
+        "none",
+        "release",
+        "prerelease"
+      ],
+      "default": "release",
+      "description": "Update built-in [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources."
     },
-    "installsAfter": [
-        "ghcr.io/devcontainers/features/common-utils"
-    ]
+    "updatePSReadLine": {
+      "type": "string",
+      "enum": [
+        "none",
+        "release",
+        "prerelease"
+      ],
+      "default": "release",
+      "description": "Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version."
+    },
+    "setUserDefaultShell": {
+      "type": "boolean",
+      "default": false,
+      "description": "Change default shell for non-root user to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
+    },
+    "setRootDefaultShell": {
+      "type": "boolean",
+      "default": false,
+      "description": "Change default shell for root to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
+    },
+    "repositories": {
+      "type": "string",
+      "default": "",
+      "description": "Optional semicolon separated list of PowerShell repositories to register. To set a specific name for a repository, use the format `name=url`, otherwise the name will be the base URL. See feature documentation for more information about advanced installation options."
+    },
+    "resources": {
+      "type": "string",
+      "default": "",
+      "description": "Optional semicolon separated list of PowerShell resources to install. If you need to install a specific version, use `@` to specify the version (e.g. `Az.Accounts@3.1.0`). See feature documentation for more information about advanced installation options."
+    },
+    "installOhMyPosh": {
+      "type": "boolean",
+      "default": true,
+      "description": "Install Oh My Posh?"
+    },
+    "installOhMyPoshConfig": {
+      "type": "boolean",
+      "default": true,
+      "description": "Allow installing the default dev container profile templates?"
+    },
+    "profileURLAllUsersAllHosts": {
+      "type": "string",
+      "default": "",
+      "description": "Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts)."
+    }
+  },
+  "containerEnv": {
+    "POWERSHELL_DISTRIBUTION_CHANNEL": "PSDocker-DevContainer-Feature",
+    "PSPROFILE_PSREADLINE_EDITMODE": "Emacs",
+    "PSPROFILE_POSH_THEME": "devcontainers.minimal",
+    "PSPROFILE_TERMINAL_COMPLETION_GIT": "true",
+    "PSPROFILE_TERMINAL_COMPLETION_POSH": "true",
+    "PSPROFILE_TERMINAL_COMPLETION_PREDICTOR": "true",
+    "PSPROFILE_TERMINAL_COMPLETION_PREDICTOR_AZ": "true",
+    "PSPROFILE_TERMINAL_COMPLETION_PSFZF": "true",
+    "PSPROFILE_TERMINAL_ICONS": "true",
+    "PSPROFILE_TERMINAL_Z": "true",
+    "VSCODE_POSH_THEME": "devcontainers.minimal",
+    "VSCODE_TERMINAL_COMPLETION_GIT": "true",
+    "VSCODE_TERMINAL_COMPLETION_POSH": "true",
+    "VSCODE_TERMINAL_COMPLETION_PREDICTOR": "true",
+    "VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ": "true",
+    "VSCODE_TERMINAL_COMPLETION_PSFZF": "true",
+    "VSCODE_TERMINAL_ICONS": "true",
+    "VSCODE_TERMINAL_Z": "true",
+    "POSH_DISABLE_UPGRADE_NOTICE": "false",
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.powershell"
+      ]
+    }
+  },
+  "installsAfter": [
+    "ghcr.io/devcontainers/features/common-utils"
+  ]
 }

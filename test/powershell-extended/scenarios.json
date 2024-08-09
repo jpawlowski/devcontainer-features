@@ -2,7 +2,23 @@
   "install_powershell_fallback_test": {
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
-      "powershell-extended": {}
+      "powershell-extended": {
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false
+      }
+    }
+  },
+  "install_powershell_ohmyposh": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell-extended": {
+        "installOhMyPosh": true,
+        "installOhMyPoshConfig": true,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none"
+      }
     }
   },
   "install_powershell_profile": {
@@ -11,7 +27,11 @@
       "powershell-extended": {
         "setUserDefaultShell": true,
         "setRootDefaultShell": true,
-        "profileURLAllUsersAllHosts": "https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/test/powershell-extended/Test-Profile.ps1"
+        "profileURLAllUsersAllHosts": "https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/test/powershell-extended/Test-Profile.ps1",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none"
       }
     }
   },
@@ -19,7 +39,11 @@
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell-extended": {
-        "repositories": "PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^60"
+        "repositories": "PSGallery; PoshTestGallery=https://www.poshtestgallery.com/api/v2^60",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none"
       }
     }
   },
@@ -27,7 +51,11 @@
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell-extended": {
-        "resources": "Az.Accounts; Az.Resources"
+        "resources": "Az.Accounts; Az.Resources",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none"
       }
     }
   },
@@ -35,7 +63,11 @@
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell-extended": {
-        "resources": "Az.Accounts@3.0.0; Az.Resources@7.2.0"
+        "resources": "Az.Accounts@3.0.0; Az.Resources@7.2.0",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none"
       }
     }
   },
@@ -43,7 +75,11 @@
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell-extended": {
-        "resources": "Az.Accounts@[3.0,3.1); Az.Resources@[6.16,6.17)"
+        "resources": "Az.Accounts@[3.0,3.1); Az.Resources@[6.16,6.17)",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none"
       }
     }
   }
