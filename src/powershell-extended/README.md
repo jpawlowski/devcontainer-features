@@ -21,10 +21,12 @@ Installs PowerShell on AMD64 and ARM64 machines, and optional additional resourc
 | installMethod | Select the installation method for PowerShell. If you choose `package`, PowerShell will be installed using the package manager with a fallback to 'github'. If you choose `github`, PowerShell will be installed from GitHub releases. | string | package |
 | updatePSResourceGet | Update built-in [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources. | string | release |
 | updatePSReadLine | Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version. | string | release |
-| setUserDefaultShell | Set PowerShell as the default shell for non-root user. | boolean | false |
-| setRootDefaultShell | Set PowerShell as the default shell for root. | boolean | false |
+| setUserDefaultShell | Change default shell for non-root user to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead. | boolean | false |
+| setRootDefaultShell | Change default shell for root to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead. | boolean | false |
 | repositories | Optional semicolon separated list of PowerShell repositories to register. To set a specific name for a repository, use the format `name=url`, otherwise the name will be the base URL. See feature documentation for more information about advanced installation options. | string | - |
 | resources | Optional semicolon separated list of PowerShell resources to install. If you need to install a specific version, use `@` to specify the version (e.g. `Az.Accounts@3.1.0`). See feature documentation for more information about advanced installation options. | string | - |
+| installOhMyPosh | Install Oh My Posh? | boolean | true |
+| installOhMyPoshConfig | Allow installing the default dev container profile templates? | boolean | true |
 | profileURLAllUsersAllHosts | Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts). | string | - |
 
 ## Customizations
