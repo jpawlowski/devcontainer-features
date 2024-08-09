@@ -35,16 +35,6 @@ Installs PowerShell on AMD64 and ARM64 machines, and optional additional resourc
 
 - `ms-vscode.powershell`
 
-## Advanced Resource Installation Options
-
-This is a re-write of the original [ghcr.io/devcontainers/features/powershell](https://ghcr.io/devcontainers/features/powershell)
-package. It uses [Microsoft.PowerShell.PSResourceGet](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.psresourceget/)
-instead of [PowerShellGet](https://learn.microsoft.com/en-us/powershell/gallery/overview) to install resources, which is
-included with PowerShell since version 7.4.0.
-
-The new configuration options support an advanced syntax for 3rd party installation repositories as well as enhanced version
-definition, including version ranges and pre-releases.
-
 ## Terminal Prompt Theme
 
 This feature comes with a custom [Oh My Posh](https://ohmyposh.dev/) theme to adjust the terminal prompt.
@@ -57,6 +47,16 @@ to the name of the desired theme. You may also put your own theme into the `~/.c
 
 > **Note**: Most themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your host
 > system (not the Dev Container) and changing your font settings in VSCode.
+
+## Advanced Resource Installation Options
+
+This is a re-write of the original [ghcr.io/devcontainers/features/powershell](https://ghcr.io/devcontainers/features/powershell)
+package. It uses [Microsoft.PowerShell.PSResourceGet](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.psresourceget/)
+instead of [PowerShellGet](https://learn.microsoft.com/en-us/powershell/gallery/overview) to install resources, which is
+included with PowerShell since version 7.4.0.
+
+The new configuration options support an advanced syntax for 3rd party installation repositories as well as enhanced version
+definition, including version ranges and pre-releases.
 
 ### Setting a version for `resources`
 
