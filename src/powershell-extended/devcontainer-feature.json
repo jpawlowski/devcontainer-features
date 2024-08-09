@@ -50,12 +50,12 @@
         "setUserDefaultShell": {
             "type": "boolean",
             "default": false,
-            "description": "Set PowerShell as the default shell for non-root user."
+            "description": "Change default shell for non-root user to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
         },
         "setRootDefaultShell": {
           "type": "boolean",
           "default": false,
-          "description": "Set PowerShell as the default shell for root."
+          "description": "Change default shell for root to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
         },
         "repositories": {
             "type": "string",
@@ -67,6 +67,16 @@
             "default": "",
             "description": "Optional semicolon separated list of PowerShell resources to install. If you need to install a specific version, use `@` to specify the version (e.g. `Az.Accounts@3.1.0`). See feature documentation for more information about advanced installation options."
         },
+        "installOhMyPosh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Install Oh My Posh?"
+        },
+        "installOhMyPoshConfig": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow installing the default dev container profile templates?"
+        },
         "profileURLAllUsersAllHosts": {
             "type": "string",
             "default": "",
@@ -74,7 +84,8 @@
         }
     },
     "containerEnv": {
-        "POWERSHELL_DISTRIBUTION_CHANNEL": "PSDocker-DevContainer-Feature"
+        "POWERSHELL_DISTRIBUTION_CHANNEL": "PSDocker-DevContainer-Feature",
+        "POSH_THEME_NAME": "devcontainers.minimal"
     },
     "customizations": {
         "vscode": {

@@ -10,6 +10,9 @@ export POWERSHELL_USER_DEFAULT_SHELL="${SETUSERDEFAULTSHELL:-"false"}"
 export POWERSHELL_ROOT_DEFAULT_SHELL="${SETROOTDEFAULTSHELL:-"false"}"
 export POWERSHELL_PROFILE_URL="${PROFILEURLALLUSERSALLHOSTS:-""}"
 
+export INSTALL_OHMYPOSH="${INSTALLOHMYPOSH:-"true"}"
+export INSTALL_OHMYPOSH_CONFIG="${INSTALLOHMYPOSHCONFIG:-"true"}"
+
 export PSModuleAnalysisCachePath="${PSModuleAnalysisCachePath:-"/root/.cache/powershell"}"
 export MICROSOFT_GPG_KEYS_URI="https://packages.microsoft.com/keys/microsoft.asc"
 export POWERSHELL_ARCHIVE_ARCHITECTURES="amd64 arm64"
