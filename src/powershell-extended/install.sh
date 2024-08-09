@@ -412,6 +412,8 @@ fi
 if [ ! -f "$globalProfilePath" ]; then
     echo "Installing global default profile"
     cp "${FEATURE_DIR}/PROFILE.AllUsersAllHosts.ps1" "$globalProfilePath"
+    globalProfileFunctionsPath="${globalProfilePath%.*}.functions.ps1"
+    cp "${FEATURE_DIR}/PROFILE.Functions.ps1" "$globalProfileFunctionsPath"
 fi
 
 # If Oh My Posh installation is requested, install it
