@@ -1,4 +1,3 @@
-// Oh My Posh Theme for DevContainers and GitHub Codespaces - partly inspired by https://github.com/devcontainers/features/blob/main/src/common-utils/scripts/devcontainers.zsh-theme
 {
   "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
   "console_title_template": "{{ .Path }}",
@@ -13,6 +12,7 @@
           "properties": {
             "mapped_shell_names": {
               "bash": "Bash",
+              "fish": "Fish",
               "pwsh": "PowerShell",
               "zsh": "Zsh"
             }

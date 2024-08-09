@@ -86,6 +86,8 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
         This function imports a module and installs it from the PowerShell Gallery if it is not already installed.
     .PARAMETER Name
         The name of the module to import.
+    .PARAMETER ArgumentList
+        An array of arguments to pass to the module when importing it.
     .PARAMETER InstallInBackground
         Indicates whether the module should be installed in the background if it is not already installed. Default is $true.
     .PARAMETER ImportInBackground
@@ -107,6 +109,7 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param (
             [string]$Name,
+            [array]$ArgumentList,
             [bool]$InstallInBackground = $true,
             [bool]$ImportInBackground = $true,
             [int]$DelaySeconds = 0
@@ -137,7 +140,7 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
         }
 
         try {
-            __PSProfile-Import-ModuleIfNotLoaded -ModuleName $Name
+            __PSProfile-Import-ModuleIfNotLoaded -ModuleName $Name -ArgumentList $ArgumentList
         }
         catch {
             if ($_.FullyQualifiedErrorId -eq 'ModuleNotFound') {
@@ -226,13 +229,16 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
         This function imports a module if it is not already loaded.
     .PARAMETER ModuleName
         The name of the module to import.
+    .PARAMETER ArgumentList
+        An array of arguments to pass to the module when importing it.
     .EXAMPLE
         __PSProfile-Import-ModuleIfNotLoaded -ModuleName Microsoft.PowerShell.Utility
         This will import the Microsoft.PowerShell.Utility module if it is not already loaded.
     #>
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param (
-            [string]$ModuleName
+            [string]$ModuleName,
+            [array]$ArgumentList
         )
 
         # Check if the module is already loaded
@@ -241,7 +247,15 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
             if (Get-Module -ListAvailable -Name $ModuleName) {
                 try {
                     # Import the module
-                    Import-Module -Scope Global -Name $ModuleName -ErrorAction Stop
+                    $params = @{
+                        Name        = $ModuleName
+                        Scope       = 'Global'
+                        ErrorAction = 'Stop'
+                    }
+                    if ($ArgumentList) {
+                        $params.ArgumentList = $ArgumentList
+                    }
+                    Import-Module @params
                 }
                 catch {
                     $errorRecord = [System.Management.Automation.ErrorRecord]::new(

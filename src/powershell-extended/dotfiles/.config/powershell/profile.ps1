@@ -48,11 +48,11 @@ try {
     #endregion Import Modules ------------------------------------------------------
 
     #region PSReadLine, except predictor plugins ===================================
-    # This is based on an example profile for PSReadLine from
-    # https://github.com/PowerShell/PSReadLine/blob/e9122d38e932614393ff61faf57d6518990d7226/PSReadLine/SamplePSReadLineProfile.ps1
-    #
-
     Set-PSReadLineOption -EditMode $(if ($env:PSPROFILE_PSREADLINE_EDITMODE) { $env:PSPROFILE_PSREADLINE_EDITMODE } else { 'Emacs' })
+
+    # Ctrl+Space is bound to MenuComplete by default, but it's also bound to
+    # the native PSReadLine Select command. This removes the PSReadLine binding.
+    Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
 
     # Searching for commands with up/down arrow is really handy.  The
     # option "moves to end" is useful if you want the cursor at the end
@@ -87,27 +87,6 @@ try {
     Set-PSReadLineKeyHandler -Key Alt+f -Function ShellForwardWord
     Set-PSReadLineKeyHandler -Key Alt+B -Function SelectShellBackwardWord
     Set-PSReadLineKeyHandler -Key Alt+F -Function SelectShellForwardWord
-
-    # Insert text from the clipboard as a here string
-    $__PSProfilePSRParams = @{
-        Key              = 'Ctrl+v'
-        BriefDescription = 'PasteAsHereString'
-        LongDescription  = 'Paste the clipboard text as a here string'
-        ScriptBlock      = {
-            param($key, $arg)
-
-            Add-Type -Assembly PresentationCore
-            if ([System.Windows.Clipboard]::ContainsText()) {
-                # Get clipboard text - remove trailing spaces, convert \r\n to \n, and remove the final \n.
-                $text = ([System.Windows.Clipboard]::GetText() -replace "\p{Zs}*`r?`n", "`n").TrimEnd()
-                [Microsoft.PowerShell.PSConsoleReadLine]::Insert("@'`n$text`n'@")
-            }
-            else {
-                [Microsoft.PowerShell.PSConsoleReadLine]::Ding()
-            }
-        }
-    }
-    Set-PSReadLineKeyHandler @__PSProfilePSRParams
 
     # `ForwardChar` accepts the entire suggestion text when the cursor is at the end of the line.
     # This custom binding makes `RightArrow` behave similarly - accepting the next word instead of the entire suggestion text.

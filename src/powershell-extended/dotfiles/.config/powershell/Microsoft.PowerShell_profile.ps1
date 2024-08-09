@@ -40,10 +40,12 @@ try {
     __PSProfile-Write-ProfileLoadMessage '💻 Applying shared configurations for all terminals.' -ForegroundColor DarkCyan
 
     #region Import Modules =========================================================
-    if ($env:PSPROFILE_TERMINAL_ICONS -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
+    if ($env:PSPROFILE_TERMINAL_COMPLETION_GIT -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
+    if ($env:PSPROFILE_TERMINAL_COMPLETION_PSFZF -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf -ArgumentList 'Ctrl+t', 'Ctrl+r' }
     if ($env:PSPROFILE_TERMINAL_COMPLETION_PREDICTOR -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
     if ($env:PSPROFILE_TERMINAL_COMPLETION_PREDICTOR_AZ -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
-    if ($env:PSPROFILE_TERMINAL_COMPLETION_GIT -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
+    if ($env:PSPROFILE_TERMINAL_Z -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
+    if ($env:PSPROFILE_TERMINAL_ICONS -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
     #endregion Import Modules ------------------------------------------------------
 
     #region Oh My Posh =============================================================
