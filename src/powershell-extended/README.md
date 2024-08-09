@@ -45,6 +45,19 @@ included with PowerShell since version 7.4.0.
 The new configuration options support an advanced syntax for 3rd party installation repositories as well as enhanced version
 definition, including version ranges and pre-releases.
 
+## Terminal Prompt Theme
+
+This feature comes with a custom [Oh My Posh](https://ohmyposh.dev/) theme to adjust the terminal prompt.
+
+[![Oh My Posh theme: devcontainers.minimal](images/devcontainers.minimal.omp.png)](https://ohmyposh.dev/docs/themes)
+
+You may [change the theme](https://ohmyposh.dev/docs/themes) to one of the preinstalled ones by setting the container environment
+variables `PSPROFILE_POSH_THEME` (for the PowerShell host) and/or `VSCODE_POSH_THEME` (for the VSCode PowerShell Extension)
+to the name of the desired theme. You may also put your own theme into the `~/.config/oh-my-posh/themes` folder.
+
+> **Note**: Most themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your host
+> system (not the Dev Container) and changing your font settings in VSCode.
+
 ### Setting a version for `resources`
 
 To use advanced options for resource installation, you may do so using the extended
