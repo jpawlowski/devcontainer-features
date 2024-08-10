@@ -55,19 +55,21 @@ try {
     #endregion Global Variables ----------------------------------------------------
 
     #region Environment Variables ==================================================
-    if ($env:PATH.Split(':') -notcontains "$($env:HOME)/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "$env:PATH:$env:HOME/.local/bin") }
-    if (-not $env:USER && -not $env:USERNAME) { $env:USER = $(whoami) }
+    $__PSProfileOriginalPath = [Environment]::GetEnvironmentVariable('PATH')
+    if ($__PSProfileOriginalPath.Split(':') -notcontains "$([Environment]::GetEnvironmentVariable('HOME'))/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:$([Environment]::GetEnvironmentVariable('HOME'))/.local/bin") }
+    if (-not [Environment]::GetEnvironmentVariable('USER') && -not [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', $(/usr/bin/id -un)) }
 
     # Set the SHELL environment variable to a Unix native shell to avoid issues with VS Code userEnvProbe
-    if ($env:VSCODE_USER_ENVIRONMENT_PROBE_SHELL -and $env:SHELL -like '*/pwsh*' -and $env:VSCODE_USER_ENVIRONMENT_PROBE_SHELL -notlike '*/pwsh*') {
+    $__PSProfileUserEnvProbeShell = [Environment]::GetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL')
+    if ($__PSProfileUserEnvProbeShell -and [Environment]::GetEnvironmentVariable('SHELL') -like '*/pwsh*' -and $__PSProfileUserEnvProbeShell -notlike '*/pwsh*') {
         if (
-            -not ([System.IO.File]::Exists($env:VSCODE_USER_ENVIRONMENT_PROBE_SHELL)) -or
-            -not (Get-Content /etc/shells | Where-Object { $_ -eq $env:VSCODE_USER_ENVIRONMENT_PROBE_SHELL })
+            -not ([System.IO.File]::Exists($__PSProfileUserEnvProbeShell)) -or
+            -not ([System.IO.File]::ReadAllLines('/etc/shells') | Where-Object { $_ -eq $__PSProfileUserEnvProbeShell })
         ) {
             Write-Warning "The shell specified in the VSCODE_USER_ENVIRONMENT_PROBE_SHELL environment variable is not a valid shell. Falling back to /bin/bash."
-            $env:VSCODE_USER_ENVIRONMENT_PROBE_SHELL = '/bin/bash'
+            [Environment]::SetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL', '/bin/bash')
         }
-        if ($env:VSCODE_USER_ENVIRONMENT_PROBE_SHELL -ne 'none') { $env:SHELL = $env:VSCODE_USER_ENVIRONMENT_PROBE_SHELL }
+        if ([Environment]::GetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL') -ne 'none') { [Environment]::SetEnvironmentVariable('SHELL', [Environment]::GetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL')) }
     }
     #endregion Environment Variables -----------------------------------------------
 
