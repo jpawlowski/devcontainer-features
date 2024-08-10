@@ -57,7 +57,7 @@ try {
     #region Environment Variables ==================================================
     $__PSProfileOriginalPath = [Environment]::GetEnvironmentVariable('PATH')
     if ($__PSProfileOriginalPath.Split(':') -notcontains "$([Environment]::GetEnvironmentVariable('HOME'))/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:$([Environment]::GetEnvironmentVariable('HOME'))/.local/bin") }
-    if (-not [Environment]::GetEnvironmentVariable('USER') && -not [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', $(/usr/bin/id -un)) }
+    if (-not [Environment]::GetEnvironmentVariable('USER') && -not [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
 
     # Set the SHELL environment variable to a Unix native shell to avoid issues with VS Code userEnvProbe
     $__PSProfileUserEnvProbeShell = [Environment]::GetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL')
