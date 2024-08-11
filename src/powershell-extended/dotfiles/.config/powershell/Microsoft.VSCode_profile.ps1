@@ -37,7 +37,7 @@
 try {
     if ($Error) { return } # Skip if there was an error loading the profile before
 
-    #region Functions ==============================================================
+    #region Functions ==========================================================
     $__PSProfileFunctionsPath = Join-Path -Path ($PROFILE.AllUsersAllHosts | Split-Path -Parent) -ChildPath 'profile.functions.ps1'
     if ([System.IO.File]::Exists($__PSProfileFunctionsPath)) { . $__PSProfileFunctionsPath } else { throw "Profile functions file not found at $__PSProfileFunctionsPath" }
     #
@@ -46,35 +46,45 @@ try {
     # the same directory as this file. Note that you must define them explicitly into the global scope,
     # e.g., 'function Global:MyFunction { ... }'.
     #
-    #endregion Functions -----------------------------------------------------------
+    #endregion Functions -------------------------------------------------------
 
     __PSProfile-Write-ProfileLoadMessage "📝 Applying configurations for $($PSStyle.Bold)PowerShell Extension$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
 
-    #region Import Modules =========================================================
-    if ($env:VSCODE_TERMINAL_COMPLETION_GIT -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
-    if ($env:VSCODE_TERMINAL_COMPLETION_PSFZF -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf -ArgumentList 'Ctrl+t', 'Ctrl+r' }
-    if ($env:VSCODE_TERMINAL_COMPLETION_PREDICTOR -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
-    if ($env:VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
-    if ($env:VSCODE_TERMINAL_Z -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
-    if ($env:VSCODE_TERMINAL_ICONS -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
-    #endregion Import Modules ------------------------------------------------------
+    #region Import Modules =====================================================
+    if ($env:PSPROFILE_VSCODE_TERMINAL_COMPLETION_GIT -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
+    if ($env:PSPROFILE_VSCODE_TERMINAL_COMPLETION_PSFZF -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf -ArgumentList 'Ctrl+t', 'Ctrl+r' }
+    if ($env:PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
+    if ($env:PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
+    if ($env:PSPROFILE_VSCODE_TERMINAL_Z -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
+    if ($env:PSPROFILE_VSCODE_TERMINAL_ICONS -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
+    #endregion Import Modules --------------------------------------------------
 
-    #region Oh My Posh =============================================================
-    if (-not ($env:POSH_THEME -eq $false)) {
-        if ($env:VSCODE_POSH_THEME) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $env:VSCODE_POSH_THEME } else { __PSProfile-Enable-OhMyPosh-Theme }
-        if ($env:VSCODE_TERMINAL_COMPLETION_POSH -eq $true -and $env:POSH_PID) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
-        if ($env:POSH_DISABLE_UPGRADE_NOTICE -eq $true -and $env:POSH_PID) { oh-my-posh disable notice }
+    #region Environment ========================================================
+    if ($env:PSPROFILE_VSCODE_AUTOUPDATE_MODULEHELP -eq $true) {
+        $lockFilePath = "$([System.Environment]::GetEnvironmentVariable('HOME'))/.local/powershell/Update-Help.lock"
+        if (-not [System.IO.File]::Exists($lockFilePath) -or [System.IO.FileInfo]::new($lockFilePath).LastWriteTime -lt [DateTime]::Now.AddDays(-1)) {
+            $null = Start-ThreadJob -Name "UpdateHelp" -ScriptBlock { Update-Help -Scope CurrentUser -ErrorAction Ignore }
+            [System.IO.File]::Create($lockFilePath).Dispose()
+        }
     }
-    #endregion Oh My Posh ----------------------------------------------------------
+    #endregion Environment -----------------------------------------------------
 
-    #region Custom Profile =========================================================
+    #region Oh My Posh =========================================================
+    if (-not ($env:POSH_THEME -eq $false)) {
+        if ($env:PSPROFILE_VSCODE_POSH_THEME) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $env:PSPROFILE_VSCODE_POSH_THEME } else { __PSProfile-Enable-OhMyPosh-Theme }
+        if ($env:PSPROFILE_TERMINAL_COMPLETION_POSH -eq $true -and $env:POSH_PID) { $null = Start-ThreadJob -Name 'PoshCompletion' -ScriptBlock { oh-my-posh completion powershell | Out-String | Invoke-Expression } }
+        if ($env:PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE -eq $true -and $env:POSH_PID) { $null = Start-ThreadJob -Name 'PoshDisableNotice' -ScriptBlock { oh-my-posh disable notice } }
+    }
+    #endregion Oh My Posh ------------------------------------------------------
+
+    #region Custom Profile =====================================================
     __PSProfile-Invoke-CustomProfileFilePath -FilePath $MyInvocation.MyCommand.Path -CustomSuffix 'my'
     #
     # Hint:
     # To load your own custom profile, you may put it into
     # Microsoft.VSCode_profile.my.ps1 in the same directory as this file.
     #
-    #endregion Custom Profile ------------------------------------------------------
+    #endregion Custom Profile --------------------------------------------------
 }
 catch {
     $__PSProfileError = "`n❌ Interrupting profile load process.`n"

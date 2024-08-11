@@ -4,8 +4,60 @@
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-#region Profile Functions ------------------------------------------------------
-# Only define the functions if they are not already defined
+#region Global Functions ======================================================
+# Only define the functions if they are not already defined. Take only one function as an example.
+if (-not (Get-Command -Name Test-IsWindowsTerminal -ErrorAction Ignore)) {
+    function Test-IsWindowsTerminal {
+        <#
+        .SYNOPSIS
+            Checks if the current process is running in Windows Terminal.
+        .DESCRIPTION
+            This function checks if the current process is running in Windows Terminal.
+        .NOTES
+            Credits to https://mikefrobbins.com/2024/05/16/detecting-windows-terminal-with-powershell/
+        #>
+        [CmdletBinding()]
+        param ()
+
+        # Check if PowerShell version is 5.1 or below, or if running on Windows
+        if ($PSVersionTable.PSVersion.Major -le 5 -or $IsWindows -eq $true) {
+            $currentPid = $PID
+
+            # Loop through parent processes to check if Windows Terminal is in the hierarchy
+            while ($currentPid) {
+                try {
+                    $process = Get-CimInstance Win32_Process -Filter "ProcessId = $currentPid" -ErrorAction Stop -Verbose:$false
+                }
+                catch {
+                    # Return false if unable to get process information
+                    return $false
+                }
+
+                Write-Verbose -Message "ProcessName: $($process.Name), Id: $($process.ProcessId), ParentId: $($process.ParentProcessId)"
+
+                # Check if the current process is Windows Terminal
+                if ($process.Name -eq 'WindowsTerminal.exe') {
+                    return $true
+                }
+                else {
+                    # Move to the parent process
+                    $currentPid = $process.ParentProcessId
+                }
+            }
+
+            # Return false if Windows Terminal is not found in the hierarchy
+            return $false
+        }
+        else {
+            Write-Verbose -Message 'Exiting due to non-Windows environment'
+            return $false
+        }
+    }
+}
+#endregion Global Functions ---------------------------------------------------
+
+#region Profile Functions ======================================================
+# Only define the functions if they are not already defined. Take only one function as an example.
 if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ignore)) {
     function __PSProfile-Write-ProfileLoadMessage {
         <#
@@ -144,6 +196,7 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
         }
         catch {
             if ($_.FullyQualifiedErrorId -eq 'ModuleNotFound') {
+                $Error.Clear() # Clear the error because we are going to solve it
                 if ($psVersion -ge $minVersion -and $InstallInBackground) {
                     $job = Start-ThreadJob -Name "Install-$Name" -ScriptBlock {
                         param (
@@ -201,7 +254,7 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
                             Microsoft.PowerShell.PSResourceGet\Install-PSResource -Name $Name -Repository PSGallery -TrustRepository -Scope CurrentUser -AcceptLicense -Confirm:$false -Quiet
                         }
                         if ($psVersion -ge $minVersion -and $ImportInBackground) {
-                            Start-Job -ScriptBlock {
+                            Start-ThreadJob -ScriptBlock {
                                 param ($moduleName)
                                 Import-Module -Scope Global -Name $moduleName -ErrorAction Stop
                             } -ArgumentList $Name | Out-Null
@@ -223,18 +276,18 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
     }
     function __PSProfile-Import-ModuleIfNotLoaded {
         <#
-    .SYNOPSIS
-        Imports a module if it is not already loaded.
-    .DESCRIPTION
-        This function imports a module if it is not already loaded.
-    .PARAMETER ModuleName
-        The name of the module to import.
-    .PARAMETER ArgumentList
-        An array of arguments to pass to the module when importing it.
-    .EXAMPLE
-        __PSProfile-Import-ModuleIfNotLoaded -ModuleName Microsoft.PowerShell.Utility
-        This will import the Microsoft.PowerShell.Utility module if it is not already loaded.
-    #>
+        .SYNOPSIS
+            Imports a module if it is not already loaded.
+        .DESCRIPTION
+            This function imports a module if it is not already loaded.
+        .PARAMETER ModuleName
+            The name of the module to import.
+        .PARAMETER ArgumentList
+            An array of arguments to pass to the module when importing it.
+        .EXAMPLE
+            __PSProfile-Import-ModuleIfNotLoaded -ModuleName Microsoft.PowerShell.Utility
+            This will import the Microsoft.PowerShell.Utility module if it is not already loaded.
+        #>
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param (
             [string]$ModuleName,
@@ -280,12 +333,12 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
     }
     function __PSProfile-Assert-IsUserInteractiveShell {
         <#
-    .SYNOPSIS
-        Determines if the current shell is interactive.
-    .DESCRIPTION
-        This function determines if the current shell is interactive. It checks if the shell is running in an interactive session by examining the environment variables and command line arguments.
-        If the shell is interactive, the function returns $true; otherwise, it returns $false.
-    #>
+        .SYNOPSIS
+            Determines if the current shell is interactive.
+        .DESCRIPTION
+            This function determines if the current shell is interactive. It checks if the shell is running in an interactive session by examining the environment variables and command line arguments.
+            If the shell is interactive, the function returns $true; otherwise, it returns $false.
+        #>
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param()
         $IsInteractive = $true
@@ -312,14 +365,14 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
     }
     function __PSProfile-Enable-OhMyPosh-Theme {
         <#
-    .SYNOPSIS
-        Enables an Oh My Posh theme.
-    .DESCRIPTION
-        This function enables an Oh My Posh theme.
-    .EXAMPLE
-        __PSProfile-Enable-OhMyPosh-Theme
-        This will enable an Oh My Posh theme.
-    #>
+        .SYNOPSIS
+            Enables an Oh My Posh theme.
+        .DESCRIPTION
+            This function enables an Oh My Posh theme.
+        .EXAMPLE
+            __PSProfile-Enable-OhMyPosh-Theme
+            This will enable an Oh My Posh theme.
+        #>
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param(
             [string]$Theme = 'devcontainers.minimal'
@@ -348,27 +401,27 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
     }
     function __PSProfile-Clear-Environment {
         <#
-    .SYNOPSIS
-        Clear global environment from temporary profile artifacts.
-    .DESCRIPTION
-        This function clears global environment from temporary profile artifacts.
-        This prevents the environment from being polluted with temporary variables and functions created during the profile load process.
-    #>
+        .SYNOPSIS
+            Clear global environment from temporary profile artifacts.
+        .DESCRIPTION
+            This function clears global environment from temporary profile artifacts.
+            This prevents the environment from being polluted with temporary variables and functions created during the profile load process.
+        #>
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param()
 
-        # Initialize the profile load list if it hasn't been initialized yet
-        if (-not $Script:__PSProfileLoadList) {
-            $Script:__PSProfileLoadList = [System.Collections.Generic.List[string]]::new()
-            @($PROFILE.AllUsersAllHosts, $PROFILE.AllUsersCurrentHost, $PROFILE.CurrentUserAllHosts, $PROFILE.CurrentUserCurrentHost) | ForEach-Object {
-                if ([System.IO.File]::Exists($_)) {
-                    [void]$Script:__PSProfileLoadList.Add($_)
-                }
-            }
+        # Initialize the profile load count if it hasn't been initialized yet
+        if (-not $Script:__PSProfileTotalCount) {
+            $Script:__PSProfileTotalCount = @(
+                $PROFILE.AllUsersAllHosts,
+                $PROFILE.AllUsersCurrentHost,
+                $PROFILE.CurrentUserAllHosts,
+                $PROFILE.CurrentUserCurrentHost
+            ) | Where-Object { [System.IO.File]::Exists($_) } | Measure-Object | Select-Object -ExpandProperty Count
         }
 
         # Check if the profile load is still in progress
-        if ($__PSProfiles.Count -lt $Script:__PSProfileLoadList.Count) {
+        if ($Script:__PSProfilesIndex -lt $Script:__PSProfileTotalCount) {
             return
         }
 
@@ -378,20 +431,16 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
         if ($__PSProfileErrorView) { $Global:ErrorView = $__PSProfileErrorView }
         if ($__PSProfileInformationPreference) { $Global:InformationPreference = $__PSProfileInformationPreference }
 
-        $varRegex = '^__PSProfile(?!Source|s).*'
-        foreach ($variable in Get-Variable -Scope 1 | Where-Object { $_.Name -match $varRegex }) {
-            Remove-Variable -Name $variable.Name -Scope 1 -Force -WarningAction Ignore -ErrorAction Ignore -Verbose:$false -Debug:$false -Confirm:$false -WhatIf:$false
-        }
-
-        $fnRegex = '^__PSProfile.*'
+        # Remove temporary functions
+        $fnRegex = '^__PSProfile(?!Alias).*'
         foreach ($function in Get-Command -CommandType Function | Where-Object { $_.Name -match $fnRegex }) {
             Remove-Item -Path "Function:\$($function.Name)" -Force -WarningAction Ignore -ErrorAction Ignore -Verbose:$false -Debug:$false -Confirm:$false -WhatIf:$false
         }
 
+        # Generate the profile load duration information
         $i = 0
-        $profileCount = $__PSProfiles.Count
         foreach ($item in $__PSProfiles) {
-            if ($i -lt ($profileCount - 1) -and $__PSProfiles[$i + 1].LoadBeginDate) {
+            if ($i -lt $Script:__PSProfilesIndex -and $__PSProfiles[$i + 1].LoadBeginDate) {
                 $EndDate = $__PSProfiles[$i + 1].LoadBeginDate
             }
             else {
@@ -400,17 +449,24 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
             Add-Member -InputObject $__PSProfiles[$i] -MemberType NoteProperty -Name 'LoadEndDate' -Value $EndDate
             Add-Member -InputObject $__PSProfiles[$i] -MemberType NoteProperty -Name 'LoadDuration' -Value ($EndDate - $__PSProfiles[$i].LoadBeginDate)
             $i++
+            if ($i -eq $Script:__PSProfilesIndex) { break }
+        }
+
+        # Remove temporary variables
+        $varRegex = '^__PSProfile(?!Source|s).*'
+        foreach ($variable in Get-Variable -Scope 1 | Where-Object { $_.Name -match $varRegex }) {
+            Remove-Variable -Name $variable.Name -Scope 1 -Force -WarningAction Ignore -ErrorAction Ignore -Verbose:$false -Debug:$false -Confirm:$false -WhatIf:$false
         }
     }
     function __PSProfile-Get-ProfileInfoFromFilePath {
         <#
-    .SYNOPSIS
-        Gets the profile information from the file path.
-    .DESCRIPTION
-        This function gets the profile information from the file path.
-    .PARAMETER FilePath
-        The file path to check.
-    #>
+        .SYNOPSIS
+            Gets the profile information from the file path.
+        .DESCRIPTION
+            This function gets the profile information from the file path.
+        .PARAMETER FilePath
+            The file path to check.
+        #>
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param(
             [string]$FilePath
@@ -434,23 +490,23 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
     }
     function __PSProfile-Invoke-CustomProfileFilePath {
         <#
-    .SYNOPSIS
-        Invokes a custom profile file based on the provided file path and custom suffix.
-    .DESCRIPTION
-        This function modifies the provided profile file path by appending a custom suffix and delimiter.
-        If the resulting custom profile file exists, it is dot-sourced (executed in the current scope).
-    .PARAMETER FilePath
-        The path to the original profile file. This parameter is mandatory.
-    .PARAMETER CustomSuffix
-        The custom suffix to append to the file name. Default is 'my'.
-    .PARAMETER Delimiter
-        The delimiter to use between the original file name and the custom suffix. Default is '.'.
-    .EXAMPLE
-        __PSProfile-Invoke-CustomProfileFilePath -FilePath "C:\Users\Profile.ps1" -CustomSuffix "custom" -Delimiter "_"
-        This will look for a file named "C:\Users\Profile_custom.ps1" and dot-source it if it exists.
-    .NOTES
-        This function ensures that the custom suffix starts with the delimiter and ends with '.ps1'.
-    #>
+        .SYNOPSIS
+            Invokes a custom profile file based on the provided file path and custom suffix.
+        .DESCRIPTION
+            This function modifies the provided profile file path by appending a custom suffix and delimiter.
+            If the resulting custom profile file exists, it is dot-sourced (executed in the current scope).
+        .PARAMETER FilePath
+            The path to the original profile file. This parameter is mandatory.
+        .PARAMETER CustomSuffix
+            The custom suffix to append to the file name. Default is 'my'.
+        .PARAMETER Delimiter
+            The delimiter to use between the original file name and the custom suffix. Default is '.'.
+        .EXAMPLE
+            __PSProfile-Invoke-CustomProfileFilePath -FilePath "C:\Users\Profile.ps1" -CustomSuffix "custom" -Delimiter "_"
+            This will look for a file named "C:\Users\Profile_custom.ps1" and dot-source it if it exists.
+        .NOTES
+            This function ensures that the custom suffix starts with the delimiter and ends with '.ps1'.
+        #>
         [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
         param(
             [Parameter(Mandatory = $true)]
@@ -477,8 +533,14 @@ if (-not (Get-Command -Name __PSProfile-Write-ProfileLoadMessage -ErrorAction Ig
 #endregion Profile Functions ---------------------------------------------------
 
 #region Global Variables =======================================================
-if (-not $__PSProfiles) { $__PSProfiles = [System.Collections.ArrayList]@() }
-[void]$__PSProfiles.Add((__PSProfile-Get-ProfileInfoFromFilePath -FilePath $MyInvocation.ScriptName))
+if (-not $Script:__PSProfiles) {
+    $Script:__PSProfiles = [object[]]::new(4)
+    $Script:__PSProfilesIndex = 0
+}
+if ($Script:__PSProfilesIndex -lt 4) {
+    $Script:__PSProfiles[$Script:__PSProfilesIndex] = (__PSProfile-Get-ProfileInfoFromFilePath -FilePath $MyInvocation.ScriptName)
+    $Script:__PSProfilesIndex++
+}
 #endregion Global Variables ----------------------------------------------------
 
 #region Custom Functions =======================================================

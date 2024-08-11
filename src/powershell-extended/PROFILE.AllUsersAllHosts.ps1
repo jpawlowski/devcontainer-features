@@ -60,18 +60,139 @@ try {
     if (-not [Environment]::GetEnvironmentVariable('USER') && -not [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
 
     # Set the SHELL environment variable to a Unix native shell to avoid issues with VS Code userEnvProbe
-    $__PSProfileUserEnvProbeShell = [Environment]::GetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL')
+    $__PSProfileUserEnvProbeShell = [Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_USER_ENVIRONMENT_PROBE_SHELL')
     if ($__PSProfileUserEnvProbeShell -and [Environment]::GetEnvironmentVariable('SHELL') -like '*/pwsh*' -and $__PSProfileUserEnvProbeShell -notlike '*/pwsh*') {
         if (
             -not ([System.IO.File]::Exists($__PSProfileUserEnvProbeShell)) -or
             -not ([System.IO.File]::ReadAllLines('/etc/shells') | Where-Object { $_ -eq $__PSProfileUserEnvProbeShell })
         ) {
-            Write-Warning "The shell specified in the VSCODE_USER_ENVIRONMENT_PROBE_SHELL environment variable is not a valid shell. Falling back to /bin/bash."
-            [Environment]::SetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL', '/bin/bash')
+            Write-Warning "The shell specified in the PSPROFILE_VSCODE_USER_ENVIRONMENT_PROBE_SHELL environment variable is not a valid shell. Falling back to /bin/bash."
+            $__PSProfileUserEnvProbeShell = '/bin/bash'
         }
-        if ([Environment]::GetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL') -ne 'none') { [Environment]::SetEnvironmentVariable('SHELL', [Environment]::GetEnvironmentVariable('VSCODE_USER_ENVIRONMENT_PROBE_SHELL')) }
+        if ($__PSProfileUserEnvProbeShell -ne 'none') { [Environment]::SetEnvironmentVariable('SHELL', $__PSProfileUserEnvProbeShell); [Environment]::SetEnvironmentVariable('SHELL', 'PSPROFILE_VSCODE_USER_ENVIRONMENT_PROBE_SHELL') }
     }
     #endregion Environment Variables -----------------------------------------------
+
+    #region Aliases ================================================================
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE') -eq $true -or [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_HIDDEN') -eq $true -or [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_SORT') -eq $true) {
+        <#
+        This is a copy of:
+
+        CommandType Name          Version Source
+        ----------- ----          ------- ------
+        Cmdlet      Get-ChildItem 7.0.0.0 Microsoft.PowerShell.Management
+
+        Created: 2024-08-11
+        Author : Julian Pawlowski
+
+        Created with PSScriptTools: Copy-Command Get-Childitem -AsProxy -UseForwardHelp -IncludeDynamic
+        #>
+        function __PSProfileAliasDir {
+            <#
+            .ForwardHelpTargetName Microsoft.PowerShell.Management\Get-ChildItem
+            .ForwardHelpCategory Cmdlet
+            #>
+            [CmdletBinding(DefaultParameterSetName = 'Items', HelpUri = 'https://go.microsoft.com/fwlink/?LinkID=2096492')]
+            Param(
+                [Parameter(ParameterSetName = 'Items', Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+                [string[]]
+                ${Path},
+
+                [Parameter(ParameterSetName = 'LiteralItems', Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+                [Alias('PSPath', 'LP')]
+                [string[]]
+                ${LiteralPath},
+
+                [Parameter(Position = 1)]
+                [string]
+                ${Filter},
+
+                [string[]]
+                ${Include},
+
+                [string[]]
+                ${Exclude},
+
+                [Alias('s')]
+                [switch]
+                ${Recurse},
+
+                [uint]
+                ${Depth},
+
+                [switch]
+                ${Force},
+
+                [switch]
+                ${Name},
+
+                [System.Management.Automation.FlagsExpression[System.IO.FileAttributes]]
+                ${Attributes},
+
+                [switch]
+                ${FollowSymlink},
+
+                [Alias('ad')]
+                [switch]
+                ${Directory},
+
+                [Alias('af')]
+                [switch]
+                ${File},
+
+                [Alias('ah', 'h')]
+                [switch]
+                ${Hidden},
+
+                [Alias('ar')]
+                [switch]
+                ${ReadOnly},
+
+                [Alias('as')]
+                [switch]
+                ${System}
+            )
+
+            Begin {
+                Write-Verbose "[BEGIN  ] Starting $($MyInvocation.MyCommand)"
+                Write-Verbose "[BEGIN  ] Using parameter set $($PSCmdlet.ParameterSetName)"
+                Write-Verbose ($PSBoundParameters | Out-String)
+                try {
+                    $outBuffer = $null
+                    if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
+                        $PSBoundParameters['OutBuffer'] = 1
+                    }
+                    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE') -eq $true) {
+                        $PSBoundParameters['Force'] = $true
+                    }
+                    elseif ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_HIDDEN') -eq $true) {
+                        $PSBoundParameters['Hidden'] = $true
+                    }
+
+                    $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Management\Get-ChildItem', [System.Management.Automation.CommandTypes]::Cmdlet)
+                    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_SORT') -eq $true) {
+                        $scriptCmd = { & $wrappedCmd @PSBoundParameters | Sort-Object -Property { -Not $_.psiscontainer }, LastWritetime }
+                    }
+                    else {
+                        $scriptCmd = { & $wrappedCmd @PSBoundParameters }
+                    }
+
+                    $steppablePipeline = $scriptCmd.GetSteppablePipeline($myInvocation.CommandOrigin)
+                    $steppablePipeline.Begin($PSCmdlet)
+                }
+                catch { throw }
+            }
+            Process {
+                try { $steppablePipeline.Process($_) } catch { throw }
+            }
+            End {
+                Write-Verbose "[END    ] Ending $($MyInvocation.MyCommand)"
+                try { $steppablePipeline.End() } catch { throw }
+            }
+        }
+        Set-Alias -Name dir -Value __PSProfileAliasDir -Option AllScope -Description "dir -> Get-ChildItem$(if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE') -eq $true) { ' -Force' } else { ' -Hidden' })"
+    }
+    #endregion Import Modules ------------------------------------------------------
 
     #region Custom Profile =========================================================
     __PSProfile-Invoke-CustomProfileFilePath -FilePath $MyInvocation.MyCommand.Path -CustomSuffix 'my'

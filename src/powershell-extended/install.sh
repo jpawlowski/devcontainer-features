@@ -111,11 +111,11 @@ if ! command -v pwsh >/dev/null 2>&1; then
             if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" = 'prerelease' ]; then
                 prerelease="-Prerelease"
             fi
-            currentVersion=$(pwsh -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet).Version.ToString()")
-            latestVersion=$(pwsh -NoLogo -NoProfile -Command "(Find-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
+            currentVersion=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet).Version.ToString()")
+            latestVersion=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Find-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
             if version_compare "$latestVersion" 'gt' "$currentVersion"; then
                 echo "Updating Microsoft.PowerShell.PSResourceGet"
-                pwsh -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet $prerelease"
+                "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet $prerelease"
             fi
         else
             # Installing Microsoft.PowerShell.PSResourceGet
@@ -124,7 +124,7 @@ if ! command -v pwsh >/dev/null 2>&1; then
                 prerelease="-AllowPrerelease"
             fi
             echo "Installing Microsoft.PowerShell.PSResourceGet"
-            pwsh -NoLogo -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber $prerelease; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted"
+            "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; Install-Module -Verbose -Repository PSGallery -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet -Force -AllowClobber $prerelease; Set-PSRepository -Name PSGallery -InstallationPolicy Untrusted"
         fi
     fi
 
@@ -142,7 +142,7 @@ else
 fi
 
 # Get existing repositories
-IFS=';' read -r -a repos <<<"$(pwsh -NoLogo -NoProfile -Command "(Get-PSResourceRepository).Uri.OriginalString -join ';'")"
+IFS=';' read -r -a repos <<<"$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Get-PSResourceRepository).Uri.OriginalString -join ';'")"
 
 # If PowerShell repositories are requested, loop through and register
 if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
@@ -162,19 +162,19 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
             if [ -z "$repoPrio" ]; then
                 # Set PSGallery to trusted only
                 echo "[root] Set PSGallery as trusted repository"
-                pwsh -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
+                "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
                 if [ "${USERNAME}" != 'root' ]; then
                     echo "[${USERNAME}] Set PSGallery as trusted repository"
-                    sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
+                    sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted"
                 fi
 
             elif [[ "$repoPrio" =~ ^[0-9]+$ ]] && [ "$repoPrio" -ge 0 ] && [ "$repoPrio" -le 100 ]; then
                 # Update priority and set to trusted
                 echo "[root] Set PSGallery as trusted repository and update priority to '$repoPrio'"
-                pwsh -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
+                "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
                 if [ "${USERNAME}" != 'root' ]; then
                     echo "[${USERNAME}] Set PSGallery as trusted repository and update priority to '$repoPrio'"
-                    sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
+                    sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Set-PSResourceRepository -Name PSGallery -Trusted -Priority $repoPrio"
                 fi
             else
                 echo "Invalid priority for 'PSGallery': $repoPrio"
@@ -221,10 +221,10 @@ if [ "$POWERSHELL_REPOSITORIES" != '' ]; then
 
             # Register repository
             echo "[root] Register-PSResourceRepository $repoargs"
-            pwsh -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
+            "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
             if [ "${USERNAME}" != 'root' ]; then
                 echo "[${USERNAME}] Register-PSResourceRepository $repoargs"
-                sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
+                sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
             fi
 
             # Add to list of repositories
@@ -341,10 +341,10 @@ if [ "$POWERSHELL_RESOURCES" != '' ]; then
 
                 # Register repository
                 echo "[root] Register-PSResourceRepository $repoargs"
-                pwsh -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
+                "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
                 if [ "${USERNAME}" != 'root' ]; then
                     echo "[${USERNAME}] Register-PSResourceRepository $repoargs"
-                    sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
+                    sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Register-PSResourceRepository $repoargs"
                 fi
 
                 # Add to list of repositories
@@ -375,7 +375,7 @@ if [ "$POWERSHELL_RESOURCES" != '' ]; then
         echo ""
 
         echo "Install-PSResource $args"
-        pwsh -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose $args"
+        "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose $args"
     done
 fi
 
@@ -386,16 +386,28 @@ if [ -n "$POWERSHELL_UPDATE_PSREADLINE" ]; then
         prerelease="-Prerelease"
     fi
 
-    currentVersion=$(pwsh -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name PSReadLine).Version.ToString()")
-    latestVersion=$(pwsh -NoLogo -NoProfile -Command "(Find-PSResource -Name PSReadLine -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
+    currentVersion=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name PSReadLine).Version.ToString()")
+    latestVersion=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Find-PSResource -Name PSReadLine -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
     if version_compare "$latestVersion" 'gt' "$currentVersion"; then
         echo "Updating PSReadLine"
-        pwsh -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name PSReadLine $prerelease"
+        "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name PSReadLine $prerelease"
+    fi
+fi
+
+# Update Help Files
+if [ "$POWERSHELL_UPDATE_MODULESHELP" = 'true' ]; then
+    echo "Updating PowerShell Modules Help"
+    if [ "${USERNAME}" = 'root' ]; then
+        "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope AllUsers -UICulture en-US -ErrorAction Stop"
+        touch "/root/.local/powershell/Update-Help.lock"
+    else
+        # shellcheck disable=SC2140
+        sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope CurrentUser -UICulture en-US -ErrorAction Stop; New-Item -Path "\$env:HOME/.local/powershell/Update-Help.lock" -ItemType File -Force"
     fi
 fi
 
 # Get profile path from currently installed pwsh
-globalProfilePath=$(pwsh -NoLogo -NoProfile -Command "\$PROFILE.AllUsersAllHosts")
+globalProfilePath=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "\$PROFILE.AllUsersAllHosts")
 
 # If URL for PowerShell profile is provided, download it to '/opt/microsoft/powershell/7/profile.ps1'
 if [ "$POWERSHELL_PROFILE_URL" != '' ]; then
@@ -442,14 +454,13 @@ if [ "$INSTALL_OHMYPOSH" = 'true' ]; then
         mkdir -p "$root_local_bin_dir"
         curl -fsSL https://ohmyposh.dev/install.sh | bash -s -- -d "$root_local_bin_dir"
 
-        # Copy to non-root user if one is specified
+        # Install for non-root user if specified
         if [ "${USERNAME}" != 'root' ] && [ ! -e "${user_local_bin_dir}/oh-my-posh" ]; then
-            mkdir -p "$user_local_bin_dir"
-            cp "$root_local_bin_dir/oh-my-posh" "$user_local_bin_dir"
-            chown -R "${USERNAME}":"${group_name}" "$user_local_bin_dir"
+            sudo -H -u "${USERNAME}" mkdir -p "$user_local_bin_dir"
+            sudo -H -u "${USERNAME}" curl -fsSL https://ohmyposh.dev/install.sh | bash -s -- -d "$user_local_bin_dir"
         fi
     else
-        echo "Oh My Posh already installed"
+        echo "Oh My Posh is already installed."
     fi
 
     if [ "$INSTALL_OHMYPOSH_CONFIG" = 'true' ]; then
@@ -470,18 +481,17 @@ if [ "$INSTALL_OHMYPOSH" = 'true' ]; then
                 if [ ! -d "$user_dir" ]; then
                     echo "Creating directory $user_dir"
                     mkdir -p "$user_dir"
-                    chown "${target_user}":"${target_group}" "$user_dir"
                 fi
 
                 # Copy the file if it does not exist
                 if [ ! -f "$user_file" ]; then
                     echo "Copying $relative_path to $user_file"
                     cp "$file" "$user_file"
-                    chown "${target_user}":"${target_group}" "$user_file"
                 else
                     echo "$relative_path already exists at $user_file"
                 fi
             done
+            chown --recursive "${target_user}":"${target_group}" "${target_home}"
             shopt -u dotglob
         }
 

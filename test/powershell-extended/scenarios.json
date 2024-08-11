@@ -5,6 +5,7 @@
       "powershell-extended": {
         "updatePSResourceGet": "none",
         "updatePSReadLine": "none",
+        "updateModulesHelp": false,
         "installOhMyPosh": false,
         "installOhMyPoshConfig": false
       }
@@ -16,6 +17,7 @@
       "powershell-extended": {
         "installOhMyPosh": true,
         "installOhMyPoshConfig": true,
+        "updateModulesHelp": false,
         "updatePSResourceGet": "none",
         "updatePSReadLine": "none"
       }
@@ -31,7 +33,8 @@
         "installOhMyPosh": false,
         "installOhMyPoshConfig": false,
         "updatePSResourceGet": "none",
-        "updatePSReadLine": "none"
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false
       }
     }
   },
@@ -43,7 +46,8 @@
         "installOhMyPosh": false,
         "installOhMyPoshConfig": false,
         "updatePSResourceGet": "none",
-        "updatePSReadLine": "none"
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false
       }
     }
   },
@@ -55,7 +59,8 @@
         "installOhMyPosh": false,
         "installOhMyPoshConfig": false,
         "updatePSResourceGet": "none",
-        "updatePSReadLine": "none"
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false
       }
     }
   },
@@ -67,7 +72,8 @@
         "installOhMyPosh": false,
         "installOhMyPoshConfig": false,
         "updatePSResourceGet": "none",
-        "updatePSReadLine": "none"
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false
       }
     }
   },
@@ -79,7 +85,8 @@
         "installOhMyPosh": false,
         "installOhMyPoshConfig": false,
         "updatePSResourceGet": "none",
-        "updatePSReadLine": "none"
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false
       }
     }
   }

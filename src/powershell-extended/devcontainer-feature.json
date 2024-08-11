@@ -16,7 +16,7 @@
         "7.3"
       ],
       "default": "latest",
-      "description": "Select or enter a version of PowerShell."
+      "description": "Select or enter a version of PowerShell. Defaults to `latest`."
     },
     "installMethod": {
       "type": "string",
@@ -35,7 +35,7 @@
         "prerelease"
       ],
       "default": "release",
-      "description": "Update built-in [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources."
+      "description": "Update built-in [`Microsoft.PowerShell.PSResourceGet`](https://github.com/PowerShell/PSResourceGet) module to the latest version before installing additional resources. Defaults to `release`."
     },
     "updatePSReadLine": {
       "type": "string",
@@ -45,17 +45,22 @@
         "prerelease"
       ],
       "default": "release",
-      "description": "Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version."
+      "description": "Update built-in [`PSReadLine`](https://github.com/PowerShell/PSReadline) module to the latest version. Defaults to `release`."
+    },
+    "updateModulesHelp": {
+      "type": "boolean",
+      "default": true,
+      "description": "Update help files for installed modules? Defaults to `true`."
     },
     "setUserDefaultShell": {
       "type": "boolean",
       "default": false,
-      "description": "Change default shell for non-root user to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
+      "description": "Change default shell for non-root user to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead. Defaults to `false`."
     },
     "setRootDefaultShell": {
       "type": "boolean",
       "default": false,
-      "description": "Change default shell for root to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead."
+      "description": "Change default shell for root to PowerShell? Note that this might impact [`userEnvProbe`](https://containers.dev/implementors/json_reference/#general-properties) performance. Consider setting [`terminal.integrated.defaultProfile.*`](https://code.visualstudio.com/docs/terminal/profiles) instead. Defaults to `false`."
     },
     "repositories": {
       "type": "string",
@@ -70,21 +75,22 @@
     "installOhMyPosh": {
       "type": "boolean",
       "default": true,
-      "description": "Install Oh My Posh?"
+      "description": "Install Oh My Posh? Defaults to `true`."
     },
     "installOhMyPoshConfig": {
       "type": "boolean",
       "default": true,
-      "description": "Allow installing the default dev container profile templates?"
+      "description": "Allow installing the default dev container profile templates? Defaults to `true`. May be tweaked by setting `containerEnv.PSPROFILE_*` variables."
     },
     "profileURLAllUsersAllHosts": {
       "type": "string",
       "default": "",
-      "description": "Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts)."
+      "description": "Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts). Defaults to `\"\"`. Note that this will take precedence over `installOhMyPoshConfig` for the global profile."
     }
   },
   "containerEnv": {
-    "POWERSHELL_DISTRIBUTION_CHANNEL": "PSDocker-DevContainer-Feature",
+    "POWERSHELL_DISTRIBUTION_CHANNEL": "DevContainer-Feature:PowerShell-Extended",
+    "PSPROFILE_AUTOUPDATE_MODULEHELP": "true",
     "PSPROFILE_PSREADLINE_EDITMODE": "Emacs",
     "PSPROFILE_POSH_THEME": "devcontainers.minimal",
     "PSPROFILE_TERMINAL_COMPLETION_GIT": "true",
@@ -93,16 +99,21 @@
     "PSPROFILE_TERMINAL_COMPLETION_PREDICTOR_AZ": "false",
     "PSPROFILE_TERMINAL_COMPLETION_PSFZF": "false",
     "PSPROFILE_TERMINAL_ICONS": "true",
+    "PSPROFILE_TERMINAL_PSSCRIPTTOOLS": "true",
     "PSPROFILE_TERMINAL_Z": "true",
-    "VSCODE_POSH_THEME": "devcontainers.minimal",
-    "VSCODE_TERMINAL_COMPLETION_GIT": "true",
-    "VSCODE_TERMINAL_COMPLETION_POSH": "true",
-    "VSCODE_TERMINAL_COMPLETION_PREDICTOR": "true",
-    "VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ": "false",
-    "VSCODE_TERMINAL_COMPLETION_PSFZF": "false",
-    "VSCODE_TERMINAL_ICONS": "true",
-    "VSCODE_TERMINAL_Z": "true",
-    "POSH_DISABLE_UPGRADE_NOTICE": "true"
+    "PSPROFILE_VSCODE_AUTOUPDATE_MODULEHELP": "false",
+    "PSPROFILE_VSCODE_POSH_THEME": "devcontainers.minimal",
+    "PSPROFILE_VSCODE_TERMINAL_COMPLETION_GIT": "true",
+    "PSPROFILE_VSCODE_TERMINAL_COMPLETION_POSH": "true",
+    "PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR": "true",
+    "PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ": "false",
+    "PSPROFILE_VSCODE_TERMINAL_COMPLETION_PSFZF": "false",
+    "PSPROFILE_VSCODE_TERMINAL_ICONS": "true",
+    "PSPROFILE_VSCODE_TERMINAL_PSSCRIPTTOOLS": "true",
+    "PSPROFILE_VSCODE_TERMINAL_Z": "true",
+    "PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE": "true",
+    "PSPROFILE_ALIAS_DIR_HIDDEN": "true",
+    "PSPROFILE_ALIAS_DIR_FORCE": "false"
   },
   "customizations": {
     "vscode": {
