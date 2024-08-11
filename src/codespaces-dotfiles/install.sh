@@ -83,12 +83,12 @@ if [[ "${INSTALL_COMMAND}" == */* ]]; then
 fi
 
 # Generate postStartCommand script to finalize dotfiles installation
-mkdir -p /usr/local/share/devcontainers/features/codespace-dotfiles
-cat > /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh << EOF
+mkdir -p /usr/local/share/devcontainers/features/codespaces-dotfiles
+cat > /usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh << EOF
 #!/bin/bash
 
 # Install Codespace dotfiles in user context
-# Generated $(date -u +"%Y-%m-%dT%H:%M:%SZ") by devcontainer-features/codespace-dotfiles/install.sh
+# Generated $(date -u +"%Y-%m-%dT%H:%M:%SZ") by devcontainer-features/codespaces-dotfiles/install.sh
 
 set -e
 
@@ -101,21 +101,21 @@ USERNAME="${USERNAME}"
 USERHOME="${USERHOME}"
 
 # Only run in Codespaces and only once
-if [ ! -d "/workspaces/.codespaces" ] || [ -f "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled" ]; then
+if [ ! -d "/workspaces/.codespaces" ] || [ -f "\${USERHOME}/.local/share/devcontainers/features/codespaces-dotfiles/.dotFilesInstalled" ]; then
     exit 0
 fi
 
 # Skip if dotfiles are already installed by GitHub Codespaces themselves
 if [ -d "/workspaces/.codespaces/.persistedshare/dotfiles" ]; then
     echo "dotfiles already installed by GitHub Codespaces. Skipping custom installation."
-    mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles"
-    date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled"
+    mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespaces-dotfiles"
+    date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespaces-dotfiles/.dotFilesInstalled"
     exit 0
 fi
 
 # If the target path already exists, throw an error
 if [ -d "\${TARGET_PATH}" ]; then
-    echo "codespace-dotfiles setup: Target path \${TARGET_PATH} already exists."
+    echo "codespaces-dotfiles setup: Target path \${TARGET_PATH} already exists."
     exit 1
 fi
 
@@ -136,8 +136,8 @@ if [ -z "\${INSTALL_COMMAND}" ]; then
 fi
 
 # Run the install script
-mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles"
-INSTALL_LOG="\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/install.log"
+mkdir -p "\${USERHOME}/.local/share/devcontainers/features/codespaces-dotfiles"
+INSTALL_LOG="\${USERHOME}/.local/share/devcontainers/features/codespaces-dotfiles/install.log"
 if [ -n "\${INSTALL_COMMAND}" ]; then
     if [ -f "\${TARGET_PATH}/\${INSTALL_COMMAND}" ]; then
         echo "Running dotfiles install script \${INSTALL_COMMAND} ..."
@@ -175,15 +175,15 @@ else
     exit 1
 fi
 
-# Mark codespace-dotfiles as installed
-date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespace-dotfiles/.dotFilesInstalled"
+# Mark codespaces-dotfiles as installed
+date -u +"%Y-%m-%dT%H:%M:%SZ" > "\${USERHOME}/.local/share/devcontainers/features/codespaces-dotfiles/.dotFilesInstalled"
 EOF
 
-chmod +x /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh
-echo "postCreateCommand generated at /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh to finalize dotfiles installation:"
+chmod +x /usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh
+echo "postCreateCommand generated at /usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh to finalize dotfiles installation:"
 
-echo ">>>>>>>>>>>>>>>> /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh >>>>>>>>>>>>>>"
-cat /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh
-echo "<<<<<<<<<<<<<<<< /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh <<<<<<<<<<<<<<"
+echo ">>>>>>>>>>>>>>>> /usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh >>>>>>>>>>>>>>"
+cat /usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh
+echo "<<<<<<<<<<<<<<<< /usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh <<<<<<<<<<<<<<"
 
 echo "Done!"

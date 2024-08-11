@@ -7,7 +7,7 @@ set -e
 source dev-container-features-test-lib
 
 # Extension-specific tests
-check "postStartOnce.sh present" [ -f /usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh ] && exit 0 || exit 1
+check "postStartOnce.sh present" [ -f /usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh ] && exit 0 || exit 1
 
 # Report result
 reportResults

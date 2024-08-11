@@ -1,5 +1,5 @@
 
-# GitHub Codespace dotfiles (codespace-dotfiles)
+# GitHub Codespace dotfiles (codespaces-dotfiles)
 
 Install your dotfiles repository into GitHub Codespaces from your `devcontainer.json`. This feature will not do anything outside of GitHub Codespaces and will leave the dotfile setup to the [VS Code builtin personalization option](https://code.visualstudio.com/docs/devcontainers/containers#_personalizing-with-dotfile-repositories).
 
@@ -7,7 +7,7 @@ Install your dotfiles repository into GitHub Codespaces from your `devcontainer.
 
 ```json
 "features": {
-    "ghcr.io/jpawlowski/devcontainer-features/codespace-dotfiles:1": {}
+    "ghcr.io/jpawlowski/devcontainer-features/codespaces-dotfiles:1": {}
 }
 ```
 
@@ -41,4 +41,4 @@ the user has defined them in the GitHub profile settings.
 
 ---
 
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/jpawlowski/devcontainer-features/blob/main/src/codespace-dotfiles/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/jpawlowski/devcontainer-features/blob/main/src/codespaces-dotfiles/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._

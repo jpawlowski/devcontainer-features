@@ -1,9 +1,9 @@
 {
   "name": "GitHub Codespace dotfiles",
-  "id": "codespace-dotfiles",
+  "id": "codespaces-dotfiles",
   "version": "1.0.0",
   "description": "Install your dotfiles repository into GitHub Codespaces from your `devcontainer.json`. This feature will not do anything outside of GitHub Codespaces and will leave the dotfile setup to the [VS Code builtin personalization option](https://code.visualstudio.com/docs/devcontainers/containers#_personalizing-with-dotfile-repositories).",
-  "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/codespace-dotfiles",
+  "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/codespaces-dotfiles",
   "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
   "keywords": [
     "codespaces",
@@ -36,7 +36,7 @@
       "description": "The method to use if no install command is found. Defaults to `symlink`. This will symlink or copy any files or folders in your dotfiles repository starting with . to the codespace's ~ or $HOME directory."
     }
   },
-  "postStartCommand": "/usr/local/share/devcontainers/features/codespace-dotfiles/postStartOnce.sh",
+  "postStartCommand": "/usr/local/share/devcontainers/features/codespaces-dotfiles/postStartOnce.sh",
   "installsAfter": [
     "ghcr.io/devcontainers/features/common-utils",
     "ghcr.io/devcontainers/features/git",
