@@ -18,13 +18,13 @@ the dev container specification.
 
 Below are the features currently available in this repository:
 
-| Feature Name        | Description                                                                                                                                                                         | Documentation                        |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------- |
-| Cascadia Code       | Cascadia Code font.                                                                                                                                                                 | [📚 Link](./src/cascadia-code/)       |
-| CLI Microsoft 365   | CLI for Microsoft 365 is a cross-platform CLI that allows users on any platform to manage various configuration settings of Microsoft 365.                                          | [📚 Link](./src/cli-microsoft365/)    |
-| Codespace Dotfiles  | Install dotfiles in Codespaces using `devcontainers.json`.                                                                                                                          | [📚 Link](./src/codespace-dotfiles/)  |
-| PnP.PowerShell      | PnP PowerShell is a cross-platform PowerShell module that allows users on any platform to manage various configuration settings of Microsoft 365.                                   | [📚 Link](./src/pnp.powershell/)      |
-| PowerShell Extended | Installs PowerShell on AMD64 and ARM64 machines, and optional additional resources from the PowerShell Gallery using PSResourceGet. It also supports advanced installation options. | [📚 Link](./src/powershell-extended/) |
+| Feature Name        | Description                                                                                                                                                                                                                                | Documentation                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------- |
+| Cascadia Code       | Cascadia Code font.                                                                                                                                                                                                                        | [📚 Link](./src/cascadia-code/)       |
+| CLI Microsoft 365   | CLI for Microsoft 365 is a cross-platform CLI that allows users on any platform to manage various configuration settings of Microsoft 365.                                                                                                 | [📚 Link](./src/cli-microsoft365/)    |
+| Codespace Dotfiles  | Install dotfiles in Codespaces using `devcontainers.json`.                                                                                                                                                                                 | [📚 Link](./src/codespace-dotfiles/)  |
+| PnP.PowerShell      | PnP PowerShell is a cross-platform PowerShell module that allows users on any platform to manage various configuration settings of Microsoft 365.                                                                                          | [📚 Link](./src/pnp.powershell/)      |
+| PowerShell Extended | Installs PowerShell on AMD64 and ARM64 architectures, with optional resources from the PowerShell Gallery via PSResourceGet. Includes a custom Oh-My-Posh terminal prompt theme and profile files. Supports advanced installation options. | [📚 Link](./src/powershell-extended/) |
 
 'Features' are self-contained units of installation code and development container configuration. Features are designed
 to install atop a wide-range of base container images.
