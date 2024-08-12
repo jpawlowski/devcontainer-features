@@ -11,6 +11,19 @@
       }
     }
   },
+  "install_powershell72_ohmyposh": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell-extended": {
+        "version": "7.2",
+        "installOhMyPosh": true,
+        "installOhMyPoshConfig": true,
+        "updateModulesHelp": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none"
+      }
+    }
+  },
   "install_powershell_ohmyposh": {
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
@@ -18,8 +31,8 @@
         "installOhMyPosh": true,
         "installOhMyPoshConfig": true,
         "updateModulesHelp": false,
-        "updatePSResourceGet": "none",
-        "updatePSReadLine": "none"
+        "updatePSResourceGet": "true",
+        "updatePSReadLine": "true"
       }
     }
   },

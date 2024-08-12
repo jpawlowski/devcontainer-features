@@ -71,8 +71,13 @@
           "foreground": "blue",
           "style": "plain",
           "properties": {
-            "style": "mixed",
-            "mixed_threshold": 4
+            "style": "agnoster_short",
+            "max_depth": 4,
+            "hide_root_location": false,
+            "home_icon": "\uD83C\uDFE0",
+            "mapped_locations": {
+              "/workspaces": "\uD83D\uDDC2\uFE0F "
+            }
           },
           "template": " <b>{{ .Path }}</b>",
           "type": "path"
@@ -83,7 +88,7 @@
             "native_fallback": true
           },
           "style": "plain",
-          "template": " <cyan>(<b><red>{{ .HEAD }}</></b>)</>",
+          "template": " <cyan>(</><b><red>{{ .HEAD }}</></b><cyan>)</>",
           "type": "git"
         },
         {

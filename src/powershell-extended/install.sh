@@ -104,18 +104,20 @@ if ! command -v pwsh >/dev/null 2>&1; then
                 Start-Sleep -Seconds 6 ; \
             }"
 
-    if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" != 'none' ]; then
-        if [ "$POWERSHELL_VERSION" = 'latest' ] || ! version_compare "$POWERSHELL_VERSION" 'ge' '7.4.0'; then
+    if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" != 'none' ] || version_compare  '7.4.0' 'gt' "$POWERSHELL_VERSION"; then
+        if [ "$POWERSHELL_VERSION" = 'latest' ] || version_compare  '7.4.0' 'le' "$POWERSHELL_VERSION"; then
             # Update Microsoft.PowerShell.PSResourceGet
             prerelease=""
             if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" = 'prerelease' ]; then
                 prerelease="-Prerelease"
             fi
-            currentVersion=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet).Version.ToString()")
+            currentVersion=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet -ErrorAction Stop).Version.ToString()")
             latestVersion=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Find-PSResource -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Type Module $prerelease | Sort-Object -Property {[version]\$_.Version} -Descending | Select-Object -First 1).Version.ToString()")
             if version_compare "$latestVersion" 'gt' "$currentVersion"; then
                 echo "Updating Microsoft.PowerShell.PSResourceGet"
                 "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Install-PSResource -Verbose -Repository PSGallery -TrustRepository -Scope AllUsers -Name Microsoft.PowerShell.PSResourceGet $prerelease"
+            else
+                echo "Microsoft.PowerShell.PSResourceGet is already up-to-date."
             fi
         else
             # Installing Microsoft.PowerShell.PSResourceGet
