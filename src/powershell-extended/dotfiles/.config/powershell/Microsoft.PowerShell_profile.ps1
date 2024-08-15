@@ -54,7 +54,7 @@ try {
     #region Oh My Posh =========================================================
     $__PSProfileEnvOhMyPoshTheme = [Environment]::GetEnvironmentVariable('PSPROFILE_POSH_THEME')
     if ($null -ne $__PSProfileEnvOhMyPoshTheme) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $__PSProfileEnvOhMyPoshTheme } else { __PSProfile-Enable-OhMyPosh-Theme }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_POSH') -eq $true) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_POSH') -eq $true) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
     if ([Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE') -eq $true) { $null = Start-ThreadJob -Name 'PoshDisableNotice' -ScriptBlock { oh-my-posh disable notice } }
     #endregion Oh My Posh ------------------------------------------------------
 
