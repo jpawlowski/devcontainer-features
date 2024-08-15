@@ -431,7 +431,7 @@ fi
 # Set experimental features if requested
 if [ "$POWERSHELL_CONFIG_EXPERIMENTALFEATURES" != '' ]; then
     echo 'Setting PowerShell Experimental Features'
-    IFS=';' read -r -a experimental_features <<<"$POWERSHELL_CONFIG_EXPERIMENTALFEATURES"
+    IFS=';' read -r -a experimental_features <<<"$(echo "$POWERSHELL_CONFIG_EXPERIMENTALFEATURES" | tr -d '[:space:]')"
 
     # Use jq to update the JSON file
     jq --argjson new_features "$(printf '%s\n' "${experimental_features[@]}" | jq -R . | jq -s .)" '

@@ -120,7 +120,7 @@
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {
       "powershell-extended": {
-        "psConfigExperimentalFeatures": "PSCommandWithArgs",
+        "psConfigExperimentalFeatures": "ExperimentalFeature1; ExperimentalFeature2;",
         "installOhMyPosh": false,
         "installOhMyPoshConfig": false,
         "updatePSResourceGet": "none",
