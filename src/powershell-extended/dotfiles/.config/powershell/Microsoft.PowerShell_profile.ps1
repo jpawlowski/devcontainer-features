@@ -58,131 +58,92 @@ try {
     if ([Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE') -eq $true) { $null = Start-ThreadJob -Name 'PoshDisableNotice' -ScriptBlock { oh-my-posh disable notice } }
     #endregion Oh My Posh ------------------------------------------------------
 
-    # Check the terminal emulator
-    if ($null -ne $env:TERM_PROGRAM) {
-        switch -Wildcard ($env:TERM_PROGRAM) {
-            # VSCode and Operating System native terminals
-            'vscode*' {
-                __PSProfile-Write-ProfileLoadMessage "📝 Applying configurations for $($PSStyle.Bold)VSCode Integrated Terminal$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any VSCode-specific configurations here ...
-            }
-            'Windows_Terminal*' {
-                __PSProfile-Write-ProfileLoadMessage "🖥️ Applying configurations for $($PSStyle.Bold)Windows Terminal$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Windows Terminal-specific configurations here ...
-            }
-            'Apple_Terminal*' {
-                __PSProfile-Write-ProfileLoadMessage " Applying configurations for $($PSStyle.Bold)Apple Terminal$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Apple Terminal-specific configurations here ...
-            }
-
-            # Popular modern terminals
-            'Alacritty*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Alacritty$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Alacritty-specific configurations here ...
-            }
-            'WezTerm*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)WezTerm$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any WezTerm-specific configurations here ...
-            }
-            'Warp*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Warp$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Warp-specific configurations here ...
-            }
-            'Tabby*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Tabby$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Tabby-specific configurations here ...
-            }
-            'Terminus*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Terminus$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Terminus-specific configurations here ...
-            }
-            'Upterm*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Upterm$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Upterm-specific configurations here ...
-            }
-
-            # Browser-based terminals
-            'Hyper*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Hyper terminal$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Hyper-specific configurations here ...
-            }
-
-            # Other common terminals
-            'gnome-terminal*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)GNOME Terminal$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any GNOME Terminal-specific configurations here ...
-            }
-            'iTerm.app*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)iTerm2$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any iTerm2-specific configurations here ...
-            }
-            'Kitty*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Kitty$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Kitty-specific configurations here ...
-            }
-            'Konsole*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Konsole$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Konsole-specific configurations here ...
-            }
-            'Terminator*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Terminator terminal$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Terminator-specific configurations here ...
-            }
-            'Terminology*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Terminology$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Terminology-specific configurations here ...
-            }
-            'Tilix*' {
-                __PSProfile-Write-ProfileLoadMessage "🪄 Applying configurations for $($PSStyle.Bold)Tilix$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
-                # ... Add any Tilix-specific configurations here ...
-            }
-            default {
-                __PSProfile-Write-ProfileLoadMessage "🟡 Applying configurations for $($PSStyle.Bold)unknown$($PSStyle.BoldOff) terminal emulator." -ForegroundColor DarkCyan
-                # ... Add any default configurations here
-            }
-        }
-    }
-
-    # Check the terminal multiplexer or console emulator
-    else {
-        switch -Wildcard ($env:TERM) {
-            # Terminal Multiplexers and Console Emulators
-            'xterm*' {
-                __PSProfile-Write-ProfileLoadMessage "⌨️ Applying configurations for $($PSStyle.Bold)XTerm$($PSStyle.BoldOff)." -ForegroundColor DarkGray
-                # ... Add any XTerm-specific configurations here ...
-            }
-            'screen*' {
-                __PSProfile-Write-ProfileLoadMessage "⌨️ Applying configurations for $($PSStyle.Bold)screen$($PSStyle.BoldOff) session." -ForegroundColor DarkGray
-                # ... Add any screen-specific configurations here ...
-            }
-            'linux*' {
-                __PSProfile-Write-ProfileLoadMessage "⌨️ Applying configurations for $($PSStyle.Bold)Linux console$($PSStyle.BoldOff)." -ForegroundColor DarkGray
-                # ... Add any Linux console-specific configurations here ...
-            }
-            'tmux*' {
-                __PSProfile-Write-ProfileLoadMessage "⌨️ Applying configurations for $($PSStyle.Bold)tmux$($PSStyle.BoldOff) session." -ForegroundColor DarkGray
-                # ... Add any tmux-specific configurations here ...
-            }
-            default {
-                __PSProfile-Write-ProfileLoadMessage "⌨️ Applying configurations for $($PSStyle.Bold)unknown$($PSStyle.BoldOff) terminal multiplexer or console emulator." -ForegroundColor DarkGray
-                # ... Add any default configurations here
-            }
-        }
-    }
-
     #region Custom Profile =====================================================
     #
     # Hint:
     # To load your own custom profile, you may create a directory named 'Microsoft.PowerShell_profile.d' in the same directory as this file.
     # Then, place your custom profile files in the 'Microsoft.PowerShell_profile.d' directory to load them automatically.
     #
-    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.d')
+    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, 'd')
     if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
         foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
             . $file
         }
     }
     #endregion Custom Profile --------------------------------------------------
+
+    #region Custom Terminal Configuration ======================================
+    #
+    # Hint:
+    # To load your own custom terminal configuration, you may create a directory named
+    # 'Microsoft.PowerShell_profile_<TERM_PROGRAM>.d' in the same directory as this file.
+    # Then, place your custom terminal configuration files in the 'Microsoft.PowerShell_profile_<TERM_PROGRAM>.d'
+    # directory to load them automatically.
+    #
+    # Examples:
+    # If you are using the VSCode Integrated Terminal, create a directory named 'Microsoft.PowerShell_profile_vscode.d'
+    # in the same directory as this file. Then, place your custom terminal configuration files in the
+    # 'Microsoft.PowerShell_profile_vscode.d' directory to load them automatically.
+    #
+    # If you are using the tmux terminal multiplexer, create a directory named 'Microsoft.PowerShell_profile_tmux.d'
+    # in the same directory as this file. Then, place your custom terminal configuration files in the
+    # 'Microsoft.PowerShell_profile_tmux.d' directory to load them automatically.
+    #
+    # If you are using the screen terminal multiplexer, create a directory named 'Microsoft.PowerShell_profile_screen.d'
+    # in the same directory as this file. Then, place your custom terminal configuration files in the
+    # 'Microsoft.PowerShell_profile_screen.d' directory to load them automatically.
+    #
+    $__PSProfileEnvTermProgram = [regex]::Split(
+        (
+            [regex]::Replace(
+                (
+                    [regex]::Replace(
+                        [Environment]::GetEnvironmentVariable('TERM_PROGRAM'),
+                        '\.[^\.]*$',
+                        ''
+                    )
+                ),
+                '[ .]',
+                '_'
+            )
+        ),
+        '-'
+    )[0]
+    if ($null -ne $__PSProfileEnvTermProgram) {
+        $__PSProfileTerminalPrograms = @{
+            'vscode' = @{
+                'name' = 'VSCode Integrated Terminal'
+                'icon' = '📝'
+            }
+            'tmux'   = @{
+                'name' = 'tmux Terminal Multiplexer'
+                'icon' = '🔲'
+            }
+            'screen' = @{
+                'name' = 'Screen Terminal Multiplexer'
+                'icon' = '🔲'
+            }
+        }
+
+        if ($__PSProfileTerminalPrograms.ContainsKey($__PSProfileEnvTermProgram)) {
+            $__PSProfileTerminalProgram = $__PSProfileTerminalPrograms.$__PSProfileEnvTermProgram
+        }
+        else {
+            $__PSProfileTerminalProgram = @{
+                'name' = $__PSProfileEnvTermProgram.Substring(0, 1).ToUpper() + $__PSProfileEnvTermProgram.Substring(1)
+                'icon' = '🟡'
+            }
+        }
+        __PSProfile-Write-ProfileLoadMessage "$($__PSProfileTerminalProgram.icon) Applying configurations for $($PSStyle.Bold)$($__PSProfileTerminalProgram.name)$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
+
+        $__PSProfileDirectoryPath = [regex]::Replace($MyInvocation.MyCommand.Path, '\.ps1$', "_$($__PSProfileEnvTermProgram.ToLower()).d")
+        if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
+            foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
+                . $file
+            }
+        }
+    }
+    #endregion Custom Terminal Configuration -----------------------------------
 }
 catch {
     __PSProfile-Write-ProfileLoadMessage "`n❌ Interrupting profile load process.`n" -ForegroundColor DarkRed
