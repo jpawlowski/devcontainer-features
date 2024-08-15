@@ -33,48 +33,84 @@
 #Requires -Version 7.0
 
 try {
-    if ($IsWindows) { return } # This global profile is for *nix only
-    $__PSProfileConfirmPreference = $ConfirmPreference; $ConfirmPreference = 'None'
-    $__PSProfileErrorActionPreference = $ErrorActionPreference; $ErrorActionPreference = 'Stop'
-
     #region Functions ==============================================================
-    $__PSProfileFunctionsPath = Join-Path -Path ($PROFILE.AllUsersAllHosts | Split-Path -Parent) -ChildPath 'profile.functions.ps1'
+    $__PSProfileFunctionsPath = [System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($PROFILE.AllUsersAllHosts), 'profile.functions.ps1')
     if ([System.IO.File]::Exists($__PSProfileFunctionsPath)) { . $__PSProfileFunctionsPath } else { throw "Profile functions file not found at $__PSProfileFunctionsPath" }
-    #
-    # Hint:
-    # To load your own functions, you may put them into profile.my.functions.ps1 in
-    # the same directory as this file. Note that you must define them explicitly into the global scope,
-    # e.g., 'function Global:MyFunction { ... }'.
-    #
+    __PSProfile-Initialize-Profile
     #endregion Functions -----------------------------------------------------------
+
+    if ($IsWindows) { return } # This global profile is for *nix only
+
+    #region Script Variables =======================================================
+    $__PSProfileEnvPathOriginal = [Environment]::GetEnvironmentVariable('PATH')
+    $__PSProfileEnvHome = [Environment]::GetEnvironmentVariable('HOME')
+    $__PSProfileEnvTermProgram = [Environment]::GetEnvironmentVariable('TERM_PROGRAM')
+
+    $__PSProfileEnvAliasDirForce = [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE')
+    $__PSProfileEnvAliasDirHidden = [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_HIDDEN')
+    $__PSProfileEnvAliasDirSort = [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_SORT')
+    if ($null -eq $__PSProfileEnvAliasDirForce) { $__PSProfileEnvAliasDirForce = $false; [System.Environment]::SetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE', $__PSProfileEnvAliasDirForce) }
+    if ($null -eq $__PSProfileEnvAliasDirHidden) { $__PSProfileEnvAliasDirHidden = $true; [System.Environment]::SetEnvironmentVariable('PSPROFILE_ALIAS_DIR_HIDDEN', $__PSProfileEnvAliasDirHidden) }
+    if ($null -eq $__PSProfileEnvAliasDirSort) { $__PSProfileEnvAliasDirSort = $true; [System.Environment]::SetEnvironmentVariable('PSPROFILE_ALIAS_DIR_SORT', $__PSProfileEnvAliasDirSort) }
+    #endregion Script Variables ----------------------------------------------------
+
+    # Display optional first run image specific notice if configured and terminal is interactive
+    if (
+        (__PSProfile-Assert-IsUserInteractiveShell) -and
+        $__PSProfileEnvTermProgram -match '^(vscode|codespaces)$' -and
+        -not ([System.IO.File]::Exists("$__PSProfileEnvHome/.config/vscode-dev-containers/first-run-notice-already-displayed"))
+    ) {
+        if ([System.IO.File]::Exists('/usr/local/etc/vscode-dev-containers/first-run-notice.txt')) {
+            [System.IO.File]::ReadAllText('/usr/local/etc/vscode-dev-containers/first-run-notice.txt')
+        }
+        elseif ([System.IO.File]::Exists('/workspaces/.codespaces/shared/first-run-notice.txt')) {
+            [System.IO.File]::ReadAllText('/workspaces/.codespaces/shared/first-run-notice.txt')
+        }
+        # Mark first run notice as displayed after 10s to avoid problems with fast terminal refreshes hiding it
+        $null = Start-ThreadJob -Name FirstRunNoticeAlreadyDisplayed -ScriptBlock {
+            Start-Sleep -Seconds 10
+            $null = New-Item -ItemType Directory -Force -Path "$env:HOME/.config/vscode-dev-containers"
+            $null = New-Item -ItemType File -Force -Path "$env:HOME/.config/vscode-dev-containers/first-run-notice-already-displayed"
+        }
+    }
 
     __PSProfile-Write-ProfileLoadMessage "🌐 Loading $($PSStyle.Bold)global$($PSStyle.BoldOff) profile."
 
     #region Global Variables =======================================================
-    $Global:__PSProfileSource = "PSDocker-DevContainer-Feature"
+    $Global:__PSProfileSource = 'DevContainer-Feature:PowerShell-Extended'
     #endregion Global Variables ----------------------------------------------------
 
     #region Environment Variables ==================================================
-    $__PSProfileOriginalPath = [Environment]::GetEnvironmentVariable('PATH')
-    if ($__PSProfileOriginalPath.Split(':') -notcontains "$([Environment]::GetEnvironmentVariable('HOME'))/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:$([Environment]::GetEnvironmentVariable('HOME'))/.local/bin") }
-    if (-not [Environment]::GetEnvironmentVariable('USER') && -not [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
+    # Add local bin directory to PATH if not already present
+    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "$__PSProfileEnvHome/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:$__PSProfileEnvHome/.local/bin") }
 
-    # Set the SHELL environment variable to a Unix native shell to avoid issues with VS Code userEnvProbe
-    $__PSProfileUserEnvProbeShell = [Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_USER_ENVIRONMENT_PROBE_SHELL')
-    if ($__PSProfileUserEnvProbeShell -and [Environment]::GetEnvironmentVariable('SHELL') -like '*/pwsh*' -and $__PSProfileUserEnvProbeShell -notlike '*/pwsh*') {
-        if (
-            -not ([System.IO.File]::Exists($__PSProfileUserEnvProbeShell)) -or
-            -not ([System.IO.File]::ReadAllLines('/etc/shells') | Where-Object { $_ -eq $__PSProfileUserEnvProbeShell })
-        ) {
-            Write-Warning "The shell specified in the PSPROFILE_VSCODE_USER_ENVIRONMENT_PROBE_SHELL environment variable is not a valid shell. Falling back to /bin/bash."
-            $__PSProfileUserEnvProbeShell = '/bin/bash'
+    # Set the USER environment variable if not already set
+    if ($null -eq [Environment]::GetEnvironmentVariable('USER') -and $null -eq [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
+
+    # Set the default git editor if not already set
+    if (
+        $null -eq [Environment]::GetEnvironmentVariable('GIT_EDITOR') -and
+        $null -eq $(try { git config --get core.editor } catch { $Error.Clear(); $null })
+    ) {
+        # Check if the terminal program is vscode
+        if ($__PSProfileEnvTermProgram -match '^(vscode|codespaces)$') {
+            # Check if code-insiders is available and code is not available
+            if ((Get-Command -Name 'code-insiders' -ErrorAction Ignore) -and $null -eq (Get-Command -Name 'code' -ErrorAction Ignore)) {
+                [Environment]::SetEnvironmentVariable('GIT_EDITOR', 'code-insiders --wait')
+            }
+            else {
+                [Environment]::SetEnvironmentVariable('GIT_EDITOR', 'code --wait')
+            }
         }
-        if ($__PSProfileUserEnvProbeShell -ne 'none') { [Environment]::SetEnvironmentVariable('SHELL', $__PSProfileUserEnvProbeShell); [Environment]::SetEnvironmentVariable('SHELL', 'PSPROFILE_VSCODE_USER_ENVIRONMENT_PROBE_SHELL') }
     }
     #endregion Environment Variables -----------------------------------------------
 
     #region Aliases ================================================================
-    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE') -eq $true -or [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_HIDDEN') -eq $true -or [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_SORT') -eq $true) {
+    if (
+        $__PSProfileEnvAliasDirForce -eq $true -or
+        $__PSProfileEnvAliasDirHidden -eq $true -or
+        $__PSProfileEnvAliasDirSort -eq $true
+    ) {
         <#
         This is a copy of:
 
@@ -171,7 +207,7 @@ try {
 
                     $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Management\Get-ChildItem', [System.Management.Automation.CommandTypes]::Cmdlet)
                     if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_SORT') -eq $true) {
-                        $scriptCmd = { & $wrappedCmd @PSBoundParameters | Sort-Object -Property { -Not $_.psiscontainer }, LastWritetime }
+                        $scriptCmd = { & $wrappedCmd @PSBoundParameters | Sort-Object -Property { -not $_.psiscontainer }, Name }
                     }
                     else {
                         $scriptCmd = { & $wrappedCmd @PSBoundParameters }
@@ -190,23 +226,28 @@ try {
                 try { $steppablePipeline.End() } catch { throw }
             }
         }
-        Set-Alias -Name dir -Value __PSProfileAliasDir -Option AllScope -Description "dir -> Get-ChildItem$(if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE') -eq $true) { ' -Force' } else { ' -Hidden' })"
+        New-Alias -Name dir -Value __PSProfileAliasDir -Option AllScope -Force
     }
     #endregion Import Modules ------------------------------------------------------
 
     #region Custom Profile =========================================================
-    __PSProfile-Invoke-CustomProfileFilePath -FilePath $MyInvocation.MyCommand.Path -CustomSuffix 'my'
     #
     # Hint:
-    # To load your own custom profile, you may put it into profile.my.ps1 in
-    # the same directory as this file.
+    # To load your own custom profile, you may create a directory named 'profile.d' in the same directory as this file.
+    # Then, place your custom profile files in the 'profile.d' directory to load them automatically.
     #
+    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.d')
+    if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
+        foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
+            . $file
+        }
+    }
     #endregion Custom Profile ------------------------------------------------------
 }
 catch {
     $__PSProfileError = "`n❌ Interrupting profile load process.`n"
     if (Get-Command -Name '__PSProfile-Write-ProfileLoadMessage' -ErrorAction Ignore) { __PSProfile-Write-ProfileLoadMessage $__PSProfileError -ForegroundColor DarkRed } else { Write-Host $__PSProfileError -ForegroundColor DarkRed }
-    Write-Error "An error occurred while loading the global profile: $_" -ErrorAction Continue
+    Write-Error "An error occurred while loading the global profile." -ErrorAction Continue
     throw
 }
 finally {

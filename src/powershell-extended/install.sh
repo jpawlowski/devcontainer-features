@@ -104,8 +104,8 @@ if ! command -v pwsh >/dev/null 2>&1; then
                 Start-Sleep -Seconds 6 ; \
             }"
 
-    if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" != 'none' ] || version_compare  '7.4.0' 'gt' "$POWERSHELL_VERSION"; then
-        if [ "$POWERSHELL_VERSION" = 'latest' ] || version_compare  '7.4.0' 'le' "$POWERSHELL_VERSION"; then
+    if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" != 'none' ] || version_compare '7.4.0' 'gt' "$POWERSHELL_VERSION"; then
+        if [ "$POWERSHELL_VERSION" = 'latest' ] || version_compare '7.4.0' 'le' "$POWERSHELL_VERSION"; then
             # Update Microsoft.PowerShell.PSResourceGet
             prerelease=""
             if [ "$POWERSHELL_UPDATE_PSRESOURCEGET" = 'prerelease' ]; then
@@ -400,12 +400,43 @@ fi
 if [ "$POWERSHELL_UPDATE_MODULESHELP" = 'true' ]; then
     echo "Updating PowerShell Modules Help"
     if [ "${USERNAME}" = 'root' ]; then
-        "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope AllUsers -UICulture en-US -ErrorAction Stop"
-        touch "/root/.local/powershell/Update-Help.lock"
+        "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope AllUsers -UICulture en-US -ErrorAction Stop -ProgressAction Ignore"
+        touch "/root/.local/share/powershell/Update-Help.lock"
     else
         # shellcheck disable=SC2140
-        sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope CurrentUser -UICulture en-US -ErrorAction Stop; New-Item -Path "\$env:HOME/.local/powershell/Update-Help.lock" -ItemType File -Force"
+        sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope CurrentUser -UICulture en-US -ErrorAction Stop -ProgressAction Ignore; New-Item -Path "\$env:HOME/.local/share/powershell/Update-Help.lock" -ItemType File -Force"
     fi
+fi
+
+# Get config path from currently installed pwsh
+globalConfigPath=$("$(command -v pwsh)" -NoLogo -NoProfile -Command "echo \$PSHOME/powershell.config.json")
+
+# If URL for PowerShell config is provided, download it to '/opt/microsoft/powershell/7/powershell.config.json'
+if [ "$POWERSHELL_CONFIG_URL" != '' ]; then
+    # If file is not existing yet, download it
+    if [ ! -f "$globalConfigPath" ]; then
+        echo "Downloading PowerShell Config from: $POWERSHELL_CONFIG_URL"
+        curl -fsSL -o "$globalConfigPath" "$POWERSHELL_CONFIG_URL"
+    else
+        echo "PowerShell Config already exists at: $globalConfigPath"
+    fi
+fi
+
+# Install global default config if it does not exist
+if [ ! -f "$globalConfigPath" ]; then
+    echo 'Installing global default config'
+    cp "${FEATURE_DIR}/powershell.config.json" "$globalConfigPath"
+fi
+
+# Set experimental features if requested
+if [ "$POWERSHELL_CONFIG_EXPERIMENTALFEATURES" != '' ]; then
+    echo 'Setting PowerShell Experimental Features'
+    IFS=';' read -r -a experimental_features <<<"$POWERSHELL_CONFIG_EXPERIMENTALFEATURES"
+
+    # Use jq to update the JSON file
+    jq --argjson new_features "$(printf '%s\n' "${experimental_features[@]}" | jq -R . | jq -s .)" '
+      .ExperimentalFeatures |= ( . + $new_features | unique )
+    ' "$globalConfigPath" >"$globalConfigPath.tmp" && mv "$globalConfigPath.tmp" "$globalConfigPath"
 fi
 
 # Get profile path from currently installed pwsh
@@ -416,7 +447,7 @@ if [ "$POWERSHELL_PROFILE_URL" != '' ]; then
     # If file is not existing yet, download it
     if [ ! -f "$globalProfilePath" ]; then
         echo "Downloading PowerShell Profile from: $POWERSHELL_PROFILE_URL"
-        curl -sSL -o "$globalProfilePath" "$POWERSHELL_PROFILE_URL"
+        curl -fsSL -o "$globalProfilePath" "$POWERSHELL_PROFILE_URL"
     else
         echo "PowerShell Profile already exists at: $globalProfilePath"
     fi

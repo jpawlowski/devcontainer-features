@@ -25,51 +25,40 @@
 
 try {
     if ($Error) { return } # Skip if there was an error loading the profile before
-
-    #region Functions ==========================================================
-    $__PSProfileFunctionsPath = Join-Path -Path ($PROFILE.AllUsersAllHosts | Split-Path -Parent) -ChildPath 'profile.functions.ps1'
-    if ([System.IO.File]::Exists($__PSProfileFunctionsPath)) { . $__PSProfileFunctionsPath } else { throw "Profile functions file not found at $__PSProfileFunctionsPath" }
-    #
-    # Hint:
-    # To load your own functions, you may put them into Microsoft.PowerShell_profile.functions.ps1 in
-    # the same directory as this file. Note that you must define them explicitly into the global scope,
-    # e.g., 'function Global:MyFunction { ... }'.
-    #
-    #endregion Functions -------------------------------------------------------
-
+    __PSProfile-Initialize-Profile
     __PSProfile-Write-ProfileLoadMessage '💻 Applying shared configurations for all terminals.' -ForegroundColor DarkCyan
 
     #region Import Modules =====================================================
-    if ($env:PSPROFILE_TERMINAL_COMPLETION_GIT -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
-    if ($env:PSPROFILE_TERMINAL_COMPLETION_PSFZF -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf -ArgumentList 'Ctrl+t', 'Ctrl+r' }
-    if ($env:PSPROFILE_TERMINAL_COMPLETION_PREDICTOR -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
-    if ($env:PSPROFILE_TERMINAL_COMPLETION_PREDICTOR_AZ -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
-    if ($env:PSPROFILE_TERMINAL_Z -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
-    if ($env:PSPROFILE_TERMINAL_ICONS -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_GIT') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_PSFZF') -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_PREDICTOR') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_PREDICTOR_AZ') -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_Z') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_ICONS') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
     #endregion Import Modules --------------------------------------------------
 
+    #region PSReadLine predictor plugins =======================================
+    $__PSProfilePSReadLineOptions = @{}
+    $__PSProfileEnvPSReadlinePredictionSource = [Environment]::GetEnvironmentVariable('PSPROFILE_PSREADLINE_PREDICTION_SOURCE')
+    $__PSProfileEnvPSReadlinePredictionViewStyle = [Environment]::GetEnvironmentVariable('PSPROFILE_PSREADLINE_PREDICTION_VIEWSTYLE')
+    if ($null -ne $__PSProfileEnvPSReadlinePredictionSource) { $__PSProfilePSReadLineOptions.PredictionSource = $__PSProfileEnvPSReadlinePredictionSource }
+    if ($null -ne $__PSProfileEnvPSReadlinePredictionViewStyle) { $__PSProfilePSReadLineOptions.PredictionViewStyle = $__PSProfileEnvPSReadlinePredictionViewStyle }
+    if ($__PSProfilePSReadLineOptions.Count -gt 0) { Set-PSReadLineOption @__PSProfilePSReadLineOptions }
+    #endregion PSReadLine ------------------------------------------------------
+
     #region Environment ========================================================
-    if ($env:PSPROFILE_AUTOUPDATE_MODULEHELP -eq $true) {
-        $__PSProfileModulesHelpLockFilePath = "$([System.Environment]::GetEnvironmentVariable('HOME'))/.local/powershell/Update-Help.lock"
-        if (-not [System.IO.File]::Exists($__PSProfileModulesHelpLockFilePath) -or [System.IO.FileInfo]::new($__PSProfileModulesHelpLockFilePath).LastWriteTime -lt [DateTime]::Now.AddDays(-1)) {
-            $null = Start-ThreadJob -Name "UpdateHelp" -ScriptBlock { Microsoft.PowerShell.Core\Update-Help -Scope CurrentUser -ErrorAction Ignore }
-            $__PSProfileModulesHelpLockFileDirectory = [System.IO.Path]::GetDirectoryName($__PSProfileModulesHelpLockFilePath)
-            if (-not [System.IO.Directory]::Exists($__PSProfileModulesHelpLockFileDirectory)) { [void][System.IO.Directory]::CreateDirectory($__PSProfileModulesHelpLockFileDirectory) }
-            [System.IO.File]::Create($__PSProfileModulesHelpLockFilePath).Dispose()
-        }
-    }
+    $__PSProfileEnvAutoUpdateModuleHelp = [Environment]::GetEnvironmentVariable('PSPROFILE_AUTOUPDATE_MODULEHELP')
+    if ($null -eq $__PSProfileEnvAutoUpdateModuleHelp -or $__PSProfileEnvAutoUpdateModuleHelp -eq $true) { __PSProfile-Update-Help }
     #endregion Environment -----------------------------------------------------
 
     #region Oh My Posh =========================================================
-    if (-not ($env:POSH_THEME -eq $false)) {
-        if ($env:PSPROFILE_POSH_THEME) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $env:PSPROFILE_POSH_THEME } else { __PSProfile-Enable-OhMyPosh-Theme }
-        if ($env:PSPROFILE_TERMINAL_COMPLETION_POSH -eq $true -and $env:POSH_PID) { $null = Start-ThreadJob -Name 'PoshCompletion' -ScriptBlock { oh-my-posh completion powershell | Out-String | Invoke-Expression } }
-        if ($env:PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE -eq $true -and $env:POSH_PID) { $null = Start-ThreadJob -Name 'PoshDisableNotice' -ScriptBlock { oh-my-posh disable notice } }
-    }
+    if ($null -ne [Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_POSH_THEME')) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $env:PSPROFILE_VSCODE_POSH_THEME } else { __PSProfile-Enable-OhMyPosh-Theme }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_POSH') -eq $true) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE') -eq $true) { $null = Start-ThreadJob -Name 'PoshDisableNotice' -ScriptBlock { oh-my-posh disable notice } }
     #endregion Oh My Posh ------------------------------------------------------
 
     # Check the terminal emulator
-    if ($env:TERM_PROGRAM) {
+    if ($null -ne $env:TERM_PROGRAM) {
         switch -Wildcard ($env:TERM_PROGRAM) {
             # VSCode and Operating System native terminals
             'vscode*' {
@@ -181,20 +170,24 @@ try {
     }
 
     #region Custom Profile =====================================================
-    __PSProfile-Invoke-CustomProfileFilePath -FilePath $MyInvocation.MyCommand.Path -CustomSuffix 'my'
     #
     # Hint:
-    # To load your own custom profile, you may put it into
-    # Microsoft.PowerShell_profile.my.ps1 in the same directory as this file.
+    # To load your own custom profile, you may create a directory named 'Microsoft.PowerShell_profile.d' in the same directory as this file.
+    # Then, place your custom profile files in the 'Microsoft.PowerShell_profile.d' directory to load them automatically.
     #
+    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.d')
+    if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
+        foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
+            . $file
+        }
+    }
     #endregion Custom Profile --------------------------------------------------
 }
 catch {
-    $__PSProfileError = "`n❌ Interrupting profile load process.`n"
-    if (Get-Command -Name '__PSProfile-Write-ProfileLoadMessage' -ErrorAction Ignore) { __PSProfile-Write-ProfileLoadMessage $__PSProfileError -ForegroundColor DarkRed } else { Write-Host $__PSProfileError -ForegroundColor DarkRed }
-    Write-Error "An error occurred while loading the host profile: $_" -ErrorAction Continue
+    __PSProfile-Write-ProfileLoadMessage "`n❌ Interrupting profile load process.`n" -ForegroundColor DarkRed
+    Write-Error "An error occurred while loading the user profile." -ErrorAction Continue
     throw
 }
 finally {
-    if (Get-Command -Name '__PSProfile-Clear-Environment' -ErrorAction Ignore) { __PSProfile-Clear-Environment }
+    __PSProfile-Clear-Environment
 }

@@ -102,5 +102,31 @@
         "updateModulesHelp": false
       }
     }
+  },
+  "install_powershell_psconfig": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell-extended": {
+        "psConfigURLAllUsersAllHosts": "https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/test/powershell-extended/Test-powershell.config.json",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false
+      }
+    }
+  },
+  "psconfig_experimental_features": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "powershell-extended": {
+        "psConfigExperimentalFeatures": "PSCommandWithArgs",
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false,
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false
+      }
+    }
   }
 }

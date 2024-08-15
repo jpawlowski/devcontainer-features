@@ -25,74 +25,31 @@
 # For instance, when you run PowerShell in VSCode, the VSCode Integrated Terminal acts as the terminal emulator, and the PowerShell extension acts as the PowerShell host.
 # Similarly, when you run PowerShell in Windows Terminal, Windows Terminal acts as the terminal emulator, and the PowerShell console acts as the PowerShell host.
 
-#Requires -Version 7.2
+#Requires -Version 7.2 -Modules PSReadLine
 
 try {
     if ($Error) { return } # Skip if there was an error loading the profile before
-
-    #region Functions ==============================================================
-    $__PSProfileFunctionsPath = Join-Path -Path ($PROFILE.AllUsersAllHosts | Split-Path -Parent) -ChildPath 'profile.functions.ps1'
-    if ([System.IO.File]::Exists($__PSProfileFunctionsPath)) { . $__PSProfileFunctionsPath } else { throw "Profile functions file not found at $__PSProfileFunctionsPath" }
-    #
-    # Hint:
-    # To load your own functions, you may put them into profile.functions.my.ps1 in
-    # the same directory as this file. Note that you must define them explicitly into the global scope,
-    # e.g., 'function Global:MyFunction { ... }'.
-    #
-    #endregion Functions -----------------------------------------------------------
-
+    __PSProfile-Initialize-Profile
     __PSProfile-Write-ProfileLoadMessage "👤 Loading $($PSStyle.Bold)user$($PSStyle.BoldOff) profile."
 
-    #region Import Modules =========================================================
-    __PSProfile-Import-ModuleAndInstallIfMissing -Name PSReadLine
-    #endregion Import Modules ------------------------------------------------------
+    #region PSReadLine, except predictor plugins ===============================
+    $__PSProfileEnvPSReadlineEditMode = [Environment]::GetEnvironmentVariable('PSPROFILE_PSREADLINE_EDITMODE')
+    $__PSProfilePSReadLineOptions = @{
+        EditMode = $(if ($null -ne $__PSProfileEnvPSReadlineEditMode) { $__PSProfileEnvPSReadlineEditMode } else { 'Emacs' })
+        HistorySearchCursorMovesToEnd = $true
+        BellStyle = 'None'
+    }
+    Set-PSReadLineOption @__PSProfilePSReadLineOptions
 
-    #region PSReadLine, except predictor plugins ===================================
-    Set-PSReadLineOption -EditMode $(if ($env:PSPROFILE_PSREADLINE_EDITMODE) { $env:PSPROFILE_PSREADLINE_EDITMODE } else { 'Emacs' })
-
-    # Ctrl+Space is bound to MenuComplete by default, but it's also bound to
-    # the native PSReadLine Select command. This removes the PSReadLine binding.
     Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
-
-    # Searching for commands with up/down arrow is really handy.  The
-    # option "moves to end" is useful if you want the cursor at the end
-    # of the line while cycling through history like it does w/o searching,
-    # without that option, the cursor will remain at the position it was
-    # when you used up arrow, which can be useful if you forget the exact
-    # string you started the search on.
-    Set-PSReadLineOption -HistorySearchCursorMovesToEnd
     Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
     Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
-
-    # In Emacs mode - Tab acts like in bash, but the Windows style completion
-    # is still useful sometimes, so bind some keys so we can do both
-    Set-PSReadLineKeyHandler -Key Ctrl+q -Function TabCompleteNext
-    Set-PSReadLineKeyHandler -Key Ctrl+Q -Function TabCompletePrevious
-
-    # Clipboard interaction is bound by default in Windows mode, but not Emacs mode.
-    Set-PSReadLineKeyHandler -Key Ctrl+C -Function Copy
-    Set-PSReadLineKeyHandler -Key Ctrl+v -Function Paste
-
-    # CaptureScreen is good for blog posts or email showing a transaction
-    # of what you did when asking for help or demonstrating a technique.
-    Set-PSReadLineKeyHandler -Chord 'Ctrl+d,Ctrl+c' -Function CaptureScreen
-
-    # The built-in word movement uses character delimiters, but token based word
-    # movement is also very useful - these are the bindings you'd use if you
-    # prefer the token based movements bound to the normal emacs word movement
-    # key bindings.
-    Set-PSReadLineKeyHandler -Key Alt+d -Function ShellKillWord
-    Set-PSReadLineKeyHandler -Key Alt+Backspace -Function ShellBackwardKillWord
-    Set-PSReadLineKeyHandler -Key Alt+b -Function ShellBackwardWord
-    Set-PSReadLineKeyHandler -Key Alt+f -Function ShellForwardWord
-    Set-PSReadLineKeyHandler -Key Alt+B -Function SelectShellBackwardWord
-    Set-PSReadLineKeyHandler -Key Alt+F -Function SelectShellForwardWord
 
     # `ForwardChar` accepts the entire suggestion text when the cursor is at the end of the line.
     # This custom binding makes `RightArrow` behave similarly - accepting the next word instead of the entire suggestion text.
     Set-PSReadLineKeyHandler -Key RightArrow `
         -BriefDescription ForwardCharAndAcceptNextSuggestionWord `
-        -LongDescription "Move cursor one character to the right in the current editing line and accept the next word in suggestion when it's at the end of current editing line" `
+        -LongDescription 'Move cursor one character to the right in the current editing line and accept the next word in suggestion when it''s at the end of current editing line' `
         -ScriptBlock {
         param($key, $arg)
 
@@ -107,23 +64,45 @@ try {
             [Microsoft.PowerShell.PSConsoleReadLine]::AcceptNextSuggestionWord($key, $arg)
         }
     }
-    #endregion PSReadLine ----------------------------------------------------------
 
-    #region Custom Profile =========================================================
-    __PSProfile-Invoke-CustomProfileFilePath -FilePath $MyInvocation.MyCommand.Path -CustomSuffix 'my'
+    # Custom binding for the `End` key to jump to the end of the line and accept the entire suggestion
+    Set-PSReadLineKeyHandler -Key End `
+        -BriefDescription AcceptEntireSuggestion `
+        -LongDescription 'Move cursor to the end of the current editing line and accept the entire suggestion' `
+        -ScriptBlock {
+        param($key, $arg)
+
+        $line = $null
+        $cursor = $null
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+
+        # Move cursor to the end of the line
+        [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine($key, $arg)
+
+        # Accept the entire suggestion
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptSuggestion($key, $arg)
+    }
+    #endregion PSReadLine ------------------------------------------------------
+
+    #region Custom Profile =====================================================
     #
     # Hint:
-    # To load your own custom profile, you may put it into profile.my.ps1 in
-    # the same directory as this file.
+    # To load your own custom profile, you may create a directory named 'profile.d' in the same directory as this file.
+    # Then, place your custom profile files in the 'profile.d' directory to load them automatically.
     #
-    #endregion Custom Profile ------------------------------------------------------
+    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.d')
+    if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
+        foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
+            . $file
+        }
+    }
+    #endregion Custom Profile --------------------------------------------------
 }
 catch {
-    $__PSProfileError = "`n❌ Interrupting profile load process.`n"
-    if (Get-Command -Name '__PSProfile-Write-ProfileLoadMessage' -ErrorAction Ignore) { __PSProfile-Write-ProfileLoadMessage $__PSProfileError -ForegroundColor DarkRed } else { Write-Host $__PSProfileError -ForegroundColor DarkRed }
-    Write-Error "An error occurred while loading the user profile: $_" -ErrorAction Continue
+    __PSProfile-Write-ProfileLoadMessage "`n❌ Interrupting profile load process.`n" -ForegroundColor DarkRed
+    Write-Error "An error occurred while loading the user profile." -ErrorAction Continue
     throw
 }
 finally {
-    if (Get-Command -Name '__PSProfile-Clear-Environment' -ErrorAction Ignore) { __PSProfile-Clear-Environment }
+    __PSProfile-Clear-Environment
 }

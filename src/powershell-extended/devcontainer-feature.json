@@ -85,16 +85,28 @@
     "profileURLAllUsersAllHosts": {
       "type": "string",
       "default": "",
-      "description": "Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts). Defaults to `\"\"`. Note that this will take precedence over `installOhMyPoshConfig` for the global profile."
+      "description": "Optional (publicly accessible) URL to download global [PowerShell profile](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles) (AllUsersAllHosts). Defaults to `\"\"`. Note that this will take precedence over `installOhMyPoshConfig` for the global profile."
+    },
+    "psConfigURLAllUsersAllHosts": {
+      "type": "string",
+      "default": "",
+      "description": "Optional (publicly accessible) URL to download global [PowerShell config](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_powershell_config) (AllUsersAllHosts) in JSON format. Defaults to `\"\"`."
+    },
+    "psConfigExperimentalFeatures": {
+      "type": "string",
+      "default": "",
+      "description": "Optional semicolon separated list of [experimental PowerShell features](https://learn.microsoft.com/en-us/powershell/scripting/learn/experimental-features) to enable in the global PowerShell config. Defaults to `\"\"`."
     }
   },
   "containerEnv": {
     "POWERSHELL_DISTRIBUTION_CHANNEL": "DevContainer-Feature:PowerShell-Extended",
     "PSPROFILE_AUTOUPDATE_MODULEHELP": "true",
     "PSPROFILE_PSREADLINE_EDITMODE": "Emacs",
+    "PSPROFILE_PSREADLINE_PREDICTION_SOURCE": "HistoryAndPlugin",
+    "PSPROFILE_PSREADLINE_PREDICTION_VIEWSTYLE": "ListView",
     "PSPROFILE_POSH_THEME": "devcontainers.minimal",
     "PSPROFILE_TERMINAL_COMPLETION_GIT": "true",
-    "PSPROFILE_TERMINAL_COMPLETION_POSH": "true",
+    "PSPROFILE_TERMINAL_COMPLETION_POSH": "false",
     "PSPROFILE_TERMINAL_COMPLETION_PREDICTOR": "true",
     "PSPROFILE_TERMINAL_COMPLETION_PREDICTOR_AZ": "false",
     "PSPROFILE_TERMINAL_COMPLETION_PSFZF": "false",
@@ -103,8 +115,10 @@
     "PSPROFILE_TERMINAL_Z": "true",
     "PSPROFILE_VSCODE_AUTOUPDATE_MODULEHELP": "false",
     "PSPROFILE_VSCODE_POSH_THEME": "devcontainers.minimal",
+    "PSPROFILE_VSCODE_PSREADLINE_PREDICTION_SOURCE": "HistoryAndPlugin",
+    "PSPROFILE_VSCODE_PSREADLINE_PREDICTION_VIEWSTYLE": "ListView",
     "PSPROFILE_VSCODE_TERMINAL_COMPLETION_GIT": "true",
-    "PSPROFILE_VSCODE_TERMINAL_COMPLETION_POSH": "true",
+    "PSPROFILE_VSCODE_TERMINAL_COMPLETION_POSH": "false",
     "PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR": "true",
     "PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ": "false",
     "PSPROFILE_VSCODE_TERMINAL_COMPLETION_PSFZF": "false",
@@ -112,8 +126,9 @@
     "PSPROFILE_VSCODE_TERMINAL_PSSCRIPTTOOLS": "true",
     "PSPROFILE_VSCODE_TERMINAL_Z": "true",
     "PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE": "true",
+    "PSPROFILE_ALIAS_DIR_FORCE": "false",
     "PSPROFILE_ALIAS_DIR_HIDDEN": "true",
-    "PSPROFILE_ALIAS_DIR_FORCE": "false"
+    "PSPROFILE_ALIAS_DIR_SORT": "true"
   },
   "customizations": {
     "vscode": {
@@ -123,6 +138,7 @@
     }
   },
   "installsAfter": [
-    "ghcr.io/devcontainers/features/common-utils"
+    "ghcr.io/devcontainers/features/common-utils",
+    "ghcr.io/devcontainers-contrib/features/fzf"
   ]
 }
