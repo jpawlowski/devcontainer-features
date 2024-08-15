@@ -5,8 +5,8 @@ This feature comes with a custom [Oh My Posh](https://ohmyposh.dev/) theme to ad
 [![Oh My Posh theme: devcontainers.minimal](images/devcontainers.minimal.omp.png)](https://ohmyposh.dev/docs/themes)
 
 You may [change the theme](https://ohmyposh.dev/docs/themes) to one of the preinstalled ones by setting the container environment
-variables `PSPROFILE_POSH_THEME` (for the PowerShell host) and/or `PSPROFILE_VSCODE_POSH_THEME` (for the VSCode PowerShell Extension)
-to the name of the desired theme. You may also put your own theme into the `~/.config/oh-my-posh/themes` folder.
+variables `PSPROFILE_POSH_THEME` (for the PowerShell host) and/or `PSPROFILE_VSCODE_POSH_THEME` (for the VSCode PowerShell
+Extension) to the name of the desired theme. You may also put your own theme into the `~/.config/oh-my-posh/themes` folder.
 
 > **Note**: Most themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your host
 > system (not the Dev Container) and changing your font settings in VSCode. The VSCode default font _Cascadia Mono_
