@@ -28,7 +28,9 @@
 | resources | Optional semicolon separated list of PowerShell resources to install. If you need to install a specific version, use `@` to specify the version (e.g. `Az.Accounts@3.1.0`). See feature documentation for more information about advanced installation options. | string | - |
 | installOhMyPosh | Install Oh My Posh? Defaults to `true`. | boolean | true |
 | installOhMyPoshConfig | Allow installing the default dev container profile templates? Defaults to `true`. May be tweaked by setting `containerEnv.PSPROFILE_*` variables. | boolean | true |
-| profileURLAllUsersAllHosts | Optional (publicly accessible) URL to download global PowerShell profile (AllUsersAllHosts). Defaults to `""`. Note that this will take precedence over `installOhMyPoshConfig` for the global profile. | string | - |
+| profileURLAllUsersAllHosts | Optional (publicly accessible) URL to download global [PowerShell profile](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles) (AllUsersAllHosts). Defaults to `""`. Note that this will take precedence over `installOhMyPoshConfig` for the global profile. | string | - |
+| psConfigURLAllUsersAllHosts | Optional (publicly accessible) URL to download global [PowerShell config](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_powershell_config) (AllUsersAllHosts) in JSON format. Defaults to `""`. | string | - |
+| psConfigExperimentalFeatures | Optional semicolon separated list of [experimental PowerShell features](https://learn.microsoft.com/en-us/powershell/scripting/learn/experimental-features) to enable in the global PowerShell config. Defaults to `""`. | string | - |
 
 ## Customizations
 
@@ -43,8 +45,8 @@ This feature comes with a custom [Oh My Posh](https://ohmyposh.dev/) theme to ad
 [![Oh My Posh theme: devcontainers.minimal](images/devcontainers.minimal.omp.png)](https://ohmyposh.dev/docs/themes)
 
 You may [change the theme](https://ohmyposh.dev/docs/themes) to one of the preinstalled ones by setting the container environment
-variables `PSPROFILE_POSH_THEME` (for the PowerShell host) and/or `PSPROFILE_VSCODE_POSH_THEME` (for the VSCode PowerShell Extension)
-to the name of the desired theme. You may also put your own theme into the `~/.config/oh-my-posh/themes` folder.
+variables `PSPROFILE_POSH_THEME` (for the PowerShell host) and/or `PSPROFILE_VSCODE_POSH_THEME` (for the VSCode PowerShell
+Extension) to the name of the desired theme. You may also put your own theme into the `~/.config/oh-my-posh/themes` folder.
 
 > **Note**: Most themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your host
 > system (not the Dev Container) and changing your font settings in VSCode. The VSCode default font _Cascadia Mono_
