@@ -52,10 +52,11 @@ try {
     #endregion Environment -----------------------------------------------------
 
     #region Oh My Posh =========================================================
+    $__PSProfileEnvOhMyPoshDisableUpgradeNotice = [Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE')
     $__PSProfileEnvOhMyPoshTheme = [Environment]::GetEnvironmentVariable('PSPROFILE_POSH_THEME')
+    if ($null -eq $__PSProfileEnvOhMyPoshDisableUpgradeNotice -or $__PSProfileEnvOhMyPoshDisableUpgradeNotice -eq $true) { __PSProfile-Set-OhMyPosh-UpdateNotice -Disable }
     if ($null -ne $__PSProfileEnvOhMyPoshTheme) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $__PSProfileEnvOhMyPoshTheme } else { __PSProfile-Enable-OhMyPosh-Theme }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_POSH') -eq $true) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE') -eq $true) { $null = Start-ThreadJob -Name 'PoshDisableNotice' -ScriptBlock { oh-my-posh disable notice } }
+    if ([Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_POSH') -eq $true -and $null -ne [Environment]::GetEnvironmentVariable('POSH_PID')) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
     #endregion Oh My Posh ------------------------------------------------------
 
     #region Custom Profile =====================================================

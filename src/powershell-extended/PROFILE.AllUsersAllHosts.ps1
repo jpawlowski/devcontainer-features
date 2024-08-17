@@ -43,7 +43,6 @@ try {
 
     #region Script Variables =======================================================
     $__PSProfileEnvPathOriginal = [Environment]::GetEnvironmentVariable('PATH')
-    $__PSProfileEnvHome = [Environment]::GetEnvironmentVariable('HOME')
     $__PSProfileEnvTermProgram = [Environment]::GetEnvironmentVariable('TERM_PROGRAM')
 
     $__PSProfileEnvAliasDirForce = [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE')
@@ -58,7 +57,7 @@ try {
     if (
         (__PSProfile-Assert-IsUserInteractiveShell) -and
         $__PSProfileEnvTermProgram -match '^(vscode|codespaces)$' -and
-        -not ([System.IO.File]::Exists("$__PSProfileEnvHome/.config/vscode-dev-containers/first-run-notice-already-displayed"))
+        -not ([System.IO.File]::Exists("${HOME}/.config/vscode-dev-containers/first-run-notice-already-displayed"))
     ) {
         if ([System.IO.File]::Exists('/usr/local/etc/vscode-dev-containers/first-run-notice.txt')) {
             [System.IO.File]::ReadAllText('/usr/local/etc/vscode-dev-containers/first-run-notice.txt')
@@ -82,7 +81,7 @@ try {
 
     #region Environment Variables ==================================================
     # Add local bin directory to PATH if not already present
-    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "$__PSProfileEnvHome/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:$__PSProfileEnvHome/.local/bin") }
+    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "${HOME}/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:${HOME}/.local/bin") }
 
     # Set the USER environment variable if not already set
     if ($null -eq [Environment]::GetEnvironmentVariable('USER') -and $null -eq [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }

@@ -239,18 +239,18 @@ function __PSProfile-Import-ModuleAndInstallIfMissing {
 }
 function __PSProfile-Import-ModuleIfNotLoaded {
     <#
-        .SYNOPSIS
-            Imports a module if it is not already loaded.
-        .DESCRIPTION
-            This function imports a module if it is not already loaded.
-        .PARAMETER ModuleName
-            The name of the module to import.
-        .PARAMETER ArgumentList
-            An array of arguments to pass to the module when importing it.
-        .EXAMPLE
-            __PSProfile-Import-ModuleIfNotLoaded -ModuleName Microsoft.PowerShell.Utility
-            This will import the Microsoft.PowerShell.Utility module if it is not already loaded.
-        #>
+    .SYNOPSIS
+        Imports a module if it is not already loaded.
+    .DESCRIPTION
+        This function imports a module if it is not already loaded.
+    .PARAMETER ModuleName
+        The name of the module to import.
+    .PARAMETER ArgumentList
+        An array of arguments to pass to the module when importing it.
+    .EXAMPLE
+        __PSProfile-Import-ModuleIfNotLoaded -ModuleName Microsoft.PowerShell.Utility
+        This will import the Microsoft.PowerShell.Utility module if it is not already loaded.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param (
         [string]$ModuleName,
@@ -297,12 +297,12 @@ function __PSProfile-Import-ModuleIfNotLoaded {
 }
 function __PSProfile-Assert-IsUserInteractiveShell {
     <#
-        .SYNOPSIS
-            Determines if the current shell is interactive.
-        .DESCRIPTION
-            This function determines if the current shell is interactive. It checks if the shell is running in an interactive session by examining the environment variables and command line arguments.
-            If the shell is interactive, the function returns $true; otherwise, it returns $false.
-        #>
+    .SYNOPSIS
+        Determines if the current shell is interactive.
+    .DESCRIPTION
+        This function determines if the current shell is interactive. It checks if the shell is running in an interactive session by examining the environment variables and command line arguments.
+        If the shell is interactive, the function returns $true; otherwise, it returns $false.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param()
 
@@ -330,13 +330,33 @@ function __PSProfile-Assert-IsUserInteractiveShell {
     }
     return $Script:__PSProfileIsUserInteractiveShell
 }
+function __PSProfile-Set-OhMyPosh-UpdateNotice {
+    <#
+    .SYNOPSIS
+        Sets the Oh My Posh update notice.
+    .DESCRIPTION
+        This function sets the Oh My Posh update notice.
+    .PARAMETER Disable
+        Indicates whether to disable the update notice. Default is $true.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
+    param(
+        [switch]$Disable
+    )
+    if ([System.IO.File]::Exists("${HOME}/.local/state/oh-my-posh/.psProfileInitializeMarker")) { return }
+    if ($Disable) { oh-my-posh disable notice } else { oh-my-posh enable notice }
+    if (-not [System.IO.Directory]::Exists("${HOME}/.local/state/oh-my-posh")) {
+        [void][System.IO.Directory]::CreateDirectory("${HOME}/.local/state/oh-my-posh")
+    }
+    $null = [System.IO.File]::Create("${HOME}/.local/state/oh-my-posh/.psProfileInitializeMarker")
+}
 function __PSProfile-Enable-OhMyPosh-Theme {
     <#
-        .SYNOPSIS
-            Enables an Oh My Posh theme.
-        .DESCRIPTION
-            This function enables an Oh My Posh theme.
-        #>
+    .SYNOPSIS
+        Enables an Oh My Posh theme.
+    .DESCRIPTION
+        This function enables an Oh My Posh theme.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param(
         [string]$Theme = 'devcontainers.minimal'
@@ -365,12 +385,12 @@ function __PSProfile-Enable-OhMyPosh-Theme {
 }
 function __PSProfile-Clear-Environment {
     <#
-        .SYNOPSIS
-            Clear global environment from temporary profile artifacts.
-        .DESCRIPTION
-            This function clears global environment from temporary profile artifacts.
-            This prevents the environment from being polluted with temporary variables and functions created during the profile load process.
-        #>
+    .SYNOPSIS
+        Clear global environment from temporary profile artifacts.
+    .DESCRIPTION
+        This function clears global environment from temporary profile artifacts.
+        This prevents the environment from being polluted with temporary variables and functions created during the profile load process.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param()
 
@@ -424,13 +444,13 @@ function __PSProfile-Clear-Environment {
 }
 function __PSProfile-Get-ProfileInfoFromFilePath {
     <#
-        .SYNOPSIS
-            Gets the profile information from the file path.
-        .DESCRIPTION
-            This function gets the profile information from the file path.
-        .PARAMETER FilePath
-            The file path to check.
-        #>
+    .SYNOPSIS
+        Gets the profile information from the file path.
+    .DESCRIPTION
+        This function gets the profile information from the file path.
+    .PARAMETER FilePath
+        The file path to check.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param(
         [string]$FilePath
@@ -454,14 +474,14 @@ function __PSProfile-Get-ProfileInfoFromFilePath {
 }
 function __PSProfile-Update-Help {
     <#
-        .SYNOPSIS
-            Updates the help for the current user.
-        .DESCRIPTION
-            This function updates the help for the current user.
-        #>
+    .SYNOPSIS
+        Updates the help for the current user.
+    .DESCRIPTION
+        This function updates the help for the current user.
+    #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param()
-    $__PSProfileModulesHelpLockFilePath = "$([System.Environment]::GetEnvironmentVariable('HOME'))/.local/share/powershell/Update-Help.lock"
+    $__PSProfileModulesHelpLockFilePath = "${HOME}/.local/state/powershell/.updateHelpMarker"
     if (-not [System.IO.File]::Exists($__PSProfileModulesHelpLockFilePath) -or [System.IO.FileInfo]::new($__PSProfileModulesHelpLockFilePath).LastWriteTime -lt [DateTime]::Now.AddDays(-1)) {
         $__PSProfileModulesHelpLockFileDirectory = [System.IO.Path]::GetDirectoryName($__PSProfileModulesHelpLockFilePath)
         if (-not [System.IO.Directory]::Exists($__PSProfileModulesHelpLockFileDirectory)) { [void][System.IO.Directory]::CreateDirectory($__PSProfileModulesHelpLockFileDirectory) }
