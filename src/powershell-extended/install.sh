@@ -404,7 +404,7 @@ if [ "$POWERSHELL_UPDATE_MODULESHELP" = 'true' ]; then
         touch "/root/.local/state/powershell/.updateHelpMarker"
     else
         # shellcheck disable=SC2140
-        sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope CurrentUser -UICulture en-US -ErrorAction Stop -ProgressAction Ignore; New-Item -Path "\$env:HOME/.local/state/powershell/.updateHelpMarker" -ItemType File -Force"
+        sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope CurrentUser -UICulture en-US -ErrorAction Stop -ProgressAction Ignore; New-Item -Path "\${HOME}/.local/state/powershell/.updateHelpMarker" -ItemType File -Force"
     fi
 fi
 

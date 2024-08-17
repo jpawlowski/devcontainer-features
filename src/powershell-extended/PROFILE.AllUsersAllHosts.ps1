@@ -42,8 +42,8 @@ try {
     if ($IsWindows) { return } # This global profile is for *nix only
 
     #region Script Variables =======================================================
-    $__PSProfileEnvPathOriginal = [Environment]::GetEnvironmentVariable('PATH')
-    $__PSProfileEnvTermProgram = [Environment]::GetEnvironmentVariable('TERM_PROGRAM')
+    $__PSProfileEnvPathOriginal = [System.Environment]::GetEnvironmentVariable('PATH')
+    $__PSProfileEnvTermProgram = [System.Environment]::GetEnvironmentVariable('TERM_PROGRAM')
 
     $__PSProfileEnvAliasDirForce = [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_FORCE')
     $__PSProfileEnvAliasDirHidden = [System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_HIDDEN')
@@ -68,8 +68,8 @@ try {
         # Mark first run notice as displayed after 10s to avoid problems with fast terminal refreshes hiding it
         $null = Start-ThreadJob -Name FirstRunNoticeAlreadyDisplayed -ScriptBlock {
             Start-Sleep -Seconds 10
-            $null = New-Item -ItemType Directory -Force -Path "$env:HOME/.config/vscode-dev-containers"
-            $null = New-Item -ItemType File -Force -Path "$env:HOME/.config/vscode-dev-containers/first-run-notice-already-displayed"
+            $null = New-Item -ItemType Directory -Force -Path "${HOME}/.config/vscode-dev-containers"
+            $null = New-Item -ItemType File -Force -Path "${HOME}/.config/vscode-dev-containers/first-run-notice-already-displayed"
         }
     }
 
@@ -81,24 +81,24 @@ try {
 
     #region Environment Variables ==================================================
     # Add local bin directory to PATH if not already present
-    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "${HOME}/.local/bin") { [Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:${HOME}/.local/bin") }
+    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "${HOME}/.local/bin") { [System.Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:${HOME}/.local/bin") }
 
     # Set the USER environment variable if not already set
-    if ($null -eq [Environment]::GetEnvironmentVariable('USER') -and $null -eq [Environment]::GetEnvironmentVariable('USERNAME')) { [Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
+    if ($null -eq [System.Environment]::GetEnvironmentVariable('USER') -and $null -eq [System.Environment]::GetEnvironmentVariable('USERNAME')) { [System.Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
 
     # Set the default git editor if not already set
     if (
-        $null -eq [Environment]::GetEnvironmentVariable('GIT_EDITOR') -and
+        $null -eq [System.Environment]::GetEnvironmentVariable('GIT_EDITOR') -and
         $null -eq $(try { git config --get core.editor } catch { $Error.Clear(); $null })
     ) {
         # Check if the terminal program is vscode
         if ($__PSProfileEnvTermProgram -match '^(vscode|codespaces)$') {
             # Check if code-insiders is available and code is not available
             if ((Get-Command -Name 'code-insiders' -ErrorAction Ignore) -and $null -eq (Get-Command -Name 'code' -ErrorAction Ignore)) {
-                [Environment]::SetEnvironmentVariable('GIT_EDITOR', 'code-insiders --wait')
+                [System.Environment]::SetEnvironmentVariable('GIT_EDITOR', 'code-insiders --wait')
             }
             else {
-                [Environment]::SetEnvironmentVariable('GIT_EDITOR', 'code --wait')
+                [System.Environment]::SetEnvironmentVariable('GIT_EDITOR', 'code --wait')
             }
         }
     }

@@ -40,33 +40,33 @@ try {
     __PSProfile-Write-ProfileLoadMessage "📝 Applying configurations for $($PSStyle.Bold)PowerShell Extension$($PSStyle.BoldOff)." -ForegroundColor DarkCyan
 
     #region Import Modules =====================================================
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_GIT') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PSFZF') -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ') -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_Z') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_ICONS') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_GIT') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PSFZF') -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ') -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_Z') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_ICONS') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
     #endregion Import Modules --------------------------------------------------
 
     #region PSReadLine Predictor plugins =======================================
     $__PSProfilePSReadLineOptions = @{}
-    $__PSProfileEnvPSReadlinePredictionSource = [Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_PSREADLINE_PREDICTION_SOURCE')
-    $__PSProfileEnvPSReadlinePredictionViewStyle = [Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_PSREADLINE_PREDICTION_VIEWSTYLE')
+    $__PSProfileEnvPSReadlinePredictionSource = [System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_PSREADLINE_PREDICTION_SOURCE')
+    $__PSProfileEnvPSReadlinePredictionViewStyle = [System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_PSREADLINE_PREDICTION_VIEWSTYLE')
     if ($null -ne $__PSProfileEnvPSReadlinePredictionSource) { $__PSProfilePSReadLineOptions.PredictionSource = $__PSProfileEnvPSReadlinePredictionSource }
     if ($null -ne $__PSProfileEnvPSReadlinePredictionViewStyle) { $__PSProfilePSReadLineOptions.PredictionViewStyle = $__PSProfileEnvPSReadlinePredictionViewStyle }
     if ($__PSProfilePSReadLineOptions.Count -gt 0) { Set-PSReadLineOption @__PSProfilePSReadLineOptions }
     #endregion PSReadLine ------------------------------------------------------
 
     #region Environment ========================================================
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_AUTOUPDATE_MODULEHELP') -eq $true) { __PSProfile-Update-Help }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_AUTOUPDATE_MODULEHELP') -eq $true) { __PSProfile-Update-Help }
     #endregion Environment -----------------------------------------------------
 
     #region Oh My Posh =========================================================
-    $__PSProfileEnvOhMyPoshDisableUpgradeNotice = [Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE')
-    $__PSProfileEnvOhMyPoshTheme = [Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_POSH_THEME')
+    $__PSProfileEnvOhMyPoshDisableUpgradeNotice = [System.Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE')
+    $__PSProfileEnvOhMyPoshTheme = [System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_POSH_THEME')
     if ($null -eq $__PSProfileEnvOhMyPoshDisableUpgradeNotice -or $__PSProfileEnvOhMyPoshDisableUpgradeNotice -eq $true) { __PSProfile-Set-OhMyPosh-UpdateNotice -Disable }
     if ($null -ne $__PSProfileEnvOhMyPoshTheme) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $__PSProfileEnvOhMyPoshTheme } else { __PSProfile-Enable-OhMyPosh-Theme }
-    if ([Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_POSH') -eq $true -and $null -ne [Environment]::GetEnvironmentVariable('POSH_PID')) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_POSH') -eq $true -and $null -ne [System.Environment]::GetEnvironmentVariable('POSH_PID')) { oh-my-posh completion powershell | Out-String | Invoke-Expression }
     #endregion Oh My Posh ------------------------------------------------------
 
     #region Custom Profile =====================================================

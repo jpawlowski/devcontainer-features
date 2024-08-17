@@ -76,7 +76,7 @@ function __PSProfile-Write-ProfileLoadMessage {
         [switch]$Force
     )
 
-    if ($Force -or ($env:POWERSHELL_HIDE_PROFILE_LOAD_MESSAGES -ne $true -and (__PSProfile-Assert-IsUserInteractiveShell))) {
+    if ($Force -or ([System.Environment]::GetEnvironmentVariable('POWERSHELL_HIDE_PROFILE_LOAD_MESSAGES') -ne $true -and (__PSProfile-Assert-IsUserInteractiveShell))) {
         $writeHostParams = @{
             Object          = $Message
             ForegroundColor = $ForegroundColor
@@ -359,23 +359,25 @@ function __PSProfile-Enable-OhMyPosh-Theme {
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param(
-        [string]$Theme = 'devcontainers.minimal'
+        [string]$Theme = 'devcontainers.minimal.omp.json'
     )
 
-    # Let codespaces always be an alias for devcontainers
-    $Theme = [regex]::Replace($Theme, 'codespaces', 'devcontainers')
+    if ($Theme -notmatch '^https?://') {
+        # Let codespaces always be an alias for devcontainers
+        $Theme = [regex]::Replace($Theme, 'codespaces', 'devcontainers')
 
-    # Ensure the theme file has the correct extension
-    if ($Theme -notmatch '\.omp\.json$') { $Theme = "$Theme.omp.json" }
+        # Ensure the theme file has the correct extension
+        if ($Theme -notmatch '\.omp\.[^\.]+$') { $Theme = "$Theme.omp.json" }
 
-    # Find path to theme file
-    if ($Theme -notmatch '^/') {
-        if ([System.IO.File]::Exists("$env:HOME/.config/oh-my-posh/themes/$Theme")) {
-            $Theme = "$env:HOME/.config/oh-my-posh/themes/$Theme"
-        }
-        else {
-            if (-not $env:POSH_THEMES_PATH) { $env:POSH_THEMES_PATH = "$env:HOME/.cache/oh-my-posh/themes" }
-            $Theme = "$env:POSH_THEMES_PATH/$Theme"
+        # Find path to theme file
+        if ($Theme -notmatch '^/') {
+            if ([System.IO.File]::Exists("${HOME}/.config/oh-my-posh/themes/$Theme")) {
+                $Theme = "${HOME}/.config/oh-my-posh/themes/$Theme"
+            }
+            else {
+                if (-not [System.Environment]::GetEnvironmentVariable('POSH_THEMES_PATH')) { [System.Environment]::SetEnvironmentVariable('POSH_THEMES_PATH', "${HOME}/.cache/oh-my-posh/themes") }
+                $Theme = "${HOME}/.cache/oh-my-posh/themes/$Theme"
+            }
         }
     }
 

@@ -33,7 +33,7 @@ try {
     __PSProfile-Write-ProfileLoadMessage "👤 Loading $($PSStyle.Bold)user$($PSStyle.BoldOff) profile."
 
     #region PSReadLine, except predictor plugins ===============================
-    $__PSProfileEnvPSReadlineEditMode = [Environment]::GetEnvironmentVariable('PSPROFILE_PSREADLINE_EDITMODE')
+    $__PSProfileEnvPSReadlineEditMode = [System.Environment]::GetEnvironmentVariable('PSPROFILE_PSREADLINE_EDITMODE')
     $__PSProfilePSReadLineOptions = @{
         EditMode = $(if ($null -ne $__PSProfileEnvPSReadlineEditMode) { $__PSProfileEnvPSReadlineEditMode } else { 'Emacs' })
         HistorySearchCursorMovesToEnd = $true
