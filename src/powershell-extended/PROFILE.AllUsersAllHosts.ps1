@@ -81,7 +81,7 @@ try {
 
     #region Environment Variables ==================================================
     # Add local bin directory to PATH if not already present
-    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "${HOME}/.local/bin") { [System.Environment]::SetEnvironmentVariable('PATH', "${__PSProfileOriginalPath}:${HOME}/.local/bin") }
+    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "${HOME}/.local/bin") { [System.Environment]::SetEnvironmentVariable('PATH', "${__PSProfileEnvPathOriginal}:${HOME}/.local/bin") }
 
     # Set the USER environment variable if not already set
     if ($null -eq [System.Environment]::GetEnvironmentVariable('USER') -and $null -eq [System.Environment]::GetEnvironmentVariable('USERNAME')) { [System.Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
