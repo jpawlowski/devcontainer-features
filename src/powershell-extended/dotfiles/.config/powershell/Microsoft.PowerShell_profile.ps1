@@ -110,7 +110,7 @@ try {
         ),
         '-'
     )[0]
-    if ($null -ne $__PSProfileEnvTermProgram) {
+    if (-not [string]::IsNullOrEmpty($__PSProfileEnvTermProgram)) {
         $__PSProfileTerminalPrograms = @{
             'vscode' = @{
                 'name' = 'VSCode Integrated Terminal'
@@ -130,9 +130,8 @@ try {
             $__PSProfileTerminalProgram = $__PSProfileTerminalPrograms.$__PSProfileEnvTermProgram
         }
         else {
-            $__PSProfileTerminalProgramName = $__PSProfileEnvTermProgram.Substring(0, 1).ToUpper() + $__PSProfileEnvTermProgram.Substring(1)
             $__PSProfileTerminalProgram = @{
-                'name' = $__PSProfileTerminalProgramName
+                'name' = $__PSProfileEnvTermProgram.Substring(0, 1).ToUpper() + $__PSProfileEnvTermProgram.Substring(1)
                 'icon' = '🟡'
             }
         }
