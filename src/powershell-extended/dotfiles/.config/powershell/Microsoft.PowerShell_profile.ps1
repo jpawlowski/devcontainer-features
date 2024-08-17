@@ -130,8 +130,9 @@ try {
             $__PSProfileTerminalProgram = $__PSProfileTerminalPrograms.$__PSProfileEnvTermProgram
         }
         else {
+            $__PSProfileTerminalProgramName = $__PSProfileEnvTermProgram.Substring(0, 1).ToUpper() + $__PSProfileEnvTermProgram.Substring(1)
             $__PSProfileTerminalProgram = @{
-                'name' = $__PSProfileEnvTermProgram.Substring(0, 1).ToUpper() + $__PSProfileEnvTermProgram.Substring(1)
+                'name' = $__PSProfileTerminalProgramName
                 'icon' = '🟡'
             }
         }
