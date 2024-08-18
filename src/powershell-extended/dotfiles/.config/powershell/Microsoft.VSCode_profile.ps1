@@ -45,6 +45,7 @@ try {
     if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
     if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR_AZ') -eq $true) { if (Get-Module -Name Az.Accounts -ListAvailable) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Az.Tools.Predictor } }
     if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_Z') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name z }
+    if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_PSSCRIPTTOOLS') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSScriptTools }
     if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_ICONS') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name Terminal-Icons }
     #endregion Import Modules --------------------------------------------------
 
