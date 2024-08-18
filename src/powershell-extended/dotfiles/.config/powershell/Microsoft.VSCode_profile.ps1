@@ -75,10 +75,12 @@ try {
     # To load your own custom profile, you may create a directory named 'Microsoft.VSCode_profile.d' in the same directory as this file.
     # Then, place your custom profile files in the 'Microsoft.VSCode_profile.d' directory to load them automatically.
     #
-    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.d')
+    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, 'd')
     if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
-        foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
-            . $file
+        $__PSProfileCustomProfileFiles = [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1')
+        [System.Array]::Sort($__PSProfileCustomProfileFiles)
+        foreach ($__PSProfileCustomProfileFile in $__PSProfileCustomProfileFiles) {
+            . $__PSProfileCustomProfileFile
         }
     }
     #endregion Custom Profile --------------------------------------------------

@@ -67,8 +67,10 @@ try {
     #
     $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, 'd')
     if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
-        foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
-            . $file
+        $__PSProfileCustomProfileFiles = [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1')
+        [System.Array]::Sort($__PSProfileCustomProfileFiles)
+        foreach ($__PSProfileCustomProfileFile in $__PSProfileCustomProfileFiles) {
+            . $__PSProfileCustomProfileFile
         }
     }
     #endregion Custom Profile --------------------------------------------------
