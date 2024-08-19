@@ -2,6 +2,7 @@
 
 export NVM_DIR="${NVMINSTALLPATH:-"/usr/local/share/nvm"}"
 USERNAME="${USERNAME:-"${_REMOTE_USER:-"automatic"}"}"
+USERHOME="${USERHOME:-"${_REMOTE_USER_HOME:-"automatic"}"}"
 CLI_VERSION="${VERSION:-"latest"}"
 COMMAND_COMPLETION="${COMMANDCOMPLETION:-"true"}"
 COMMAND_COMPLETIONPS="${COMMANDCOMPLETIONPS:-"true"}"
@@ -39,21 +40,35 @@ chmod +x /etc/profile.d/00-restore-env.sh
 # Determine the appropriate non-root user
 if [ "${USERNAME}" = "auto" ] || [ "${USERNAME}" = "automatic" ]; then
     USERNAME=""
+    USERHOME=""
     POSSIBLE_USERS=("vscode" "node" "codespace" "$(awk -v val=1000 -F ":" '$3==val{print $1}' /etc/passwd)")
     for CURRENT_USER in "${POSSIBLE_USERS[@]}"; do
         if id -u "${CURRENT_USER}" >/dev/null 2>&1; then
             USERNAME=${CURRENT_USER}
+            USERHOME=$(su - "${USERNAME}" -c 'echo ${HOME}')
             break
         fi
     done
     if [ "${USERNAME}" = "" ]; then
-        USERNAME=root
+        if [ -n "${_CONTAINER_USER}" ] && id -u "${_CONTAINER_USER}" >/dev/null 2>&1; then
+            USERNAME="${_CONTAINER_USER}"
+            USERHOME="${_CONTAINER_USER_HOME}"
+        else
+            USERNAME='root'
+            USERHOME='/root'
+        fi
     fi
 elif [ "${USERNAME}" = "none" ] || ! id -u "${USERNAME}" >/dev/null 2>&1; then
-    USERNAME=root
+    if [ -n "${_CONTAINER_USER}" ] && id -u "${_CONTAINER_USER}" >/dev/null 2>&1; then
+        USERNAME="${_CONTAINER_USER}"
+        USERHOME="${_CONTAINER_USER_HOME}"
+    else
+        USERNAME='root'
+        USERHOME='/root'
+    fi
 fi
 
-# Install m365-cli
+# Install cli-microsoft365
 umask 0002
 if bash -c ". '${NVM_DIR}/nvm.sh' && type npm >/dev/null 2>&1"; then
     if ! bash -c ". '${NVM_DIR}/nvm.sh' && type m365 >/dev/null 2>&1"; then
@@ -120,13 +135,29 @@ if bash -c ". '${NVM_DIR}/nvm.sh' && type npm >/dev/null 2>&1"; then
 
                 # Install cli completion
                 . "${NVM_DIR}/nvm.sh"
-                pwsh -Command 'm365 cli completion pwsh setup --profile $PROFILE.AllUsersAllHosts'
-                pwsh -Command 'Add-Content -Path $PROFILE.AllUsersAllHosts -Value "`nSet-Alias -Name m365? -Value m365_chili"'
+                if [ -d "${USERHOME}/.config/powershell/Microsoft.PowerShell_profile.d" ]; then
+                    echo "Adding completion to profile directory in ${USERHOME}/.config/powershell/Microsoft.PowerShell_profile.d"
+                    su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'm365 cli completion pwsh setup --profile \$HOME/.config/powershell/Microsoft.PowerShell_profile.d/cli-microsoft365.ps1'"
+                    su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'Add-Content -Path \$HOME/.config/powershell/Microsoft.PowerShell_profile.d/cli-microsoft365.ps1 -Value \"\`nSet-Alias -Name m365? -Value m365_chili\"'"
+                fi
+                if [ -d "${USERHOME}/.config/powershell/Microsoft.VSCode_profile.d" ]; then
+                    echo "Adding completion to profile directory in ${USERHOME}/.config/powershell/Microsoft.VSCode_profile.d"
+                    su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'm365 cli completion pwsh setup --profile \$HOME/.config/powershell/Microsoft.VSCode_profile.d/cli-microsoft365.ps1'"
+                    su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'Add-Content -Path \$HOME/.config/powershell/Microsoft.VSCode_profile.d/cli-microsoft365.ps1 -Value \"\`nSet-Alias -Name m365? -Value m365_chili\"'"
+                fi
+                if [ ! -d "${USERHOME}/.config/powershell/Microsoft.PowerShell_profile.d" ] && [ ! -d "${USERHOME}/.config/powershell/Microsoft.VSCode_profile.d" ] && [ -d "${USERHOME}/.config/powershell/profile.d" ]; then
+                    echo "Adding completion to profile directory in ${USERHOME}/.config/powershell/profile.d"
+                    su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'm365 cli completion pwsh setup --profile \$HOME/.config/powershell/profile.d/cli-microsoft365.ps1'"
+                    su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'Add-Content -Path \$HOME/.config/powershell/profile.d/cli-microsoft365.ps1 -Value \"\`nSet-Alias -Name m365? -Value m365_chili\"'"
+                else
+                    $real_path -NoLogo -NoProfile -Command 'm365 cli completion pwsh setup --profile $PROFILE.AllUsersAllHosts'
+                    $real_path -NoLogo -Noprofile -Command 'Add-Content -Path $PROFILE.AllUsersAllHosts -Value "`nSet-Alias -Name m365? -Value m365_chili"'
+                fi
                 echo "PowerShell command completion activated"
             fi
         fi
     else
-        echo "m365-cli is already installed. Skipping installation."
+        echo "cli-microsoft365 is already installed. Skipping installation."
     fi
 else
     echo "ERROR: NPM is not installed. Please install NPM and try again."

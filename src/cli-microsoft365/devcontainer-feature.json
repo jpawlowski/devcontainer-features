@@ -1,7 +1,7 @@
 {
   "name": "CLI for Microsoft 365",
   "id": "cli-microsoft365",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "CLI for Microsoft 365 is a cross-platform CLI that allows users on any platform to manage various configuration settings of Microsoft 365.",
   "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/cli-microsoft365",
   "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
