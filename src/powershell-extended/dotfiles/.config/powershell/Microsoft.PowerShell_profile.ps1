@@ -55,13 +55,13 @@ try {
         if ($null -eq $__PSProfileEnvAutoUpdateModuleHelp -or $__PSProfileEnvAutoUpdateModuleHelp -eq $true) { __PSProfile-Update-Help }
         #endregion Environment -------------------------------------------------
 
-        # #region Oh My Posh =====================================================
+        # #region Oh My Posh ===================================================
         $__PSProfileEnvOhMyPoshDisableUpgradeNotice = [System.Environment]::GetEnvironmentVariable('PSPROFILE_POSH_DISABLE_UPGRADE_NOTICE')
         $__PSProfileEnvOhMyPoshTheme = [System.Environment]::GetEnvironmentVariable('PSPROFILE_POSH_THEME')
         if ($null -eq $__PSProfileEnvOhMyPoshDisableUpgradeNotice -or $__PSProfileEnvOhMyPoshDisableUpgradeNotice -eq $true) { __PSProfile-Set-OhMyPosh-UpdateNotice -Disable }
         if ($null -ne $__PSProfileEnvOhMyPoshTheme) { __PSProfile-Enable-OhMyPosh-Theme -ThemeName $__PSProfileEnvOhMyPoshTheme } else { __PSProfile-Enable-OhMyPosh-Theme }
         if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_TERMINAL_COMPLETION_POSH') -eq $true -and $null -ne [System.Environment]::GetEnvironmentVariable('POSH_PID')) { Invoke-Expression -Command $(oh-my-posh completion powershell | Out-String) }
-        # #endregion Oh My Posh --------------------------------------------------
+        # #endregion Oh My Posh ------------------------------------------------
     }
 
     #region Custom Profile =====================================================

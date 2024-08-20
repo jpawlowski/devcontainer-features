@@ -76,7 +76,7 @@ try {
     __PSProfile-Write-ProfileLoadMessage "🌐 Loading $($PSStyle.Bold)system$($PSStyle.BoldOff) profile."
 
     #region Global Variables =======================================================
-    $Global:__PSProfileSource = 'DevContainer-Feature:PowerShell-Extended'
+    $Global:___PSProfileSource = 'DevContainer-Feature:PowerShell-Extended'
     #endregion Global Variables ----------------------------------------------------
 
     #region Environment Variables ==================================================
@@ -127,7 +127,7 @@ try {
 
         Created with PSScriptTools: Copy-Command Get-Childitem -AsProxy -UseForwardHelp -IncludeDynamic
         #>
-        function __PSProfileAliasDir {
+        function ___PSProfileAliasDir {
             <#
             .ForwardHelpTargetName Microsoft.PowerShell.Management\Get-ChildItem
             .ForwardHelpCategory Cmdlet
@@ -231,7 +231,7 @@ try {
                 try { $steppablePipeline.End() } catch { throw }
             }
         }
-        New-Alias -Name dir -Value __PSProfileAliasDir -Option AllScope -Force
+        New-Alias -Name dir -Value ___PSProfileAliasDir -Option AllScope -Force
     }
     #endregion Import Modules ------------------------------------------------------
 

@@ -11,14 +11,14 @@ function __PSProfile-Initialize-Profile {
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param ()
-    if (-not $Script:__PSProfiles) {
+    if (-not $Script:___PSProfiles) {
         $Script:__PSProfileConfirmPreference = $ConfirmPreference; $ConfirmPreference = 'None'
         $Script:__PSProfileErrorActionPreference = $ErrorActionPreference; $ErrorActionPreference = 'Stop'
-        $Script:__PSProfiles = [object[]]::new(4)
+        $Script:___PSProfiles = [object[]]::new(4)
         $Script:__PSProfileIndex = 0
     }
     if ($Script:__PSProfileIndex -lt 4) {
-        $Script:__PSProfiles[$Script:__PSProfileIndex] = (__PSProfile-Get-ProfileInfoFromFilePath -FilePath $MyInvocation.ScriptName)
+        $Script:___PSProfiles[$Script:__PSProfileIndex] = (__PSProfile-Get-ProfileInfoFromFilePath -FilePath $MyInvocation.ScriptName)
         $Script:__PSProfileIndex++
     }
 }
@@ -425,31 +425,25 @@ function __PSProfile-Clear-Environment {
     if ($__PSProfileInformationPreference) { $Global:InformationPreference = $__PSProfileInformationPreference }
 
     # Remove temporary functions
-    $fnRegex = '^__PSProfile(?!Alias).*'
-    foreach ($function in Get-Command -CommandType Function | Where-Object { $_.Name -match $fnRegex }) {
-        Remove-Item -Path "Function:\$($function.Name)" -Force -WarningAction Ignore -ErrorAction Ignore -Verbose:$false -Debug:$false -Confirm:$false -WhatIf:$false
-    }
+    Remove-Item -Path "Function:\__PSProfile*" -Force -WarningAction Ignore -ErrorAction Ignore -Verbose:$false -Debug:$false -Confirm:$false -WhatIf:$false
 
     # Generate the profile load duration information
     $i = 0
-    foreach ($item in $__PSProfiles) {
-        if ($i -lt $Script:__PSProfileIndex -and $__PSProfiles[$i + 1].LoadBeginDate) {
-            $EndDate = $__PSProfiles[$i + 1].LoadBeginDate
+    foreach ($item in $Script:___PSProfiles) {
+        if ($i -lt $Script:__PSProfileIndex -and $Script:___PSProfiles[$i + 1].LoadBeginDate) {
+            $EndDate = $Script:___PSProfiles[$i + 1].LoadBeginDate
         }
         else {
             $EndDate = Get-Date
         }
-        Add-Member -InputObject $__PSProfiles[$i] -MemberType NoteProperty -Name 'LoadEndDate' -Value $EndDate
-        Add-Member -InputObject $__PSProfiles[$i] -MemberType NoteProperty -Name 'LoadDuration' -Value ($EndDate - $__PSProfiles[$i].LoadBeginDate)
+        Add-Member -InputObject $Script:___PSProfiles[$i] -MemberType NoteProperty -Name 'LoadEndDate' -Value $EndDate
+        Add-Member -InputObject $Script:___PSProfiles[$i] -MemberType NoteProperty -Name 'LoadDuration' -Value ($EndDate - $Script:___PSProfiles[$i].LoadBeginDate)
         $i++
         if ($i -eq $Script:__PSProfileIndex) { break }
     }
 
     # Remove temporary variables
-    $varRegex = '^__PSProfile(?!Source|s).*'
-    foreach ($variable in Get-Variable -Scope 1 | Where-Object { $_.Name -match $varRegex }) {
-        Remove-Variable -Name $variable.Name -Scope 1 -Force -WarningAction Ignore -ErrorAction Ignore -Verbose:$false -Debug:$false -Confirm:$false -WhatIf:$false
-    }
+    Remove-Variable -Name "__PSProfile*" -Scope 1 -Force -WarningAction Ignore -ErrorAction Ignore -Verbose:$false -Debug:$false -Confirm:$false -WhatIf:$false
 }
 function __PSProfile-Get-ProfileInfoFromFilePath {
     <#
