@@ -518,6 +518,9 @@ if [ "$INSTALL_OHMYPOSH" = 'true' ]; then
 
                 # Copy the file if it does not exist
                 if [ ! -f "$user_file" ]; then
+                    if [ "$(basename "$file")" = ".gitkeep" ]; then
+                        continue
+                    fi
                     echo "Copying $relative_path to $user_file"
                     cp "$file" "$user_file"
                 else

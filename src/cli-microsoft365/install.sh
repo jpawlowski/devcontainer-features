@@ -145,11 +145,13 @@ if bash -c ". '${NVM_DIR}/nvm.sh' && type npm >/dev/null 2>&1"; then
                     su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'm365 cli completion pwsh setup --profile \$HOME/.config/powershell/Microsoft.VSCode_profile.d/cli-microsoft365.ps1'"
                     su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'Add-Content -Path \$HOME/.config/powershell/Microsoft.VSCode_profile.d/cli-microsoft365.ps1 -Value \"\`nSet-Alias -Name m365? -Value m365_chili\"'"
                 fi
-                if [ ! -d "${USERHOME}/.config/powershell/Microsoft.PowerShell_profile.d" ] && [ ! -d "${USERHOME}/.config/powershell/Microsoft.VSCode_profile.d" ] && [ -d "${USERHOME}/.config/powershell/profile.d" ]; then
+                if [ -d "${USERHOME}/.config/powershell/profile.d" ] && [ ! -d "${USERHOME}/.config/powershell/Microsoft.PowerShell_profile.d" ] && [ ! -d "${USERHOME}/.config/powershell/Microsoft.VSCode_profile.d" ]; then
                     echo "Adding completion to profile directory in ${USERHOME}/.config/powershell/profile.d"
                     su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'm365 cli completion pwsh setup --profile \$HOME/.config/powershell/profile.d/cli-microsoft365.ps1'"
                     su "${USERNAME}" -c "$real_path -NoLogo -NoProfile -Command 'Add-Content -Path \$HOME/.config/powershell/profile.d/cli-microsoft365.ps1 -Value \"\`nSet-Alias -Name m365? -Value m365_chili\"'"
-                else
+                fi
+                if [ ! -d "${USERHOME}/.config/powershell/Microsoft.PowerShell_profile.d" ] && [ ! -d "${USERHOME}/.config/powershell/Microsoft.VSCode_profile.d" ] && [ ! -d "${USERHOME}/.config/powershell/profile.d" ]; then
+                    echo "Adding completion to global profile.ps1"
                     $real_path -NoLogo -NoProfile -Command 'm365 cli completion pwsh setup --profile $PROFILE.AllUsersAllHosts'
                     $real_path -NoLogo -Noprofile -Command 'Add-Content -Path $PROFILE.AllUsersAllHosts -Value "`nSet-Alias -Name m365? -Value m365_chili"'
                 fi

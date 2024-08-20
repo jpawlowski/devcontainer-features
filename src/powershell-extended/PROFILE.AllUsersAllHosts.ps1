@@ -73,7 +73,7 @@ try {
         }
     }
 
-    __PSProfile-Write-ProfileLoadMessage "🌐 Loading $($PSStyle.Bold)global$($PSStyle.BoldOff) profile."
+    __PSProfile-Write-ProfileLoadMessage "🌐 Loading $($PSStyle.Bold)system$($PSStyle.BoldOff) profile."
 
     #region Global Variables =======================================================
     $Global:__PSProfileSource = 'DevContainer-Feature:PowerShell-Extended'
@@ -81,13 +81,15 @@ try {
 
     #region Environment Variables ==================================================
     # Add local bin directory to PATH if not already present
+    if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "${HOME}/bin") { [System.Environment]::SetEnvironmentVariable('PATH', "${__PSProfileEnvPathOriginal}:${HOME}/bin") }
     if ($__PSProfileEnvPathOriginal.Split(':') -notcontains "${HOME}/.local/bin") { [System.Environment]::SetEnvironmentVariable('PATH', "${__PSProfileEnvPathOriginal}:${HOME}/.local/bin") }
 
     # Set the USER environment variable if not already set
-    if ($null -eq [System.Environment]::GetEnvironmentVariable('USER') -and $null -eq [System.Environment]::GetEnvironmentVariable('USERNAME')) { [System.Environment]::SetEnvironmentVariable('USER', (& $(& which whoami))) }
+    if ($null -eq [System.Environment]::GetEnvironmentVariable('USER') -and $null -eq [System.Environment]::GetEnvironmentVariable('USERNAME')) { [System.Environment]::SetEnvironmentVariable('USER', (/usr/bin/whoami)) }
 
     # Set the default git editor if not already set
     if (
+        (__PSProfile-Assert-IsUserInteractiveShell) -and
         $null -eq [System.Environment]::GetEnvironmentVariable('GIT_EDITOR') -and
         $null -eq $(try { git config --get core.editor } catch { $Error.Clear(); $null })
     ) {
@@ -106,9 +108,12 @@ try {
 
     #region Aliases ================================================================
     if (
-        $__PSProfileEnvAliasDirForce -eq $true -or
-        $__PSProfileEnvAliasDirHidden -eq $true -or
-        $__PSProfileEnvAliasDirSort -eq $true
+        (__PSProfile-Assert-IsUserInteractiveShell) -and
+        (
+            $__PSProfileEnvAliasDirForce -eq $true -or
+            $__PSProfileEnvAliasDirHidden -eq $true -or
+            $__PSProfileEnvAliasDirSort -eq $true
+        )
     ) {
         <#
         This is a copy of:
@@ -191,7 +196,6 @@ try {
             Begin {
                 Write-Verbose "[BEGIN  ] Starting $($MyInvocation.MyCommand)"
                 Write-Verbose "[BEGIN  ] Using parameter set $($PSCmdlet.ParameterSetName)"
-                Write-Verbose ($PSBoundParameters | Out-String)
                 try {
                     $outBuffer = $null
                     if ($PSBoundParameters.TryGetValue('OutBuffer', [ref]$outBuffer)) {
@@ -203,9 +207,11 @@ try {
                     elseif ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_HIDDEN') -eq $true) {
                         $PSBoundParameters['Hidden'] = $true
                     }
+                    Write-Verbose ($PSBoundParameters | Out-String)
 
                     $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Microsoft.PowerShell.Management\Get-ChildItem', [System.Management.Automation.CommandTypes]::Cmdlet)
                     if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_ALIAS_DIR_SORT') -eq $true) {
+                        Write-Verbose 'Sorting by container status and name'
                         $scriptCmd = { & $wrappedCmd @PSBoundParameters | Sort-Object -Property { -not $_.psiscontainer }, Name }
                     }
                     else {
@@ -235,10 +241,12 @@ try {
     # To load your own custom profile, you may create a directory named 'profile.d' in the same directory as this file.
     # Then, place your custom profile files in the 'profile.d' directory to load them automatically.
     #
-    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.d')
+    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, 'd')
     if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
-        foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
-            . $file
+        $__PSProfileCustomProfileFiles = [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1')
+        [System.Array]::Sort($__PSProfileCustomProfileFiles)
+        foreach ($__PSProfileCustomProfileFile in $__PSProfileCustomProfileFiles) {
+            . $__PSProfileCustomProfileFile
         }
     }
     #endregion Custom Profile ------------------------------------------------------

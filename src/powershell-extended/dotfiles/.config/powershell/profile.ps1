@@ -25,62 +25,69 @@
 # For instance, when you run PowerShell in VSCode, the VSCode Integrated Terminal acts as the terminal emulator, and the PowerShell extension acts as the PowerShell host.
 # Similarly, when you run PowerShell in Windows Terminal, Windows Terminal acts as the terminal emulator, and the PowerShell console acts as the PowerShell host.
 
-#Requires -Version 7.2 -Modules PSReadLine
+#Requires -Version 7.2
 
 try {
     if ($Error) { return } # Skip if there was an error loading the profile before
     __PSProfile-Initialize-Profile
-    __PSProfile-Write-ProfileLoadMessage "👤 Loading $($PSStyle.Bold)user$($PSStyle.BoldOff) profile."
+    __PSProfile-Write-ProfileLoadMessage "👤 Loading $($PSStyle.Bold)personal$($PSStyle.BoldOff) profile."
 
     #region PSReadLine, except predictor plugins ===============================
-    $__PSProfileEnvPSReadlineEditMode = [System.Environment]::GetEnvironmentVariable('PSPROFILE_PSREADLINE_EDITMODE')
-    $__PSProfilePSReadLineOptions = @{
-        EditMode = $(if ($null -ne $__PSProfileEnvPSReadlineEditMode) { $__PSProfileEnvPSReadlineEditMode } else { 'Emacs' })
-        HistorySearchCursorMovesToEnd = $true
-        BellStyle = 'None'
-    }
-    Set-PSReadLineOption @__PSProfilePSReadLineOptions
-
-    Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
-    Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
-    Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
-
-    # `ForwardChar` accepts the entire suggestion text when the cursor is at the end of the line.
-    # This custom binding makes `RightArrow` behave similarly - accepting the next word instead of the entire suggestion text.
-    Set-PSReadLineKeyHandler -Key RightArrow `
-        -BriefDescription ForwardCharAndAcceptNextSuggestionWord `
-        -LongDescription 'Move cursor one character to the right in the current editing line and accept the next word in suggestion when it''s at the end of current editing line' `
-        -ScriptBlock {
-        param($key, $arg)
-
-        $line = $null
-        $cursor = $null
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
-
-        if ($cursor -lt $line.Length) {
-            [Microsoft.PowerShell.PSConsoleReadLine]::ForwardChar($key, $arg)
+    if (__PSProfile-Assert-IsUserInteractiveShell) {
+        if (-not (Get-Module -Name PSReadLine -ErrorAction Ignore)) {
+            Import-Module -Force -Scope Global -Name PSReadLine -DisableNameChecking -ErrorAction Stop
         }
-        else {
-            [Microsoft.PowerShell.PSConsoleReadLine]::AcceptNextSuggestionWord($key, $arg)
+
+        $__PSProfileEnvPSReadlineEditMode = [System.Environment]::GetEnvironmentVariable('PSPROFILE_PSREADLINE_EDITMODE')
+        $__PSProfilePSReadLineOptions = @{
+            EditMode                      = $(if ($null -ne $__PSProfileEnvPSReadlineEditMode) { $__PSProfileEnvPSReadlineEditMode } else { 'Emacs' })
+            HistorySearchCursorMovesToEnd = $true
+            BellStyle                     = 'None'
         }
-    }
+        Set-PSReadLineOption @__PSProfilePSReadLineOptions
 
-    # Custom binding for the `End` key to jump to the end of the line and accept the entire suggestion
-    Set-PSReadLineKeyHandler -Key End `
-        -BriefDescription AcceptEntireSuggestion `
-        -LongDescription 'Move cursor to the end of the current editing line and accept the entire suggestion' `
-        -ScriptBlock {
-        param($key, $arg)
+        Set-PSReadlineKeyHandler -Chord Tab -Function MenuComplete
+        Set-PSReadlineKeyHandler -Chord UpArrow -Function HistorySearchBackward
+        Set-PSReadlineKeyHandler -Chord DownArrow -Function HistorySearchForward
+        Set-PSReadLineKeyHandler -Chord F2 -Function SwitchPredictionView
 
-        $line = $null
-        $cursor = $null
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+        # `ForwardChar` accepts the entire suggestion text when the cursor is at the end of the line.
+        # This custom binding makes `RightArrow` behave similarly - accepting the next word instead of the entire suggestion text.
+        Set-PSReadlineKeyHandler -Chord RightArrow `
+            -BriefDescription ForwardCharAndAcceptNextSuggestionWord `
+            -LongDescription 'Move cursor one character to the right in the current editing line and accept the next word in suggestion when it''s at the end of current editing line' `
+            -ScriptBlock {
+            param($key, $arg)
 
-        # Move cursor to the end of the line
-        [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine($key, $arg)
+            $line = $null
+            $cursor = $null
+            [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
 
-        # Accept the entire suggestion
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptSuggestion($key, $arg)
+            if ($cursor -lt $line.Length) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::ForwardChar($key, $arg)
+            }
+            else {
+                [Microsoft.PowerShell.PSConsoleReadLine]::AcceptNextSuggestionWord($key, $arg)
+            }
+        }
+
+        # Custom binding for the `End` key to jump to the end of the line and accept the entire suggestion
+        Set-PSReadlineKeyHandler -Chord End `
+            -BriefDescription AcceptEntireSuggestion `
+            -LongDescription 'Move cursor to the end of the current editing line and accept the entire suggestion' `
+            -ScriptBlock {
+            param($key, $arg)
+
+            $line = $null
+            $cursor = $null
+            [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
+
+            # Move cursor to the end of the line
+            [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine($key, $arg)
+
+            # Accept the entire suggestion
+            [Microsoft.PowerShell.PSConsoleReadLine]::AcceptSuggestion($key, $arg)
+        }
     }
     #endregion PSReadLine ------------------------------------------------------
 
@@ -90,10 +97,12 @@ try {
     # To load your own custom profile, you may create a directory named 'profile.d' in the same directory as this file.
     # Then, place your custom profile files in the 'profile.d' directory to load them automatically.
     #
-    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.d')
+    $__PSProfileDirectoryPath = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, 'd')
     if ([System.IO.Directory]::Exists($__PSProfileDirectoryPath)) {
-        foreach ($file in [System.Array]::Sort( [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1') )) {
-            . $file
+        $__PSProfileCustomProfileFiles = [System.IO.Directory]::GetFiles($__PSProfileDirectoryPath, '*.ps1')
+        [System.Array]::Sort($__PSProfileCustomProfileFiles)
+        foreach ($__PSProfileCustomProfileFile in $__PSProfileCustomProfileFiles) {
+            . $__PSProfileCustomProfileFile
         }
     }
     #endregion Custom Profile --------------------------------------------------

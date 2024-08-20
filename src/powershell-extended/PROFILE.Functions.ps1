@@ -127,40 +127,18 @@ function __PSProfile-Import-ModuleAndInstallIfMissing {
         [array]$ArgumentList,
         [bool]$InstallInBackground = $true,
         [bool]$ImportInBackground = $true,
-        [int]$DelaySeconds = 0
+        [int]$InstallDelaySeconds = 0
     )
 
-    $psVersion = [System.Version]$PSVersionTable.PSVersion
-    $minVersion = [System.Version]'7.2'
     $mutexName = "Global\ModuleInstallMutex"
 
-    function Assert-PSGIsNewerVersionAvailable {
-        [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
-        param (
-            [string]$ModuleName
-        )
-        $installedModule = Get-Module -ListAvailable -Name $ModuleName | Sort-Object { [version]$_.Version } -Descending | Select-Object -First 1
-        $galleryModule = Find-Module -Name $ModuleName
-        return $galleryModule.Version -gt $installedModule.Version
-    }
-    function Install-PSResourceGetIfNeeded {
-        if (-not (Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet)) {
-            if (Assert-PSGIsNewerVersionAvailable -ModuleName PowerShellGet) {
-                Install-Module -Name PowerShellGet -Force -Scope CurrentUser
-            }
-            Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore -Confirm:$false
-            Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force -Scope CurrentUser
-            Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore -Confirm:$false
-        }
-    }
-
     try {
-        __PSProfile-Import-ModuleIfNotLoaded -ModuleName $Name -ArgumentList $ArgumentList
+        __PSProfile-Import-ModuleIfNotLoaded -Name $Name -ArgumentList $ArgumentList -ImportInBackground $ImportInBackground
     }
     catch {
         if ($_.FullyQualifiedErrorId -eq 'ModuleNotFound') {
             $Error.Clear() # Clear the error because we are going to solve it
-            if ($psVersion -ge $minVersion -and $InstallInBackground) {
+            if ($InstallInBackground) {
                 $job = Start-ThreadJob -Name "Install-$Name" -ScriptBlock {
                     param (
                         $moduleName,
@@ -175,7 +153,12 @@ function __PSProfile-Import-ModuleAndInstallIfMissing {
 
                     try {
                         if (-not (Get-Module -ListAvailable -Name $moduleName)) {
-                            Microsoft.PowerShell.PSResourceGet\Install-PSResource -Name $moduleName -Repository PSGallery -TrustRepository -Scope CurrentUser -AcceptLicense -Confirm:$false -Quiet
+                            if (Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet) {
+                                Microsoft.PowerShell.PSResourceGet\Install-PSResource -Name $moduleName -Repository PSGallery -TrustRepository -Scope CurrentUser -AcceptLicense -Quiet -ProgressAction Ignore -Confirm:$false -Verbose:$false -Debug:$false
+                            }
+                            else {
+                                PowerShellGet\Install-Module -Name $moduleName -Repository PSGallery -Scope CurrentUser -AcceptLicense -Force -AllowClobber -ProgressAction Ignore -Confirm:$false -Verbose:$false -Debug:$false
+                            }
                         }
                         return $true
                     }
@@ -186,12 +169,12 @@ function __PSProfile-Import-ModuleAndInstallIfMissing {
                         $mutex.ReleaseMutex()
                         $mutex.Dispose()
                     }
-                } -ArgumentList $Name, $mutexName, $DelaySeconds
+                } -ArgumentList $Name, $mutexName, $InstallDelaySeconds
 
                 $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
                     switch ($EventArgs.JobStateInfo.State) {
                         Completed {
-                            Import-Module -Force -Scope Global -Name $Event.MessageData -ErrorAction Stop -Verbose:$false -Debug:$false
+                            Import-Module -Force -Scope Global -Name $Event.MessageData -DisableNameChecking -ErrorAction Ignore
                             Unregister-Event -SourceIdentifier $Event.SourceIdentifier
                             Remove-Job -Job $Sender -ErrorAction Ignore
                             Remove-Job -Name $Event.SourceIdentifier
@@ -213,18 +196,14 @@ function __PSProfile-Import-ModuleAndInstallIfMissing {
 
                 try {
                     if (-not (Get-Module -ListAvailable -Name $Name)) {
-                        Install-PSResourceGetIfNeeded
-                        Microsoft.PowerShell.PSResourceGet\Install-PSResource -Name $Name -Repository PSGallery -TrustRepository -Scope CurrentUser -AcceptLicense -Confirm:$false -Quiet
+                        if (Get-Module -ListAvailable -Name Microsoft.PowerShell.PSResourceGet) {
+                            Microsoft.PowerShell.PSResourceGet\Install-PSResource -Name $Name -Repository PSGallery -TrustRepository -Scope CurrentUser -AcceptLicense -Quiet -ProgressAction Ignore -Confirm:$false -Verbose:$false -Debug:$false
+                        }
+                        else {
+                            PowerShellGet\Install-Module -Name $Name -Repository PSGallery -Scope CurrentUser -AcceptLicense -Force -AllowClobber -ProgressAction Ignore -Confirm:$false -Verbose:$false -Debug:$false
+                        }
                     }
-                    if ($psVersion -ge $minVersion -and $ImportInBackground) {
-                        Start-ThreadJob -ScriptBlock {
-                            param ($moduleName)
-                            Import-Module -Force -Scope Global -Name $moduleName -ErrorAction Stop
-                        } -ArgumentList $Name | Out-Null
-                    }
-                    else {
-                        Import-Module -Force -Scope Global -Name $moduleName -ErrorAction Stop
-                    }
+                    __PSProfile-Import-ModuleIfNotLoaded -Name $Name -ArgumentList $ArgumentList -ImportInBackground $ImportInBackground
                 }
                 finally {
                     $mutex.ReleaseMutex()
@@ -243,36 +222,63 @@ function __PSProfile-Import-ModuleIfNotLoaded {
         Imports a module if it is not already loaded.
     .DESCRIPTION
         This function imports a module if it is not already loaded.
-    .PARAMETER ModuleName
+    .PARAMETER Name
         The name of the module to import.
     .PARAMETER ArgumentList
         An array of arguments to pass to the module when importing it.
+    .PARAMETER ImportInBackground
+        Indicates whether the module should be imported in the background if it is not already imported. Default is $true.
     .EXAMPLE
         __PSProfile-Import-ModuleIfNotLoaded -ModuleName Microsoft.PowerShell.Utility
         This will import the Microsoft.PowerShell.Utility module if it is not already loaded.
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
     param (
-        [string]$ModuleName,
-        [array]$ArgumentList
+        [string]$Name,
+        [array]$ArgumentList,
+        [bool]$ImportInBackground = $true
     )
 
     # Check if the module is already loaded
-    if (-not (Get-Module -Name $ModuleName)) {
+    if (-not (Get-Module -Name $Name)) {
         # Check if the module is available
-        if (Get-Module -ListAvailable -Name $ModuleName) {
+        if (Get-Module -ListAvailable -Name $Name) {
             try {
-                # Import the module
-                $params = @{
-                    Name        = $ModuleName
-                    Force       = $true
-                    Scope       = 'Global'
-                    ErrorAction = 'Stop'
+                if ($ImportInBackground) {
+                    $scriptBlockString = [System.Text.StringBuilder]::new("Import-Module -Force -Scope Global -Name $Name -DisableNameChecking -ErrorAction Ignore")
+                    if ($ArgumentList) {
+                        [void]$scriptBlockString.Append(" -ArgumentList @(")
+                        [void]$scriptBlockString.Append(($ArgumentList | ForEach-Object { "'$_'" }) -join ',')
+                        [void]$scriptBlockString.Append(')')
+                    }
+
+                    # Register an engine event that triggers when PowerShell is idle for at least 300 milliseconds.
+                    # We can't use Start-ThreadJob here because it runs in its own runspace and can't import modules into the current runspace.
+                    # Credits to https://matt.kotsenas.com/posts/pwsh-profiling-async-startup
+                    $job = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -MaxTriggerCount 1 -Action $([scriptblock]::Create($scriptBlockString))
+
+                    # Register an object event to monitor the state changes of the job
+                    $null = Register-ObjectEvent -InputObject $job -EventName StateChanged -Action {
+                        if ($EventArgs.JobStateInfo.State -eq 'Stopped') {
+                            Unregister-Event -SourceIdentifier $Event.SourceIdentifier
+                            Remove-Job -Job $Sender -ErrorAction Ignore
+                            Remove-Job -Name $Event.SourceIdentifier
+                        }
+                    }
                 }
-                if ($ArgumentList) {
-                    $params.ArgumentList = $ArgumentList
+                else {
+                    $importParams = @{
+                        Name                = $Name
+                        DisableNameChecking = $true
+                        Force               = $true
+                        Scope               = 'Global'
+                        ErrorAction         = 'Ignore'
+                    }
+                    if ($ArgumentList) {
+                        $params.ArgumentList = $ArgumentList
+                    }
+                    Import-Module @importParams
                 }
-                Import-Module @params
             }
             catch {
                 $errorRecord = [System.Management.Automation.ErrorRecord]::new(
@@ -381,9 +387,10 @@ function __PSProfile-Enable-OhMyPosh-Theme {
         }
     }
 
-    if (Get-Command -Name 'oh-my-posh' -ErrorAction Ignore) {
+    try {
         & ([ScriptBlock]::Create((oh-my-posh init pwsh --config "$Theme" --print) -join "`n"))
     }
+    catch {}
 }
 function __PSProfile-Clear-Environment {
     <#
@@ -489,6 +496,39 @@ function __PSProfile-Update-Help {
         if (-not [System.IO.Directory]::Exists($__PSProfileModulesHelpLockFileDirectory)) { [void][System.IO.Directory]::CreateDirectory($__PSProfileModulesHelpLockFileDirectory) }
         [System.IO.File]::Create($__PSProfileModulesHelpLockFilePath).Dispose()
         $null = Start-ThreadJob -Name 'UpdateHelp' -ScriptBlock { Microsoft.PowerShell.Core\Update-Help -Scope CurrentUser -ErrorAction Ignore -ProgressAction Ignore }
+    }
+}
+function __PSProfile-Register-ArgumentCompleter-AzureCli {
+    <#
+    .SYNOPSIS
+        Registers the argument completer for the 'az' command.
+    .DESCRIPTION
+        This function registers the argument completer for the 'az' command.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
+    param()
+
+    if (-not (Get-Command -Name az -CommandType Application -ErrorAction Ignore)) { return }
+
+    # https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli#enable-tab-completion-on-powershell
+    Register-ArgumentCompleter -Native -CommandName az -ScriptBlock {
+        param($commandName, $wordToComplete, $cursorPosition)
+        $completion_file = New-TemporaryFile
+        [System.Environment]::SetEnvironmentVariable('ARGCOMPLETE_USE_TEMPFILES', '1')
+        [System.Environment]::SetEnvironmentVariable('_ARGCOMPLETE_STDOUT_FILENAME', $completion_file)
+        [System.Environment]::SetEnvironmentVariable('COMP_LINE', $wordToComplete)
+        [System.Environment]::SetEnvironmentVariable('COMP_POINT', $cursorPosition)
+        [System.Environment]::SetEnvironmentVariable('_ARGCOMPLETE', '1')
+        [System.Environment]::SetEnvironmentVariable('_ARGCOMPLETE_SUPPRESS_SPACE', '0')
+        [System.Environment]::SetEnvironmentVariable('_ARGCOMPLETE_IFS', "`n")
+        [System.Environment]::SetEnvironmentVariable('_ARGCOMPLETE_SHELL', 'powershell')
+        $null = az 2>&1
+        $lines = [System.IO.File]::ReadAllLines($completion_file)
+        [array]::Sort($lines)
+        foreach ($line in $lines) {
+            [System.Management.Automation.CompletionResult]::new($line, $line, 'ParameterValue', $line)
+        }
+        Remove-Item $completion_file, Env:\_ARGCOMPLETE_STDOUT_FILENAME, Env:\ARGCOMPLETE_USE_TEMPFILES, Env:\COMP_LINE, Env:\COMP_POINT, Env:\_ARGCOMPLETE, Env:\_ARGCOMPLETE_SUPPRESS_SPACE, Env:\_ARGCOMPLETE_IFS, Env:\_ARGCOMPLETE_SHELL
     }
 }
 #endregion Profile Functions ---------------------------------------------------
