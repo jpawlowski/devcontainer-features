@@ -12,6 +12,7 @@ or set the environment variable to a URL to have the theme downloaded automatica
 > **Note**: Most themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your host
 > system (not the Dev Container) and changing your font settings in VSCode. The VSCode default font _Cascadia Mono_
 > now has a native Nerd Font variant, which can be downloaded directly from [Github/Microsoft/Cascadia-Code](https://github.com/microsoft/cascadia-code/releases).
+> Follow the [Enhancement Guide](ENHANCEMENTS.md) to enable the full potential of the PowerShell terminal in your Dev Container.
 
 ## Advanced Resource Installation Options
 

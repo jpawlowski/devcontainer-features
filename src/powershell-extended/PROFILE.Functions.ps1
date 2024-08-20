@@ -525,4 +525,78 @@ function __PSProfile-Register-ArgumentCompleter-AzureCli {
         Remove-Item $completion_file, Env:\_ARGCOMPLETE_STDOUT_FILENAME, Env:\ARGCOMPLETE_USE_TEMPFILES, Env:\COMP_LINE, Env:\COMP_POINT, Env:\_ARGCOMPLETE, Env:\_ARGCOMPLETE_SUPPRESS_SPACE, Env:\_ARGCOMPLETE_IFS, Env:\_ARGCOMPLETE_SHELL
     }
 }
+function __PSProfile-Replace-EscapeSequences {
+    <#
+    .SYNOPSIS
+        Replaces escape sequences in a string.
+    .DESCRIPTION
+        This function replaces escape sequences in a string.
+        It may be used when the string contains escape sequences that need to be processed.
+        This may happen if you read a file with escape sequences that need to be interpreted by the console.
+        For example, when you define colors or links in a text file, you may need to replace the escape sequences with the actual characters.
+    .PARAMETER Text
+        The text to process.
+    .NOTES
+        The function replaces the following escape sequences:
+        - \0: Null character (ASCII 0)
+        - \a: Alert (bell) character (ASCII 7)
+        - \b: Backspace (ASCII 8)
+        - \e: Escape character (ASCII 27)
+        - \f: Form feed (ASCII 12)
+        - \n: New line (ASCII 10)
+        - \r: Carriage return (ASCII 13)
+        - \t: Horizontal tab (ASCII 9)
+        - \v: Vertical tab (ASCII 11)
+        - \uXXXX: Unicode character (4 hexadecimal digits)
+        - \xXX: ASCII character (2 hexadecimal digits)
+        - \XXX: ASCII character (1 to 3 octal digits)
+
+        We are using the Unix notation for the escape sequences instead of the Windows notation to allow for better multi-platform compatibility.
+        That means text files (strings) must use the Unix notation for the escape sequences.
+        Since we anyway need to replace the escape sequences, it seems more logical to use the Unix notation.
+    #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
+    param (
+        [string]$Text
+    )
+    [regex]::Replace(
+        $Text, '(\\0|\\a|\\b|\\e|\\f|\\n|\\r|\\t|\\v|(?:\\u[0-9A-Fa-f]{4})+|\\x[0-9A-Fa-f]{2}|\\[0-7]{1,3})',
+        {
+            param ($match)
+            try {
+                switch ($match.Value) {
+                    '\0' { [char]0 }
+                    '\a' { [char]7 }
+                    '\b' { [char]8 }
+                    '\e' { [char]27 }
+                    '\f' { [char]12 }
+                    '\n' { [char]10 }
+                    '\r' { [char]13 }
+                    '\t' { [char]9 }
+                    '\v' { [char]11 }
+                    default {
+                        if ($match.Value -match '(\\u[0-9A-Fa-f]{4})+') {
+                            # Handle multiple \uXXXX sequences
+                            $unicodeChars = $match.Value -split '(?<=\\u[0-9A-Fa-f]{4})(?=\\u[0-9A-Fa-f]{4})'
+                            $bytes = $unicodeChars | ForEach-Object { [convert]::ToInt32($_.Substring(2), 16) }
+                            [System.Text.Encoding]::UTF8.GetString([byte[]]$bytes)
+                        }
+                        elseif ($match.Value -match '\\x([0-9A-Fa-f]{2})') {
+                            [char][convert]::ToInt32($matches[1], 16)
+                        }
+                        elseif ($match.Value -match '\\([0-7]{1,3})') {
+                            [char][convert]::ToInt32($matches[1], 8)
+                        }
+                        else {
+                            $match.Value  # Return the original value if no match
+                        }
+                    }
+                }
+            }
+            catch {
+                $match.Value  # Return the original value if conversion fails
+            }
+        }
+    )
+}
 #endregion Profile Functions ---------------------------------------------------

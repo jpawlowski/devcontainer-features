@@ -60,10 +60,14 @@ try {
         -not ([System.IO.File]::Exists("${HOME}/.config/vscode-dev-containers/first-run-notice-already-displayed"))
     ) {
         if ([System.IO.File]::Exists('/usr/local/etc/vscode-dev-containers/first-run-notice.txt')) {
-            [System.IO.File]::ReadAllText('/usr/local/etc/vscode-dev-containers/first-run-notice.txt')
+            [System.Console]::WriteLine(
+                (__PSProfile-Replace-EscapeSequences ([System.IO.File]::ReadAllText('/usr/local/etc/vscode-dev-containers/first-run-notice.txt')))
+            )
         }
         elseif ([System.IO.File]::Exists('/workspaces/.codespaces/shared/first-run-notice.txt')) {
-            [System.IO.File]::ReadAllText('/workspaces/.codespaces/shared/first-run-notice.txt')
+            [System.Console]::WriteLine(
+                (__PSProfile-Replace-EscapeSequences ([System.IO.File]::ReadAllText('/workspaces/.codespaces/shared/first-run-notice.txt')))
+            )
         }
         # Mark first run notice as displayed after 10s to avoid problems with fast terminal refreshes hiding it
         $null = Start-ThreadJob -Name FirstRunNoticeAlreadyDisplayed -ScriptBlock {
