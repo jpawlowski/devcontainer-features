@@ -42,7 +42,7 @@ try {
     if (__PSProfile-Assert-IsUserInteractiveShell) {
         #region Import Modules =================================================
         if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_GIT') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name posh-git }
-        if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_AZURECLI') -eq $true) { __PSProfile-Register-ArgumentCompleter-Az }
+        if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_AZURECLI') -eq $true) { __PSProfile-Register-ArgumentCompleter-AzureCli }
         if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_GITHUBCLI') -eq $true -and $null -ne (Get-Command -Name gh -CommandType Application -ErrorAction Ignore)) { Invoke-Expression -Command $(gh completion -s powershell | Out-String) }
         if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PSFZF') -eq $true -and $null -ne (Get-Command -Name fzf -CommandType Application -ErrorAction Ignore)) { __PSProfile-Import-ModuleAndInstallIfMissing -Name PSFzf }
         if ([System.Environment]::GetEnvironmentVariable('PSPROFILE_VSCODE_TERMINAL_COMPLETION_PREDICTOR') -eq $true) { __PSProfile-Import-ModuleAndInstallIfMissing -Name CompletionPredictor }
