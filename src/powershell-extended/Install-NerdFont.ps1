@@ -260,7 +260,7 @@ function Show-Menu {
         )
 
         # Print the centered and bold title
-        $title = "🤓 $($PSStyle.Bold)Nerd Fonts Installation$($PSStyle.BoldOff)"
+        $title = "`u{1F913} $($PSStyle.Bold)Nerd Fonts Installation$($PSStyle.BoldOff)"
         $padding = [math]::Max(0, ($terminalWidth - $title.Length) / 2)
         Write-Host (' ' * $padding + $title) -ForegroundColor Cyan -NoNewline
         Write-Host -ForegroundColor Cyan

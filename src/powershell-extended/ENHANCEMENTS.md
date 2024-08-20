@@ -23,17 +23,7 @@ To make the setup easier for you, you may copy the following lines into your **l
 terminal (that is, a local Windows Terminal window, or a local VSCode window that is not running your Dev Container):
 
 ```powershell
-$tempFile = New-TemporaryFile
-$scriptUrl = 'https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/src/powershell-extended/Install-NerdFont.ps1'
-try {
-    Invoke-WebRequest -Uri $scriptUrl -OutFile $tempFile.FullName -ErrorAction Stop
-    Unblock-File -Path $tempFile.FullName
-    & $tempFile.FullName
-} catch {
-    Write-Error "$_"
-} finally {
-    Remove-Item $tempFile.FullName -Force -ErrorAction Ignore
-}
+& ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont')))
 ```
 
 This will provide an interactive menu for you to select the desired font.
