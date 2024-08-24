@@ -470,6 +470,9 @@ try {
             $extractPath = "$env:TMPDIR/NerdFont_$FontName"
         }
 
+        Write-Verbose "Zip download path: $zipPath"
+        Write-Verbose "Extract path: $extractPath"
+
         if (
             $PSCmdlet.ShouldProcess(
                 "Install the font '$FontName' from $sourceName",
