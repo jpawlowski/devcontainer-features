@@ -1,12 +1,21 @@
 {
+  "name": "PowerShell Extended [PSResourceGet / NuGet Versioning; Oh My Posh prompt profile]",
   "id": "powershell-extended",
   "legacyIds": [
     "powershell"
   ],
   "version": "2.0.0",
-  "name": "PowerShell Extended [PSResourceGet / NuGet Versioning; Oh-My-Posh prompt]",
+  "description": "Installs PowerShell on AMD64 and ARM64 architectures, with optional resources from the PowerShell Gallery via PSResourceGet. Includes a custom Oh My Posh terminal prompt theme and profile files. Supports advanced installation options.",
   "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/powershell-extended",
-  "description": "Installs PowerShell on AMD64 and ARM64 architectures, with optional resources from the PowerShell Gallery via PSResourceGet. Includes a custom Oh-My-Posh terminal prompt theme and profile files. Supports advanced installation options.",
+  "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
+  "keywords": [
+    "powershell",
+    "profile",
+    "prompt",
+    "oh-my-posh",
+    "psresourceget",
+    "dotfiles"
+  ],
   "options": {
     "version": {
       "type": "string",
