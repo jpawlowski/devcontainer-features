@@ -262,7 +262,11 @@ function Show-Menu {
         )
 
         # Print the centered and bold title
-        $title = "`u{1F913} $($PSStyle.Bold)Nerd Fonts Installation$($PSStyle.BoldOff)"
+        if ($IsCoreCLR) {
+            $title = "`u{1F913} $($PSStyle.Bold)Nerd Fonts Installation$($PSStyle.BoldOff)"
+        } else {
+            $title = "Nerd Fonts Installation"
+        }
         $padding = [math]::Max(0, ($terminalWidth - $title.Length) / 2)
         Write-Host (' ' * $padding + $title) -ForegroundColor Cyan -NoNewline
         Write-Host -ForegroundColor Cyan
