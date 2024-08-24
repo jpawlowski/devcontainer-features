@@ -76,33 +76,33 @@ described below.
                                      🤓 Nerd Fonts Installation
      =========================================================================================
 
-      1: 0xProto              28: Go-Mono              55: Monaspice            
-      2: 3270                 29: Gohu                 56: Monofur              
-      3: Agave                30: Hack                 57: Monoid               
-      4: AnonymicePro         31: Hasklig              58: Mononoki             
-      5: AnonymousPro         32: Hasklug              59: MPlus                
-      6: Arimo                33: HeavyData            60: NerdFontsSymbolsOnly 
-      7: AurulentSansMono     34: Hermit               61: Noto                 
-      8: BigBlueTerminal      35: Hurmit               62: OpenDyslexic         
-      9: BitstreamVeraSansMono36: iA-Writer            63: Overpass             
-     10: Cascadia             37: IBMPlexMono          64: ProFont              
-     11: CascadiaCode         38: iMWriting            65: ProggyClean          
-     12: CascadiaMono         39: Inconsolata          66: Recursive            
-     13: CaskaydiaCove        40: InconsolataGo        67: RobotoMono           
-     14: CaskaydiaMono        41: InconsolataLGC       68: SauceCodePro         
-     15: CodeNewRoman         42: IntelOneMono         69: ShareTechMono        
-     16: ComicShannsMono      43: IntoneMono           70: SourceCodePro        
-     17: CommitMono           44: Iosevka              71: SpaceMono            
-     18: Cousine              45: IosevkaTerm          72: SureTechMono         
-     19: D2Coding             46: IosevkaTermSlab      73: Terminess            
-     20: DaddyTimeMono        47: JetBrainsMono        74: Terminus             
-     21: DejaVuSansMono       48: Lekton               75: Tinos                
-     22: DroidSansMono        49: LiberationMono       76: Ubuntu               
-     23: EnvyCodeR            50: Lilex                77: UbuntuMono           
-     24: FantasqueSansMono    51: LiterationMono       78: UbuntuSans           
-     25: FiraCode             52: MartianMono          79: VictorMono           
-     26: FiraMono             53: Meslo                80: ZedMono              
-     27: GeistMono            54: Monaspace            
+      1: 0xProto               28: Go-Mono              55: Monaspice            
+      2: 3270                  29: Gohu                 56: Monofur              
+      3: Agave                 30: Hack                 57: Monoid               
+      4: AnonymicePro          31: Hasklig              58: Mononoki             
+      5: AnonymousPro          32: Hasklug              59: MPlus                
+      6: Arimo                 33: HeavyData            60: NerdFontsSymbolsOnly 
+      7: AurulentSansMono      34: Hermit               61: Noto                 
+      8: BigBlueTerminal       35: Hurmit               62: OpenDyslexic         
+      9: BitstreamVeraSansMono 36: iA-Writer            63: Overpass             
+     10: Cascadia              37: IBMPlexMono          64: ProFont              
+     11: CascadiaCode          38: iMWriting            65: ProggyClean          
+     12: CascadiaMono          39: Inconsolata          66: Recursive            
+     13: CaskaydiaCove         40: InconsolataGo        67: RobotoMono           
+     14: CaskaydiaMono         41: InconsolataLGC       68: SauceCodePro         
+     15: CodeNewRoman          42: IntelOneMono         69: ShareTechMono        
+     16: ComicShannsMono       43: IntoneMono           70: SourceCodePro        
+     17: CommitMono            44: Iosevka              71: SpaceMono            
+     18: Cousine               45: IosevkaTerm          72: SureTechMono         
+     19: D2Coding              46: IosevkaTermSlab      73: Terminess            
+     20: DaddyTimeMono         47: JetBrainsMono        74: Terminus             
+     21: DejaVuSansMono        48: Lekton               75: Tinos                
+     22: DroidSansMono         49: LiberationMono       76: Ubuntu               
+     23: EnvyCodeR             50: Lilex                77: UbuntuMono           
+     24: FantasqueSansMono     51: LiterationMono       78: UbuntuSans           
+     25: FiraCode              52: MartianMono          79: VictorMono           
+     26: FiraMono              53: Meslo                80: ZedMono              
+     27: GeistMono             54: Monaspace            
 
      Enter 'q' to quit.
 
@@ -207,19 +207,19 @@ To change the prompt to something of your taste, follow these steps:
 2. **Search for `containerEnv` section**:
    - Find the `containerEnv` section in the bottom part of the file.
    - If it does not exist, you may create an empty section like this:
-     ```json
-     ...
+     ```jsonc
+     // ...
      "containerEnv": {
 
      }
-     ...
+     // ...
      ```
 
 3. **Change environment variables**:
    - Now you want to change (or add) the environment variables shown below:
 
-     ```json
-     ...
+     ```jsonc
+     // ...
      "containerEnv": {
         // Set theme for regular PowerShell session
         "PSPROFILE_POSH_THEME": "devcontainers.minimal.omp.json",
@@ -227,7 +227,7 @@ To change the prompt to something of your taste, follow these steps:
         // Set theme for PowerShell Extension session
         "PSPROFILE_VSCODE_POSH_THEME": "devcontainers.minimal.omp.json"
      },
-     ...
+     // ...
      ```
 
      Note that you will need to pay attention to keep a valid JSON format which might require adding some commas `,` at
