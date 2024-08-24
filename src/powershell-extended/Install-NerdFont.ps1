@@ -157,7 +157,7 @@ param(
 if (
     $null -ne $env:REMOTE_CONTAINERS -or
     $null -ne $env:CODESPACES -or
-    $null -ne $env:WSLENV
+    $null -ne $env:WSL_INTEROP
 ) {
     Write-Host 'This script most be run on your local machine, not in a container. Exiting...' -ForegroundColor Yellow
     return
