@@ -1,9 +1,9 @@
 ### **IMPORTANT NOTE**
 - **Ids used to publish this Feature in the past - 'powershell'**
 
-# PowerShell Extended [PSResourceGet / NuGet Versioning; Oh-My-Posh prompt] (powershell-extended)
+# PowerShell Extended [PSResourceGet / NuGet Versioning; Oh My Posh prompt profile] (powershell-extended)
 
-Installs PowerShell on AMD64 and ARM64 architectures, with optional resources from the PowerShell Gallery via PSResourceGet. Includes a custom Oh-My-Posh terminal prompt theme and profile files. Supports advanced installation options.
+Installs PowerShell on AMD64 and ARM64 architectures, with optional resources from the PowerShell Gallery via PSResourceGet. Includes a custom Oh My Posh terminal prompt theme and profile files. Supports advanced installation options.
 
 ## Example Usage
 
