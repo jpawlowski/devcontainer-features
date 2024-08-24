@@ -204,23 +204,25 @@ To change the prompt to something of your taste, follow these steps:
 1. **Open `devcontainer.json`**:
    - In the file explorer of VSCode, open the `.devcontainer` folder and click on the `.devcontainer.json` file to open it.
 
-2. **Search for `containerEnv` section**:
-   - Find the `containerEnv` section in the bottom part of the file.
+2. **Search for `remoteEnv` section**:
+   - Find the `remoteEnv` section in the bottom part of the file.
    - If it does not exist, you may create an empty section like this:
      ```jsonc
      // ...
-     "containerEnv": {
+     "remoteEnv": {
 
      }
      // ...
      ```
+
+     If you are strugging to find the right spot, you may follow the [video instructions from the VSCode website](https://code.visualstudio.com/remote/advancedcontainers/environment-variables).
 
 3. **Change environment variables**:
    - Now you want to change (or add) the environment variables shown below:
 
      ```jsonc
      // ...
-     "containerEnv": {
+     "remoteEnv": {
         // Set theme for regular PowerShell session
         "PSPROFILE_POSH_THEME": "devcontainers.minimal.omp.json",
 
@@ -238,11 +240,14 @@ To change the prompt to something of your taste, follow these steps:
 4. **Save `devcontainer.json`**:
    - Save the changes.
 
-5. **Rebuild your dev container**:
-   - To apply the changes, you need to rebuild your dev container. You can do this by opening the command palette
-   (`Cmd + Shift + P` on Mac or `Ctrl + Shift + P` on Windows/Linux) and selecting `Remote-Containers: Rebuild Container`.
+5. **Restart your dev container**:
+   - To apply the changes, you need to restart your dev container. You can do this by opening the command palette
+   (`Cmd + Shift + P` on Mac or `Ctrl + Shift + P` on Windows/Linux) and selecting `Dev Containers: Reopen Folder Locally`.
+     If your container wasn't running, you may now simply start it again. Search for `Dev Containers: Reopen in Container`
+     to start the Dev Container with the new settings.
 
-   - **Note**: This procedure is the same for GitHub Codespaces. Open the command palette and select
-   `Codespaces: Rebuild Container`.
+   - **Note**: This procedure is similar for GitHub Codespaces. Open the command palette and select
+     `Codespaces: Stop current Codespace`. Then, search for `Codespaces: Connect to Codespace` to start the Codespace with
+     the new settings.
 
 By following these steps, you can customize your _Oh My Posh_ PowerShell prompt to your liking.
