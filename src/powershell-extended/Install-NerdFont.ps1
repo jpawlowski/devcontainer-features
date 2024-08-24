@@ -461,14 +461,8 @@ try {
         }
 
         # Define the local paths
-        if ($IsWindows) {
-            $zipPath = "$env:TEMP\NerdFont_$FontName.zip"
-            $extractPath = "$env:TEMP\NerdFont_$FontName"
-        }
-        else {
-            $zipPath = "$env:TMPDIR/NerdFont_$FontName.zip"
-            $extractPath = "$env:TMPDIR/NerdFont_$FontName"
-        }
+        $zipPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "NerdFont_$FontName.zip")
+        $extractPath = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "NerdFont_$FontName")
 
         Write-Verbose "Zip download path: $zipPath"
         Write-Verbose "Extract path: $extractPath"
