@@ -67,7 +67,8 @@ enabled out-of-the-box:
 - [GitHub CLI](https://cli.github.com/) (also see [devcontainers/features/github-cli](https://github.com/devcontainers/features/tree/main/src/github-cli))
 - [`Posh-Git`](https://github.com/dahlbyk/posh-git): Tab completion support for common git commands, branch names, paths
   and more.
-- [`Microsoft.PowerShell.UnixTabCompletion`](https://github.com/PowerShell/UnixCompleters)
+- [`Microsoft.PowerShell.UnixTabCompletion`](https://github.com/PowerShell/UnixCompleters): PowerShell parameter completers
+  for native commands on Linux and macOS.
 - `PSReadLine` [Predictive IntelliSense](https://learn.microsoft.com/en-us/powershell/scripting/learn/shell/using-predictors)
   plugins:
   - [`CompletionPredictor`](https://learn.microsoft.com/en-us/powershell/scripting/learn/shell/using-predictors?view=powershell-7.4#using-other-predictor-plug-ins):
