@@ -5,7 +5,7 @@
     "powershell"
   ],
   "version": "2.0.0",
-  "description": "Installs PowerShell on AMD64 and ARM64 architectures, with optional resources from the PowerShell Gallery via PSResourceGet. Includes a custom Oh My Posh terminal prompt theme and profile files. Supports advanced installation options.",
+  "description": "Installs PowerShell on AMD64 and ARM64 architectures, with optional resources from the PowerShell Gallery via PSResourceGet. Includes a custom Oh My Posh terminal prompt theme and customizable profile files. Supports advanced installation options.",
   "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/powershell-extended",
   "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
   "keywords": [
