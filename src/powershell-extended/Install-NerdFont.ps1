@@ -538,19 +538,7 @@ try {
             Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
 
             # Install the fonts
-            if ($IsWindows) {
-                $Destination = (New-Object -ComObject Shell.Application).Namespace(0x14)
-                Write-Host "`nInstalling font files to Current User Font Directory" -ForegroundColor White
-                Get-ChildItem -Path $extractPath -Filter "$FontName*.ttf" -Recurse | ForEach-Object {
-                    if ($_.FullName -like '*static*') {
-                        Write-Verbose "Skipping static font file: $($_.Name)"
-                        return
-                    }
-                    Write-Host "  $($_.Name)"
-                    $Destination.CopyHere($_.FullName, 0x10)
-                }
-            }
-            elseif ($IsMacOS) {
+            if ($IsMacOS) {
                 $Destination = "${HOME}/Library/Fonts"
                 $null = New-Item -Path $Destination -ItemType Directory -Force
                 Write-Host "`nInstalling font files to $Destination" -ForegroundColor White
@@ -579,7 +567,16 @@ try {
                 $Script:resetFontCache = $Destination
             }
             else {
-                throw 'Unsupported operating system.'
+                $Destination = (New-Object -ComObject Shell.Application).Namespace(0x14)
+                Write-Host "`nInstalling font files to Current User Font Directory" -ForegroundColor White
+                Get-ChildItem -Path $extractPath -Filter "$FontName*.ttf" -Recurse | ForEach-Object {
+                    if ($_.FullName -like '*static*') {
+                        Write-Verbose "Skipping static font file: $($_.Name)"
+                        return
+                    }
+                    Write-Host "  $($_.Name)"
+                    $Destination.CopyHere($_.FullName, 0x10)
+                }
             }
 
             Write-Host "$FontName font installed successfully.`n" -ForegroundColor Green
@@ -593,12 +590,7 @@ catch {
     Write-Error "Failed to install font:`n$_"
 }
 finally {
-    if ($IsWindows) {
-        Remove-Item -Path "$env:TEMP/NerdFont_*" -Force -Recurse -Confirm:$false
-    }
-    else {
-        Remove-Item -Path "$env:TMPDIR/NerdFont_*" -Force -Recurse -Confirm:$false
-    }
+    Remove-Item -Path $([System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), 'NerdFont_*')) -Force -Recurse -Confirm:$false
 }
 
 # Refresh the font cache
