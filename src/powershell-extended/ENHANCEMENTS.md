@@ -153,6 +153,8 @@ To change the font settings in Visual Studio Code (VSCode) for both the code edi
 
      Note that font names with multiple words should be put into single quotes (`'`).
 
+   - **_Optional_: Enable Font Ligatures**:
+
      If your font supports [ligatures](https://www.hanselman.com/blog/monospaced-programming-fonts-with-ligatures), you
      may optionally enable these to give you some (potentially) nice typographic enhancements in the editor :
 
