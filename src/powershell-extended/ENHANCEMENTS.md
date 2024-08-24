@@ -11,13 +11,11 @@ best experience for your PowerShell terminal.
 
 ## 1. Install Nerd Font
 
-Since the VSCode default font (on Windows) is _Cascadia Mono_, we recommend to install an updated version of that very
-same font directly from [Github/Microsoft/Cascadia-Code](https://github.com/microsoft/cascadia-code/releases).
-Since its [May 2024 release](https://github.com/microsoft/cascadia-code/releases/tag/v2404.23) it provides a native
-Nerd Font variant with all the nice details we care about. Since it is not bundles with any of the
-Microsoft applications (yet), you will need to install it separately.
+Since the Visual Studio (not Code) default font is _Cascadia Code_, we recommend to use it in VSCode as well. In [May 2024 release](https://github.com/microsoft/cascadia-code/releases/tag/v2404.23)
+it received native Nerd Font support with all the nice details we care about. Since it is not bundles with VSCode (yet),
+you will need to install it separately.
 
-However, you may also select any other font from [nerdfonts.com](https://www.nerdfonts.com/).
+If you wish, you may also select any other font from [nerdfonts.com](https://www.nerdfonts.com/).
 
 ### Install _Cascadia_ Code & _Cascadia Mono_ as your Nerd Font _(recommended)_
 
