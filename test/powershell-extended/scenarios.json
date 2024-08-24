@@ -103,6 +103,23 @@
       }
     }
   },
+  "install_powershell_and_powershell-extended": {
+    "image": "mcr.microsoft.com/devcontainers/base:debian",
+    "features": {
+      "ghcr.io/devcontainers/features/powershell:1": {
+        "version": "latest",
+        "modules": "Az.Accounts"
+      },
+      "powershell-extended": {
+        "resources": "Az.Resources",
+        "updatePSResourceGet": "none",
+        "updatePSReadLine": "none",
+        "updateModulesHelp": false,
+        "installOhMyPosh": false,
+        "installOhMyPoshConfig": false
+      }
+    }
+  },
   "install_powershell_psconfig": {
     "image": "mcr.microsoft.com/devcontainers/base:debian",
     "features": {

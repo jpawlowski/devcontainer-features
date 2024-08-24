@@ -143,6 +143,27 @@ else
     echo "PowerShell is already installed."
 fi
 
+# Fix pwsh execution bit
+pwsh_path=$(command -v pwsh)
+if [ -L "$pwsh_path" ]; then
+    # get the target of the symlink
+    target_path=$(readlink -f "$pwsh_path")
+    # check if the target is a file
+    if [ -f "$target_path" ]; then
+        # check if the target is not executable
+        if [ ! -x "$target_path" ]; then
+            echo "Fixing pwsh execution bit"
+            chmod +x "$target_path"
+        fi
+    fi
+else
+    # check if pwsh is not executable
+    if [ ! -x "$pwsh_path" ]; then
+        echo "Fixing pwsh execution bit"
+        chmod +x "$pwsh_path"
+    fi
+fi
+
 # Get existing repositories
 IFS=';' read -r -a repos <<<"$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Get-PSResourceRepository).Uri.OriginalString -join ';'")"
 
