@@ -49,6 +49,7 @@ try {
         Set-PSReadlineKeyHandler -Chord Tab -Function MenuComplete
         Set-PSReadlineKeyHandler -Chord UpArrow -Function HistorySearchBackward
         Set-PSReadlineKeyHandler -Chord DownArrow -Function HistorySearchForward
+        Set-PSReadLineKeyHandler -Chord Shift+F1 -Function ShowCommandHelp
         Set-PSReadLineKeyHandler -Chord F2 -Function SwitchPredictionView
 
         # `ForwardChar` accepts the entire suggestion text when the cursor is at the end of the line.
