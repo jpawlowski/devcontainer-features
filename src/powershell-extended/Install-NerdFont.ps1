@@ -32,6 +32,18 @@
     The script downloads the font archive from the GitHub release page and extracts the font files to
     the user's font directory.
 
+    You may also run this script directly from the web using the following command:
+
+    ```powershell
+    & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont')))
+    ```
+
+    Parameters may be passed just like any other PowerShell script. For example:
+
+    ```powershell
+    & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -FontName 'Cascadia'
+    ```
+
 .PARAMETER FontName
     The name of the Nerd Font to install.
     Multiple font names can be specified as an array of strings.
