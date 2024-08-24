@@ -160,9 +160,9 @@ To change the font settings in Visual Studio Code (VSCode) for both the code edi
      "editor.fontLigatures": true,
      ```
 
-    Ultimately, the choice is yours. Some people appreciate it, while others do not. It's best to form your own opinion.
-    If you have an interest in typography, you might enjoy it. However, if you prefer sticking to standards, you might not.
-    It's a balance between the artist and the nerd within you.
+     Ultimately, the choice is yours. Some people appreciate it, while others do not. It's best to form your own opinion.
+     If you have an interest in typography, you might enjoy it. However, if you prefer sticking to standards, you might not.
+     It's a balance between the artist and the nerd within you.
 
 4. **Save Settings**:
    - Save the changes if you edited the `settings.json` file.
