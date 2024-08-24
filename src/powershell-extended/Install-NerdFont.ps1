@@ -1,3 +1,5 @@
+#!/usr/bin/env pwsh
+
 <#PSScriptInfo
 .VERSION 1.0.0
 .GUID a3238c59-8a0e-4c11-a334-f071772d1255
