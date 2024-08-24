@@ -235,7 +235,7 @@ To change the prompt to something of your taste, follow these steps:
      Note that you will need to pay attention to keep a valid JSON format which might require adding some commas `,` at
      the end of a section or existing environment variables.
 
-     You may either enter the name of one of the pre-delivered themes or set a direct URL to download the theme automatically.
+     You may either enter the name of one of the included themes, or set a direct URL to download the theme automatically.
 
 4. **Save `devcontainer.json`**:
    - Save the changes.
