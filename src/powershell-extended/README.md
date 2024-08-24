@@ -38,21 +38,73 @@ Installs PowerShell on AMD64 and ARM64 architectures, with optional resources fr
 
 - `ms-vscode.powershell`
 
-## Terminal Prompt Theme
+## Enhanced Shell Experience
 
-This feature comes with a custom [Oh My Posh](https://ohmyposh.dev/) theme to adjust the terminal prompt.
+The `installOhMyPoshConfig` setting installs a pre-configured set of [PowerShell profile files](./dotfiles/.config/powershell/)
+that provide a fully-featured and ready-to-go terminal console experience.
 
-[![Oh My Posh theme: devcontainers.minimal](images/devcontainers.minimal.omp.png)](https://ohmyposh.dev/docs/themes)
+> Follow the [Enhancement Guide](ENHANCEMENTS.md) to unlock the full potential of the PowerShell terminal in your Dev Container.
 
-You may [change the theme](https://ohmyposh.dev/docs/themes) to one of the preinstalled ones by setting the container environment
-variables `PSPROFILE_POSH_THEME` (for the PowerShell host) and/or `PSPROFILE_VSCODE_POSH_THEME` (for the VSCode PowerShell
-Extension) to the name of the desired theme. You may also put your own theme into the `~/.config/oh-my-posh/themes` folder,
-or set the environment variable to a URL to have the theme downloaded automatically.
+Here are some highlights:
 
-> **Note**: Most themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your host
-> system (not the Dev Container) and changing your font settings in VSCode. The VSCode default font _Cascadia Mono_
-> now has a native Nerd Font variant, which can be downloaded directly from [Github/Microsoft/Cascadia-Code](https://github.com/microsoft/cascadia-code/releases).
-> Follow the [Enhancement Guide](ENHANCEMENTS.md) to enable the full potential of the PowerShell terminal in your Dev Container.
+### 1. Terminal Prompt Theme
+
+This feature includes a custom [Oh My Posh](https://ohmyposh.dev/) theme to customize the terminal prompt.
+[![Oh My Posh theme: devcontainers.minimal](images/devcontainers.minimal.omp.png)](./dotfiles/.config/oh-my-posh/themes/devcontainers.minimal.omp.json)
+You can [change the theme](ENHANCEMENTS.md#3-change-your-oh-my-posh-powershell-prompt) to one that you prefer.
+
+> **Note**: Most other themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your
+> **host system** (not the Dev Container) and adjusting your font settings in VSCode. The Windows Terminal default font
+> [_Cascadia Mono_](https://github.com/microsoft/cascadia-code/releases/tag/v2404.23) now has a native Nerd Font variant,
+> which can [easily be installed](ENHANCEMENTS.md#1-install-nerd-font) and looks great in VSCode as well.
+
+### 2. Command Line Completion / IntelliSense
+
+Command completion is crucial for productivity when using the command line. The profile includes multiple popular completions
+enabled out-of-the-box:
+
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/) (also see [devcontainers/features/azure-cli](https://github.com/devcontainers/features/tree/main/src/azure-cli))
+- [GitHub CLI](https://cli.github.com/) (also see [devcontainers/features/github-cli](https://github.com/devcontainers/features/tree/main/src/github-cli))
+- [`Posh-Git`](https://github.com/dahlbyk/posh-git): Tab completion support for common git commands, branch names, paths
+  and more.
+- [`Microsoft.PowerShell.UnixTabCompletion`](https://github.com/PowerShell/UnixCompleters)
+- `PSReadLine` [Predictive IntelliSense](https://learn.microsoft.com/en-us/powershell/scripting/learn/shell/using-predictors)
+  plugins:
+  - [`CompletionPredictor`](https://learn.microsoft.com/en-us/powershell/scripting/learn/shell/using-predictors?view=powershell-7.4#using-other-predictor-plug-ins):
+    Command-line IntelliSense based on PowerShell auto-completion.
+
+Optional completions that can be enabled:
+
+- [`Az.Tools.Predictor`](https://learn.microsoft.com/en-us/powershell/azure/predictor-overview): Module providing
+  recommendations for cmdlets in the `Az` module.
+- [Oh My Posh CLI](https://ohmyposh.dev/blog/whats-new-2#cli-interface-also-2)
+- [`PSFzf`](https://github.com/kelleyma49/PSFzf): A PowerShell module that wraps `fzf`, a fuzzy file finder for the
+  command line.
+
+Other tools:
+
+- [`z`](https://github.com/badmotorfinger/z): Lets you quickly navigate the file system in PowerShell based on your `cd`
+  command history.
+- Custom `dir` command alias to sort folders first and show hidden files.
+
+### 3. Other Highlights
+
+- **Fully Customizable Profile Configuration**:
+
+  Profile presets can be adjusted using `PSPROFILE_*` environment variables directly in your `devcontainer.json`. Settings
+  can be controlled separately for both regular PowerShell terminals and the VSCode PowerShell Extension host.
+
+  Custom profile settings can be placed in profile directories to avoid modifying the built-in profile files. This includes
+  separate directories for special terminal multiplexers like `tmux`.
+
+- **Fast Profile Load Time**:
+
+  The profile uses delayed and parallel module imports to enhance load times. This approach provides a feature-rich terminal
+  experience while maintaining quick responsiveness when opening a new terminal window.
+
+- **Daily Update of Help Files**:
+
+  A background job automatically updates help files once a day when a new shell is started.
 
 ## Advanced Resource Installation Options
 
