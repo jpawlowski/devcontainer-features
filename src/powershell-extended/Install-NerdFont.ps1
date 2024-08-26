@@ -571,7 +571,7 @@ begin {
             $Name = Show-Menu -Options $allNerdFonts
             if ($Name -eq 'quit') {
                 Write-Host "Selection process canceled."
-                exit
+                return
             }
         } while (-not $Name)
 
@@ -587,7 +587,7 @@ begin {
         }
         else {
             Write-Host 'No font selected.'
-            exit
+            return
         }
     }
     elseif ($PSBoundParameters.Name) {
