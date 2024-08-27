@@ -556,17 +556,7 @@ begin {
             }
 
             if ($invalidSelections.Count -eq 0) {
-                # Check for conflicting fonts
-                $conflictingFonts = $validSelections | Group-Object -Property unpatchedName | Where-Object { $_.Count -gt 1 }
-                if ($conflictingFonts.Count -eq 0) {
-                    return $validSelections.caskName
-                }
-                else {
-                    foreach ($conflict in $conflictingFonts) {
-                        $conflictNames = $conflict.Group | ForEach-Object { $_.imagePreviewFont }
-                        Write-Host "Conflicting selection(s): $($conflictNames -join ', '). These fonts cannot be installed together because they share the same base font name." -ForegroundColor Red
-                    }
-                }
+                return $validSelections.caskName
             }
             else {
                 Write-Host "Invalid selection(s): $($invalidSelections -join ', '). Please enter valid numbers between 0 and $($Options.Length - 1) or 'q' to quit." -ForegroundColor Red
