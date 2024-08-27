@@ -65,6 +65,11 @@
     You will be prompted to confirm the installation for each font with the option to skip, cancel,
     or install all without further confirmation.
 
+.PARAMETER List
+    List available Nerd Fonts matching the specified pattern.
+    Use '*' or 'All' to list all available Nerd Fonts.
+    This parameter does not install any fonts.
+
 .EXAMPLE
     Install-NerdFont -Name cascadia-code
     Install the Cascadia Code fonts from the Microsoft repository.
@@ -81,6 +86,10 @@
     Install-NerdFont -All -WhatIf
     Show what would happen if all fonts were installed.
 
+.EXAMPLE
+    Install-NerdFont -List cascadia*
+    List all fonts with names starting with 'cascadia'.
+
 .NOTES
     This script must be run on your local machine, not in a container.
 #>
@@ -93,7 +102,11 @@ param(
     [Parameter(Mandatory = $false, ParameterSetName = 'ListOnly')]
     [AllowNull()]
     [AllowEmptyString()]
-    [string]$List = $null,
+    [ArgumentCompleter({
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            @('All') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object { [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_) }
+        })]
+    [string]$List,
 
     [Parameter(Mandatory = $false, ParameterSetName = 'ByAll', HelpMessage = 'In which scope do you want to install the Nerd Font, AllUsers or CurrentUser?')]
     [Parameter(Mandatory = $false, ParameterSetName = 'ByName', HelpMessage = 'In which scope do you want to install the Nerd Font, AllUsers or CurrentUser?')]
@@ -369,7 +382,7 @@ begin {
                 Name        = $_.caskName
                 DisplayName = $_.imagePreviewFont
                 Description = $_.description
-                Source      = $_.releaseUrl -replace '^(https?://)(?:[^/]+\.)*([^/]+\.[^/]+)/repos/([^/]+)/([^/]+).*', '$1$2/$3/$4'
+                SourceUrl   = $_.releaseUrl -replace '^(https?://)(?:[^/]+\.)*([^/]+\.[^/]+)/repos/([^/]+)/([^/]+).*', '$1$2/$3/$4'
             }
         }
         return
@@ -541,6 +554,23 @@ begin {
                     $invalidSelections += $index
                 }
             }
+
+            if ($invalidSelections.Count -eq 0) {
+                # Check for conflicting fonts
+                $conflictingFonts = $validSelections | Group-Object -Property unpatchedName | Where-Object { $_.Count -gt 1 }
+                if ($conflictingFonts.Count -eq 0) {
+                    return $validSelections.caskName
+                }
+                else {
+                    foreach ($conflict in $conflictingFonts) {
+                        $conflictNames = $conflict.Group | ForEach-Object { $_.imagePreviewFont }
+                        Write-Host "Conflicting selection(s): $($conflictNames -join ', '). These fonts cannot be installed together because they share the same base font name." -ForegroundColor Red
+                    }
+                }
+            }
+            else {
+                Write-Host "Invalid selection(s): $($invalidSelections -join ', '). Please enter valid numbers between 0 and $($Options.Length - 1) or 'q' to quit." -ForegroundColor Red
+            }
         }
     }
 
@@ -670,7 +700,13 @@ begin {
             $Name = Show-Menu -Options $allNerdFonts
             if ($Name -eq 'quit') {
                 Write-Host "Selection process canceled."
-                return
+                if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '') {
+                    # Running as a script block
+                    return
+                } else {
+                    # Running as a standalone script
+                    exit
+                }
             }
         } while (-not $Name)
 
