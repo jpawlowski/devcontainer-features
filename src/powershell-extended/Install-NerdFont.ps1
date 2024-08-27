@@ -493,7 +493,7 @@ begin {
                             Write-Host -NoNewline -ForegroundColor DarkYellow $numberText
                             Write-Host -NoNewline -ForegroundColor Yellow ': '
                             if ($fontName -match '^(.+)(Font Family)(.*)$') {
-                                if ($IsCoreCLR -and -not [string]::IsNullOrEmpty($Options[$index].linkPreviewFont)) {
+                                if ($IsCoreCLR -and $Options[$index].linkPreviewFont -is [string] -and -not [string]::IsNullOrEmpty($Options[$index].linkPreviewFont)) {
                                     $link = $Options[$index].linkPreviewFont
                                     if ($link -notmatch '^https?://') {
                                         $link = "https://www.programmingfonts.org/#$link"
@@ -511,7 +511,7 @@ begin {
                                 }
                             }
                             else {
-                                if ($IsCoreCLR -and -not [string]::IsNullOrEmpty($Options[$index].linkPreviewFont)) {
+                                if ($IsCoreCLR -and $Options[$index].linkPreviewFont -is [string] -and -not [string]::IsNullOrEmpty($Options[$index].linkPreviewFont)) {
                                     $link = $Options[$index].linkPreviewFont
                                     if ($link -notmatch '^https?://') {
                                         $link = "https://www.programmingfonts.org/#$link"
