@@ -31,12 +31,12 @@
     This PowerShell script installs Nerd Fonts on Windows, macOS, or Linux.
     Nerd Fonts is a project that patches developer targeted fonts with a high number of glyphs (icons).
 
-    The script also supports the installation of the Cascadia Code, Cascadia Mono, and Cascadia fonts
-    from the Microsoft repository. These fonts have native Nerd Font and Powerline support since
-    version 2404.23.
+    The script also supports the installation of the Cascadia Code fonts from the Microsoft repository.
+    These fonts have native Nerd Font and Powerline support since version 2404.23.
 
     The script downloads the font archive from the GitHub release page and extracts the font files to
-    the user's font directory.
+    the user's font directory, or the system font directory when using the AllUsers scope on Windows
+    with elevated permissions.
 
     You may also run this script directly from the web using the following command:
 
@@ -47,7 +47,7 @@
     Parameters may be passed just like any other PowerShell script. For example:
 
     ```powershell
-    & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -Name 'Cascadia'
+    & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -Name cascadia-code, cascadia-mono
     ```
 
 .PARAMETER Name
@@ -56,8 +56,14 @@
     If no font name is specified, the script provides an interactive menu to select the font to install
     (unless the All parameter is used).
 
+    The menu is displayed only if the script is run in an interactive environment.
+
+    If the script is run in a non-interactive environment, the Name parameter is mandatory.
+
 .PARAMETER All
     Install all available Nerd Fonts.
+    You will be prompted to confirm the installation for each font with the option to skip, cancel,
+    or install all without further confirmation.
 
 .EXAMPLE
     Install-NerdFont -Name cascadia-code
@@ -67,6 +73,14 @@
     Install-NerdFont -Name cascadia-mono
     Install the Cascadia Mono fonts from the Microsoft repository.
 
+.EXAMPLE
+    Install-NerdFont -Name cascadia-code, cascadia-mono
+    Install the Cascadia Code and Cascadia Mono fonts from the Microsoft repository.
+
+.EXAMPLE
+    Install-NerdFont -All -WhatIf
+    Show what would happen if all fonts were installed.
+
 .NOTES
     This script must be run on your local machine, not in a container.
 #>
@@ -75,6 +89,11 @@
 param(
     [Parameter(Mandatory = $true, ParameterSetName = 'ByAll')]
     [switch]$All,
+
+    [Parameter(Mandatory = $false, ParameterSetName = 'ListOnly')]
+    [AllowNull()]
+    [AllowEmptyString()]
+    [string]$List = $null,
 
     [Parameter(Mandatory = $false, ParameterSetName = 'ByAll', HelpMessage = 'In which scope do you want to install the Nerd Font, AllUsers or CurrentUser?')]
     [Parameter(Mandatory = $false, ParameterSetName = 'ByName', HelpMessage = 'In which scope do you want to install the Nerd Font, AllUsers or CurrentUser?')]
@@ -119,7 +138,7 @@ dynamicparam {
         .DESCRIPTION
         This function loads the fonts list from a cache file if it exists and is not expired.
         #>
-        if (Test-Path $cacheFilePath) {
+        if ([System.IO.Directory]::Exists($cacheFilePath)) {
             $cacheFile = Get-Item $cacheFilePath
             if ((Get-Date) -lt $cacheFile.LastWriteTime.Add($cacheDuration)) {
                 return Get-Content $cacheFilePath | ConvertFrom-Json
@@ -149,33 +168,93 @@ dynamicparam {
         #>
         $customEntries = @(
             [PSCustomObject]@{
-                unpatchedName          = 'Cascadia Code'
+                unpatchedName          = 'Cascadia Code Font Family'
                 licenseId              = 'OFL-1.1-RFN'
                 RFN                    = $true
                 version                = 'latest'
-                patchedName            = 'CascadiaCode'
+                patchedName            = 'Cascadia Code Font Family'
                 folderName             = 'CascadiaCode'
-                imagePreviewFont       = 'Cascadia Code'
+                imagePreviewFont       = 'Cascadia Code Font Family'
                 imagePreviewFontSource = $null
                 linkPreviewFont        = $null
                 caskName               = 'cascadia-code'
                 repoRelease            = $false
-                description            = 'Cascadia Code is a monospaced font designed to work well with the new Windows Terminal.'
+                description            = 'The official Cascadia Code font by Microsoft with all variants, including Nerd Font and Powerline'
                 releaseUrl             = 'https://api.github.com/repos/microsoft/cascadia-code/releases/latest'
             },
             [PSCustomObject]@{
-                unpatchedName          = 'Cascadia Mono'
+                unpatchedName          = 'Cascadia Code NF'
                 licenseId              = 'OFL-1.1-RFN'
                 RFN                    = $true
                 version                = 'latest'
-                patchedName            = 'CascadiaMono'
+                patchedName            = 'Cascadia Code NF'
+                folderName             = 'CascadiaCodeNF'
+                imagePreviewFont       = 'Cascadia Code Nerd Font'
+                imagePreviewFontSource = $null
+                linkPreviewFont        = $null
+                caskName               = 'cascadia-code-nf'
+                repoRelease            = $false
+                description            = 'The official Cascadia Code font by Microsoft that is enabled with Nerd Font symbols'
+                releaseUrl             = 'https://api.github.com/repos/microsoft/cascadia-code/releases/latest'
+            },
+            [PSCustomObject]@{
+                unpatchedName          = 'Cascadia Code PL'
+                licenseId              = 'OFL-1.1-RFN'
+                RFN                    = $true
+                version                = 'latest'
+                patchedName            = 'Cascadia Code PL'
+                folderName             = 'CascadiaCodePL'
+                imagePreviewFont       = 'Cascadia Code Powerline Font'
+                imagePreviewFontSource = $null
+                linkPreviewFont        = $null
+                caskName               = 'cascadia-code-pl'
+                repoRelease            = $false
+                description            = 'The official Cascadia Code font by Microsoft that is enabled with Powerline symbols'
+                releaseUrl             = 'https://api.github.com/repos/microsoft/cascadia-code/releases/latest'
+            },
+            [PSCustomObject]@{
+                unpatchedName          = 'Cascadia Mono Font Family'
+                licenseId              = 'OFL-1.1-RFN'
+                RFN                    = $true
+                version                = 'latest'
+                patchedName            = 'Cascadia Mono Font Family'
                 folderName             = 'CascadiaMono'
-                imagePreviewFont       = 'Cascadia Mono'
+                imagePreviewFont       = 'Cascadia Mono Font Family'
                 imagePreviewFontSource = $null
                 linkPreviewFont        = $null
                 caskName               = 'cascadia-mono'
                 repoRelease            = $false
-                description            = 'Cascadia Mono is a monospaced font designed to work well with the new Windows Terminal.'
+                description            = 'The official Cascadia Mono font by Microsoft with all variants, including Nerd Font and Powerline'
+                releaseUrl             = 'https://api.github.com/repos/microsoft/cascadia-code/releases/latest'
+            },
+            [PSCustomObject]@{
+                unpatchedName          = 'Cascadia Mono NF'
+                licenseId              = 'OFL-1.1-RFN'
+                RFN                    = $true
+                version                = 'latest'
+                patchedName            = 'Cascadia Mono NF'
+                folderName             = 'CascadiaMonoNF'
+                imagePreviewFont       = 'Cascadia Mono Nerd Font'
+                imagePreviewFontSource = $null
+                linkPreviewFont        = $null
+                caskName               = 'cascadia-mono-nf'
+                repoRelease            = $false
+                description            = 'The official Cascadia Mono font by Microsoft that is enabled with Nerd Font symbols'
+                releaseUrl             = 'https://api.github.com/repos/microsoft/cascadia-code/releases/latest'
+            },
+            [PSCustomObject]@{
+                unpatchedName          = 'Cascadia Mono PL'
+                licenseId              = 'OFL-1.1-RFN'
+                RFN                    = $true
+                version                = 'latest'
+                patchedName            = 'Cascadia Mono PL'
+                folderName             = 'CascadiaMonoPL'
+                imagePreviewFont       = 'Cascadia Mono Powerline Font'
+                imagePreviewFontSource = $null
+                linkPreviewFont        = $null
+                caskName               = 'cascadia-mono-pl'
+                repoRelease            = $false
+                description            = 'The official Cascadia Mono font by Microsoft that is enabled with Powerline symbols'
                 releaseUrl             = 'https://api.github.com/repos/microsoft/cascadia-code/releases/latest'
             }
         )
@@ -266,6 +345,36 @@ param(`$commandName, `$parameterName, `$wordToComplete, `$commandAst, `$fakeBoun
 }
 
 begin {
+    if ($PSBoundParameters.ContainsKey('List')) {
+        # Set default value if List is null or empty
+        if ([string]::IsNullOrEmpty($List)) {
+            $List = "*"
+        }
+        else {
+            $List = $List.Trim()
+        }
+
+        # Handle special case for 'All'
+        if ($List -eq 'All') {
+            $List = "*"
+        }
+        elseif ($List -notmatch '\*') {
+            # Ensure the List contains wildcard characters
+            $List = "*$List*"
+        }
+
+        # Filter and format the output
+        $allNerdFonts | Where-Object { $_.caskName -like $List } | ForEach-Object {
+            [PSCustomObject]@{
+                Name        = $_.caskName
+                DisplayName = $_.imagePreviewFont
+                Description = $_.description
+                Source      = $_.releaseUrl -replace '^(https?://)(?:[^/]+\.)*([^/]+\.[^/]+)/repos/([^/]+)/([^/]+).*', '$1$2/$3/$4'
+            }
+        }
+        return
+    }
+
     if (
         $null -ne $env:REMOTE_CONTAINERS -or
         $null -ne $env:CODESPACES -or
@@ -337,13 +446,13 @@ begin {
             Write-Host -ForegroundColor Cyan
             Write-Host (('=' * $terminalWidth) + "`n") -ForegroundColor Cyan
 
-            # Add the 'All Nerd Fonts' option at the top
-            $Options = @([pscustomobject]@{ imagePreviewFont = 'All Nerd Fonts'; unpatchedName = 'All'; caskName = 'All' }) + $Options
+            # Add the 'All Fonts' option at the top
+            $Options = @([pscustomobject]@{ imagePreviewFont = 'All Fonts'; unpatchedName = 'All'; caskName = 'All' }) + $Options
 
             # Calculate the maximum width of each column
-            $maxOptionLength = ($Options | ForEach-Object { $_.imagePreviewFont.Length } | Measure-Object -Maximum).Maximum
+            $maxOptionLength = ($Options | ForEach-Object { $_.imagePreviewFont.Length } | Measure-Object -Maximum).Maximum + 1 # 1 for padding
             $maxIndexLength = ($Options.Length).ToString().Length
-            $columnWidth = $maxIndexLength + $maxOptionLength + 4  # 4 for padding and ': '
+            $columnWidth = $maxIndexLength + $maxOptionLength + 5  # 5 for padding and ': '
 
             # Calculate the number of columns that can fit in the terminal width
             $numColumns = [math]::Floor($terminalWidth / $columnWidth)
@@ -362,7 +471,7 @@ begin {
                         $fontText = ('{0,-' + $maxOptionLength + '}') -f $fontName
 
                         if ($index -eq 0) {
-                            # Special formatting for 'All Nerd Fonts'
+                            # Special formatting for 'All Fonts'
                             Write-Host -NoNewline -ForegroundColor Magenta $numberText
                             Write-Host -NoNewline -ForegroundColor Magenta ': '
                             Write-Host -NoNewline -ForegroundColor Magenta "$($PSStyle.Italic)$fontText$($PSStyle.ItalicOff)"
@@ -370,7 +479,14 @@ begin {
                         else {
                             Write-Host -NoNewline -ForegroundColor DarkYellow $numberText
                             Write-Host -NoNewline -ForegroundColor Yellow ': '
-                            Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$fontText$($PSStyle.BoldOff)"
+                            if ($fontText -match '^(.+)(Font Family)(.*)$') {
+                                Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$($Matches[1])$($PSStyle.BoldOff)"
+                                Write-Host -NoNewline -ForegroundColor Gray "$($PSStyle.Italic)$($Matches[2])$($PSStyle.ItalicOff)"
+                                Write-Host -NoNewline -ForegroundColor White "$($Matches[3])"
+                            }
+                            else {
+                                Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$fontText$($PSStyle.BoldOff)"
+                            }
                         }
                     }
                 }
@@ -409,38 +525,21 @@ begin {
             $validSelections = @()
             $invalidSelections = @()
             foreach ($number in $numbers) {
-                if ($number -match '^\d+$') {
-                    $number = [int]$number
-                    if ($number -eq 0) {
+                if ($number -match '^-?\d+$') {
+                    $index = [int]$number - 1
+                    if ($index -lt 0) {
                         return 'All'
                     }
-                    elseif ($number -ge 1 -and $number -le $Options.Length) {
-                        $validSelections += $Options[$number - 1]
+                    elseif ($index -ge 0 -and $index -le ($Options.Length - 1)) {
+                        $validSelections += $Options[$index]
                     }
                     else {
-                        $invalidSelections += $number - 1
+                        $invalidSelections += $index
                     }
                 }
                 else {
-                    $invalidSelections += $number - 1
+                    $invalidSelections += $index
                 }
-            }
-
-            if ($invalidSelections.Count -eq 0) {
-                # Check for conflicting fonts
-                $conflictingFonts = $validSelections | Group-Object -Property unpatchedName | Where-Object { $_.Count -gt 1 }
-                if ($conflictingFonts.Count -eq 0) {
-                    return $validSelections.caskName
-                }
-                else {
-                    foreach ($conflict in $conflictingFonts) {
-                        $conflictNames = $conflict.Group | ForEach-Object { $_.imagePreviewFont }
-                        Write-Host "Conflicting selection(s): $($conflictNames -join ', '). These fonts cannot be installed together because they share the same base font name." -ForegroundColor Red
-                    }
-                }
-            }
-            else {
-                Write-Host "Invalid selection(s): $($invalidSelections -join ', '). Please enter valid numbers between 0 and $($Options.Length - 1) or 'q' to quit." -ForegroundColor Red
             }
         }
     }
@@ -577,7 +676,7 @@ begin {
 
         if ($Name) {
             if ($Name -eq 'All') {
-                Write-Host "`nYou selected all Nerd Fonts.`n" -ForegroundColor Yellow
+                Write-Host "`nYou selected all fonts.`n" -ForegroundColor Yellow
                 # Proceed with the installation of all fonts
             }
             else {
@@ -597,65 +696,23 @@ begin {
     $nerdFontsToInstall = @()
 
     if ($PSBoundParameters.All -or $Name -eq 'All') {
-        # Group fonts by unpatchedName to identify conflicts
-        $groupedFonts = $allNerdFonts | Group-Object -Property unpatchedName
-
-        # Resolve conflicts by giving precedence to fonts with imagePreviewFontSource = $null
-        $resolvedFonts = @()
-        foreach ($group in $groupedFonts) {
-            $fonts = $group.Group
-            $preferredFont = $fonts | Where-Object { $_.imagePreviewFontSource -eq $null }
-            if ($preferredFont) {
-                $resolvedFonts += $preferredFont
-            }
-            else {
-                $resolvedFonts += $fonts[0]  # If no preferred font, take the first one
-            }
-        }
-
-        $nerdFontsToInstall = $resolvedFonts
+        $nerdFontsToInstall = $allNerdFonts
     }
     else {
         # Remove duplicates and collect selected fonts
         $uniqueNames = [System.Collections.Generic.HashSet[string]]::new()
         $selectedFonts = @()
-        $conflictCheck = @{}
 
         foreach ($fontName in $Name) {
             if ($uniqueNames.Add($fontName)) {
                 $matchingFonts = $allNerdFonts | Where-Object { $_.caskName -eq $fontName -or $_.folderName -eq $fontName }
                 foreach ($font in $matchingFonts) {
                     $selectedFonts += $font
-                    if ($conflictCheck.ContainsKey($font.unpatchedName)) {
-                        $conflictCheck[$font.unpatchedName] += $font.imagePreviewFont
-                    }
-                    else {
-                        $conflictCheck[$font.unpatchedName] = @($font.imagePreviewFont)
-                    }
                 }
             }
         }
 
-        # Check for conflicting fonts
-        $conflictMessages = @()
-        foreach ($key in $conflictCheck.Keys) {
-            if ($conflictCheck[$key].Count -gt 1) {
-                $conflictMessages += "Conflicting fonts: $($conflictCheck[$key] -join ', '). These fonts cannot be installed together because they share the same base font name."
-            }
-        }
-
-        if ($conflictMessages.Count -gt 0) {
-            $PSCmdlet.ThrowTerminatingError(
-                [System.Management.Automation.ErrorRecord]::new(
-                    [System.Exception]::new($conflictMessages -join "`n"),
-                    'ConflictMessagesPresent',
-                    [System.Management.Automation.ErrorCategory]::ResourceUnavailable,
-                    $null
-                )
-            )
-        }
-
-        # Add unique and non-conflicting fonts to the installation list
+        # Add unique fonts to the installation list
         $nerdFontsToInstall = $selectedFonts
     }
 
@@ -708,15 +765,15 @@ process {
 
         foreach ($nerdFont in $nerdFontsToInstall) {
             $sourceName = $nerdFont.releaseUrl -replace '^https?://(?:[^/]+\.)*([^/]+\.[^/]+)/repos/([^/]+)/([^/]+).*', '$1/$2/$3'
-            Write-Verbose "Processing font: $($nerdFont.folderName) [$($nerdFont.caskName)] ($($nerdFont.imagePreviewFont)) from $sourceName"
 
             if (
                 $PSCmdlet.ShouldProcess(
-                    "Install the font '$($nerdFont.imagePreviewFont)' from $sourceName",
-                    "Do you confirm to install the font '$($nerdFont.imagePreviewFont)' from $sourceName ?",
+                    "Install '$($nerdFont.imagePreviewFont)' from $sourceName",
+                    "Do you confirm to install '$($nerdFont.imagePreviewFont)' from $sourceName ?",
                     "Nerd Fonts Installation"
                 )
             ) {
+                Write-Verbose "Processing font: $($nerdFont.folderName) [$($nerdFont.caskName)] ($($nerdFont.imagePreviewFont)) from $sourceName"
                 if ($null -eq $nerdFont.imagePreviewFontSource) {
                     $assetUrl = $fontReleases[$nerdFont.releaseUrl].ReleaseData.assets | Where-Object { $_.name -match "\.zip$" } | Select-Object -ExpandProperty browser_download_url
                 }
@@ -782,13 +839,65 @@ process {
                     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $extractPath)
                 }
 
+                $filter = '*.ttf'
+                $otfPath = [System.IO.Path]::Combine($extractPath, 'otf')
+                $ttfPath = [System.IO.Path]::Combine($extractPath, 'ttf')
+                $staticPath = [System.IO.Path]::Combine($extractPath, 'static')
+
+                # Use otf subfolder if it exists
+                if (Test-Path -Path $otfPath) {
+                    $filter = '*.otf'
+
+                    # Use static subfolder if it exists
+                    $staticPath = [System.IO.Path]::Combine($otfPath, 'static')
+                    if (Test-Path -Path $staticPath) {
+                        Write-Verbose "Using static font files from $staticPath"
+                        $extractPath = $staticPath
+                    }
+                    else {
+                        Write-Verbose "Using font files from $otfPath"
+                        $extractPath = $otfPath
+                    }
+                }
+
+                # Use ttf subfolder if it exists
+                elseif (Test-Path -Path $ttfPath) {
+                    # Use static subfolder if it exists
+                    $staticPath = [System.IO.Path]::Combine($ttfPath, 'static')
+                    if (Test-Path -Path $staticPath) {
+                        Write-Verbose "Using static font files from $staticPath"
+                        $extractPath = $staticPath
+                    }
+                    else {
+                        Write-Verbose "Using font files from $ttfPath"
+                        $extractPath = $ttfPath
+                    }
+                }
+
+                # Use static subfolder if it exists
+                elseif (Test-Path -Path $staticPath) {
+                    $otfPath = [System.IO.Path]::Combine($staticPath, 'otf')
+                    $ttfPath = [System.IO.Path]::Combine($staticPath, 'ttf')
+                    if (Test-Path -Path $otfPath) {
+                        # Use otf subfolder if it exists
+                        Write-Verbose "Using static font files from $otfPath"
+                        $extractPath = $otfPath
+                    }
+                    elseif (Test-Path -Path $ttfPath) {
+                        # Use otf subfolder if it exists
+                        Write-Verbose "Using static font files from $ttfPath"
+                        $extractPath = $ttfPath
+                    }
+                    else {
+                        Write-Verbose "Using static font files from $staticPath"
+                        $extractPath = $staticPath
+                    }
+                }
+
                 # Install the fonts
                 $fileCounter = 0
                 if ($null -eq $nerdFont.imagePreviewFontSource) {
-                    $filter = "$($nerdFont.folderName)*.ttf"
-                }
-                else {
-                    $filter = "*.ttf"
+                    $filter = "$($nerdFont.folderName)$filter"
                 }
 
                 if ($IsMacOS) {
@@ -796,11 +905,7 @@ process {
                     $null = [System.IO.Directory]::CreateDirectory($Destination)
                     Write-Host "`nInstalling font files to $Destination" -ForegroundColor White
                     Write-Verbose "Searching for $filter font files in $extractPath"
-                    Get-ChildItem -Path $extractPath -Filter $filter -Recurse | ForEach-Object {
-                        if ($null -eq $nerdFont.imagePreviewFontSource -and $_.FullName -like '*static*') {
-                            Write-Verbose "Skipping static font file: $($_.Name)"
-                            return
-                        }
+                    Get-ChildItem -Path $extractPath -Filter $filter | ForEach-Object {
                         Write-Host "  $($_.Name)"
                         Copy-Item -Path $_.FullName -Destination $Destination -Force -Confirm:$false -Verbose:$(if ($VerbosePreference -eq 'Continue') { $true } else { $false })
                         $fileCounter++
@@ -811,7 +916,7 @@ process {
                     $null = [System.IO.Directory]::CreateDirectory($Destination)
                     Write-Host "`nInstalling font files to $Destination" -ForegroundColor White
                     Write-Verbose "Searching for $filter font files in $extractPath"
-                    Get-ChildItem -Path $extractPath -Filter $filter -Recurse | ForEach-Object {
+                    Get-ChildItem -Path $extractPath -Filter $filter | ForEach-Object {
                         if ($null -eq $nerdFont.imagePreviewFontSource -and $_.FullName -like '*static*') {
                             Write-Verbose "Skipping static font file: $($_.Name)"
                             return
@@ -827,7 +932,7 @@ process {
                     $Destination = "${env:windir}\Fonts"
                     Write-Host "`nInstalling font files to All Users Font Directory" -ForegroundColor White
                     Write-Verbose "Searching for $filter font files in $extractPath"
-                    Get-ChildItem -Path $extractPath -Filter $filter -Recurse | ForEach-Object {
+                    Get-ChildItem -Path $extractPath -Filter $filter | ForEach-Object {
                         if ($null -eq $nerdFont.imagePreviewFontSource -and $_.FullName -like '*static*') {
                             Write-Verbose "Skipping static font file: $($_.Name)"
                             return
@@ -841,7 +946,7 @@ process {
                     $Destination = (New-Object -ComObject Shell.Application).Namespace(0x14)
                     Write-Host "`nInstalling font files to Current User Font Directory" -ForegroundColor White
                     Write-Verbose "Searching for $filter font files in $extractPath"
-                    Get-ChildItem -Path $extractPath -Filter $filter -Recurse | ForEach-Object {
+                    Get-ChildItem -Path $extractPath -Filter $filter | ForEach-Object {
                         if ($null -eq $nerdFont.imagePreviewFontSource -and $_.FullName -like '*static*') {
                             Write-Verbose "Skipping static font file: $($_.Name)"
                             return
@@ -858,6 +963,9 @@ process {
                 else {
                     Write-Host "'$($nerdFont.imagePreviewFont)' font installed successfully.`n" -ForegroundColor Green
                 }
+            }
+            elseif ($WhatIfPreference -eq $true) {
+                Write-Verbose "Predicted installation of font: $($nerdFont.folderName) [$($nerdFont.caskName)] ($($nerdFont.imagePreviewFont))"
             }
             else {
                 Write-Verbose "Skipping font: $($nerdFont.folderName) [$($nerdFont.caskName)] ($($nerdFont.imagePreviewFont))"
