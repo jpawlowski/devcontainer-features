@@ -189,7 +189,7 @@ dynamicparam {
                 folderName             = 'CascadiaCode'
                 imagePreviewFont       = 'Cascadia Code Font Family'
                 imagePreviewFontSource = $null
-                linkPreviewFont        = $null
+                linkPreviewFont        = 'cascadia-code'
                 caskName               = 'cascadia-code'
                 repoRelease            = $false
                 description            = 'The official Cascadia Code font by Microsoft with all variants, including Nerd Font and Powerline'
@@ -204,7 +204,7 @@ dynamicparam {
                 folderName             = 'CascadiaCodeNF'
                 imagePreviewFont       = 'Cascadia Code Nerd Font'
                 imagePreviewFontSource = $null
-                linkPreviewFont        = $null
+                linkPreviewFont        = 'cascadia-code'
                 caskName               = 'cascadia-code-nf'
                 repoRelease            = $false
                 description            = 'The official Cascadia Code font by Microsoft that is enabled with Nerd Font symbols'
@@ -219,7 +219,7 @@ dynamicparam {
                 folderName             = 'CascadiaCodePL'
                 imagePreviewFont       = 'Cascadia Code Powerline Font'
                 imagePreviewFontSource = $null
-                linkPreviewFont        = $null
+                linkPreviewFont        = 'cascadia-code'
                 caskName               = 'cascadia-code-pl'
                 repoRelease            = $false
                 description            = 'The official Cascadia Code font by Microsoft that is enabled with Powerline symbols'
@@ -465,7 +465,7 @@ begin {
             # Calculate the maximum width of each column
             $maxOptionLength = ($Options | ForEach-Object { $_.imagePreviewFont.Length } | Measure-Object -Maximum).Maximum + 1 # 1 for padding
             $maxIndexLength = ($Options.Length).ToString().Length
-            $columnWidth = $maxIndexLength + $maxOptionLength + 5  # 5 for padding and ': '
+            $columnWidth = $maxIndexLength + $maxOptionLength + $linkSymbolLength + 7  # 7 for padding and ': '
 
             # Calculate the number of columns that can fit in the terminal width
             $numColumns = [math]::Floor($terminalWidth / $columnWidth)
@@ -481,29 +481,119 @@ begin {
                         $number = $index
                         $fontName = $Options[$index].imagePreviewFont
                         $numberText = ('{0,' + $maxIndexLength + '}') -f $number
-                        $fontText = ('{0,-' + $maxOptionLength + '}') -f $fontName
+                        $linkSymbol = "`u{2197}" # Up-Right Arrow
 
                         if ($index -eq 0) {
                             # Special formatting for 'All Fonts'
                             Write-Host -NoNewline -ForegroundColor Magenta $numberText
                             Write-Host -NoNewline -ForegroundColor Magenta ': '
-                            Write-Host -NoNewline -ForegroundColor Magenta "$($PSStyle.Italic)$fontText$($PSStyle.ItalicOff)"
+                            Write-Host -NoNewline -ForegroundColor Magenta "$($PSStyle.Italic)$fontName$($PSStyle.ItalicOff)  "
                         }
                         else {
                             Write-Host -NoNewline -ForegroundColor DarkYellow $numberText
                             Write-Host -NoNewline -ForegroundColor Yellow ': '
-                            if ($fontText -match '^(.+)(Font Family)(.*)$') {
-                                Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$($Matches[1])$($PSStyle.BoldOff)"
-                                Write-Host -NoNewline -ForegroundColor Gray "$($PSStyle.Italic)$($Matches[2])$($PSStyle.ItalicOff)"
-                                Write-Host -NoNewline -ForegroundColor White "$($Matches[3])"
+                            if ($fontName -match '^(.+)(Font Family)(.*)$') {
+                                if ($IsCoreCLR -and -not [string]::IsNullOrEmpty($Options[$index].linkPreviewFont)) {
+                                    $link = $Options[$index].linkPreviewFont
+                                    if ($link -notmatch '^https?://') {
+                                        $link = "https://www.programmingfonts.org/#$link"
+                                    }
+                                    $clickableLinkSymbol = " `e]8;;$link`e\$linkSymbol`e]8;;`e\"
+                                    Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$($Matches[1])$($PSStyle.BoldOff)"
+                                    Write-Host -NoNewline -ForegroundColor Gray "$($PSStyle.Italic)$($Matches[2])$($PSStyle.ItalicOff)"
+                                    Write-Host -NoNewline -ForegroundColor White "$($Matches[3])"
+                                    Write-Host -NoNewline -ForegroundColor DarkBlue "$clickableLinkSymbol"
+                                }
+                                else {
+                                    Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$($Matches[1])$($PSStyle.BoldOff)"
+                                    Write-Host -NoNewline -ForegroundColor Gray "$($PSStyle.Italic)$($Matches[2])$($PSStyle.ItalicOff)"
+                                    Write-Host -NoNewline -ForegroundColor White "$($Matches[3])  "
+                                }
                             }
                             else {
-                                Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$fontText$($PSStyle.BoldOff)"
+                                if ($IsCoreCLR -and -not [string]::IsNullOrEmpty($Options[$index].linkPreviewFont)) {
+                                    $link = $Options[$index].linkPreviewFont
+                                    if ($link -notmatch '^https?://') {
+                                        $link = "https://www.programmingfonts.org/#$link"
+                                    }
+                                    $clickableLinkSymbol = " `e]8;;$link`e\$linkSymbol`e]8;;`e\"
+                                    Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$fontName$($PSStyle.BoldOff)"
+                                    Write-Host -NoNewline -ForegroundColor DarkBlue "$clickableLinkSymbol"
+                                }
+                                else {
+                                    Write-Host -NoNewline -ForegroundColor White "$($PSStyle.Bold)$fontName$($PSStyle.BoldOff)  "
+                                }
                             }
                         }
+                        # Add padding to align columns
+                        $paddingLength = $maxOptionLength - $fontName.Length + $linkSymbolLength
+                        Write-Host -NoNewline (' ' * $paddingLength)
                     }
                 }
                 Write-Host
+            }
+        }
+
+        # Initial terminal width
+        $initialWidth = [console]::WindowWidth
+
+        # Draw the initial menu
+        Show-MenuOptions -Options $Options -terminalWidth $initialWidth
+
+        Write-Host "`nEnter 'q' to quit." -ForegroundColor Cyan
+
+        # Loop to handle user input and terminal resizing
+        while ($true) {
+            $currentWidth = [console]::WindowWidth
+            if ($currentWidth -ne $initialWidth) {
+                Clear-Host
+                Show-MenuOptions -Options $Options -terminalWidth $currentWidth
+                Write-Host "`nEnter 'q' to quit." -ForegroundColor Cyan
+                $initialWidth = $currentWidth
+            }
+
+            $selection = Read-Host "`nSelect one or more numbers separated by commas"
+            if ($selection -eq 'q') {
+                if ($MyInvocation.InvocationName -eq $null -or $MyInvocation.InvocationName -eq '') {
+                    # Running as a script block
+                    return
+                }
+                else {
+                    # Running as a standalone script
+                    exit
+                }
+            }
+
+            # Remove spaces and split the input by commas
+            $selection = $selection -replace '\s', ''
+            $numbers = $selection -split ',' | Select-Object -Unique
+
+            # Validate each number
+            $validSelections = @()
+            $invalidSelections = @()
+            foreach ($number in $numbers) {
+                if ($number -match '^\d+$') {
+                    $index = [int]$number
+                    if ($index -eq 0) {
+                        return 'All'
+                    }
+                    elseif ($index -gt 0 -and $index -le ($Options.Length - 1)) {
+                        $validSelections += $Options[$index]
+                    }
+                    else {
+                        $invalidSelections += $number
+                    }
+                }
+                else {
+                    $invalidSelections += $number
+                }
+            }
+
+            if ($validSelections.Count -gt 0) {
+                return $validSelections
+            }
+            elseif ($invalidSelections.Count -gt 0) {
+                Write-Host "Invalid selections: $($invalidSelections -join ', ')" -ForegroundColor Red
             }
         }
 
@@ -693,7 +783,8 @@ begin {
                 if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '') {
                     # Running as a script block
                     return
-                } else {
+                }
+                else {
                     # Running as a standalone script
                     exit
                 }
