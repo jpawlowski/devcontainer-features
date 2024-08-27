@@ -17,21 +17,28 @@ with all the nice details we care about. Since it is not bundles with VSCode (ye
 
 If you wish, you may also select any other font from [nerdfonts.com](https://www.nerdfonts.com/).
 
-### Install _Cascadia_ Code & _Cascadia Mono_ as your Nerd Font _(recommended)_
+### Install _Cascadia Code_ & _Cascadia Mono_ font families as your Nerd Font _(recommended)_
 
 1. **Open new VSCode window**:
    - In Visual Studio Code (VSCode), open a new window: `File > New Window`.
+   - _Alternatively_, you may also open a PowerShell session in your favorite terminal app and skip next step no. 2.
+     If you are on Windows, it is preferable to use PowerShell 7 (`pwsh.exe`) rather than
+     Windows PowerShell 5.1 (`powershell.exe`). PowerShell 7 is the cross-platform version that is actively maintained and
+     updated, whereas Windows PowerShell is the legacy version built into Windows.
 
 2. **Start a new PowerShell session**:
    - You can do this by opening the command palette
-   (`Cmd + Shift + P` on Mac or `Ctrl + Shift + P` on Windows/Linux) and selecting `Terminal: Create New Terminal (With Profile)`.
-   - Select `pwsh` from the menu.
+     (`Cmd + Shift + P` on Mac or `Ctrl + Shift + P` on Windows/Linux) and selecting
+     `Terminal: Create New Terminal (With Profile)`.
+   - Select `pwsh` from the menu. On Windows, it is preferable to use PowerShell 7 (`pwsh.exe`) rather than
+     Windows PowerShell 5.1 (`powershell.exe`). PowerShell 7 is the cross-platform version that is actively maintained
+     and updated, whereas Windows PowerShell is the legacy version built into Windows.
 
-3. **Run the Nerd Font installer script**:
+3. **Run the Nerd Font installer script in direct install mode**:
    - Copy & paste the following code into the terminal window:
 
      ```powershell
-     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -FontName Cascadia
+     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -Name cascadia-code, cascadia-mono
      ```
    - Press `Enter` to run the code.
 
@@ -40,11 +47,11 @@ If you wish, you may also select any other font from [nerdfonts.com](https://www
 
      ```console
      Nerd Fonts Installation
-     Do you confirm to install the font 'Cascadia' from GitHub.com/Microsoft ?
+     Do you confirm to install 'Cascadia Code Font Family' from github.com/microsoft/cascadia-code ?
      [Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "Y"): 
      ```
 
-   - Press `Enter` to continue with the installation.
+   - Type `A` and press `Enter` to continue with the installation.
 
 After this, you may continue with [step 2](#2-change-your-font-settings-in-vscode), or install additional fonts as
 described below.
@@ -53,13 +60,20 @@ described below.
 
 1. **Open new VSCode window**:
    - In Visual Studio Code (VSCode), open a new window: `File > New Window`.
+   - _Alternatively_, you may also open a PowerShell session in your favorite terminal app and skip next step no. 2.
+     If you are on Windows, it is preferable to use PowerShell 7 (`pwsh.exe`) rather than
+     Windows PowerShell 5.1 (`powershell.exe`). PowerShell 7 is the cross-platform version that is actively maintained and
+     updated, whereas Windows PowerShell is the legacy version built into Windows.
 
 2. **Start a new PowerShell session**:
    - You can do this by opening the command palette
-   (`Cmd + Shift + P` on Mac or `Ctrl + Shift + P` on Windows/Linux) and selecting `Terminal: Create New Terminal (With Profile)`.
-   - Select `pwsh` from the menu.
+     (`Cmd + Shift + P` on Mac or `Ctrl + Shift + P` on Windows/Linux) and selecting
+     `Terminal: Create New Terminal (With Profile)`.
+   - Select `pwsh` from the menu. On Windows, it is preferable to use PowerShell 7 (`pwsh.exe`) rather than
+     Windows PowerShell 5.1 (`powershell.exe`). PowerShell 7 is the cross-platform version that is actively maintained
+     and updated, whereas Windows PowerShell is the legacy version built into Windows.
 
-3. **Run the Nerd Font installer script**:
+3. **Run the Nerd Font installer script in interactive mode**:
    - Copy & paste the following code into the terminal window:
 
      ```powershell
@@ -108,10 +122,8 @@ described below.
      ```
 
    - Enter a number corresponding to the list of Nerd Font names. To choose your favorite,
-you may want to visit [nerdfonts.com](https://www.nerdfonts.com/) for a preview.
-
-     Note that some Nerd Font names may be slightly modified on the website due to legal compliance. The script lists both
-     the alias names and their original font names to make your selection easier.
+     you may want to visit [nerdfonts.com](https://www.nerdfonts.com/) for a preview. Depending on your PowerShell version
+     and availability, there may also be an `↗` upwards arrow you may click on.
 
    - Press `Enter` to confirm your selection.
 
@@ -122,7 +134,7 @@ you may want to visit [nerdfonts.com](https://www.nerdfonts.com/) for a preview.
      Your selected font: Meslo
 
      Nerd Fonts Installation
-     Do you confirm to install the font 'Meslo' from GitHub.com/ryanoasis ?
+     Do you confirm to install 'Meslo' from GitHub.com/ryanoasis ?
      [Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "Y"):
      ```
 
@@ -153,7 +165,7 @@ To change the font settings in Visual Studio Code (VSCode) for both the code edi
 
      Note that font names with multiple words should be put into single quotes (`'`).
 
-   - **_Optional_: Enable Font Ligatures**:
+   - **Enable Font Ligatures** _(optional)_:
 
      If your font supports [ligatures](https://www.hanselman.com/blog/monospaced-programming-fonts-with-ligatures), you
      may optionally enable these to give you some (potentially) nice typographic enhancements in the editor :
@@ -169,7 +181,10 @@ To change the font settings in Visual Studio Code (VSCode) for both the code edi
 4. **Save Settings**:
    - Save the changes if you edited the `settings.json` file.
 
-### Changing the Font for the Integrated Terminal
+### Changing the Font for the Integrated Terminal _(optional)_
+
+Usually, the terminal font is inherited from the editor font settings. You may optionally set a different font for the
+terminal like this:
 
 1. **Open Settings**:
    - Press `Cmd + ,` or go to `File > Preferences > Settings`.
