@@ -109,5 +109,6 @@
       "foreground": "lightRed",
       "template": "\u276F "
   },
+  "auto_upgrade": true,
   "version": 2
 }
