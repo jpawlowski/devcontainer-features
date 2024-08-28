@@ -60,6 +60,30 @@
 
     If the script is run in a non-interactive environment, the Name parameter is mandatory.
 
+.PARAMETER Variant
+    Specify the font variant to install.
+    The default value is 'Variable'.
+
+    A variable font is a single font file that can contain multiple variations of a typeface while a static font
+    is a traditional font file with a single style.
+    For example, a variable font can contain multiple weights and styles in a single file.
+
+    Most Nerd Fonts are only available as static fonts. The only exception today is Microsoft's Cascadia Code
+    font where variable fonts are recommended to be used for all platforms.
+
+    Setting this parameter to 'Static' will search for a folder with the name 'static' in the font archive.
+    If that was found, files from that folder will be installed, otherwise, the script will install the font files
+    from the root of the archive (or the folder for the font type, if any is found).
+
+.PARAMETER Type
+    Specify the order to search for font types. Only the first matching type will be installed.
+    The default order is TTF, OTF, WOFF2.
+
+    The script will search for folders with the specified type name in the font archive, and if found, install the fonts from that folder.
+    If no folder is found, the script will install the font files from the root of the archive.
+
+    The script will search for files with the specified type extension in any case.
+
 .PARAMETER All
     Install all available Nerd Fonts.
     You will be prompted to confirm the installation for each font with the option to skip, cancel,
@@ -104,18 +128,32 @@
 
 .NOTES
     This script must be run on your local machine, not in a container.
-
-    If available, OpenType fonts are preferred over TrueType fonts.
-    Also, static fonts are preferred over variable fonts.
-    Both is determined by directories in the font archive and the font file extension.
 #>
 
 [CmdletBinding(DefaultParameterSetName = 'ByName', SupportsShouldProcess, ConfirmImpact = 'High')]
 param(
+    [Parameter(Mandatory = $false, ParameterSetName = 'ByAll', HelpMessage = 'Which Font variant do you prefer?')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'ByName', HelpMessage = 'Which Font variant do you prefer?')]
+    [ArgumentCompleter({
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            @('Variable', 'Static') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object { [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_) }
+        })]
+    [ValidateSet('Variable', 'Static')]
+    [string]$Variant = 'Variable',
+
+    [Parameter(Mandatory = $false, ParameterSetName = 'ByAll', HelpMessage = 'Specify the order to search for font types. Only the first matching type will be installed.')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'ByName', HelpMessage = 'Specify the order to search for font types. Only the first matching type will be installed.')]
+    [ArgumentCompleter({
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            @('TTF', 'OTF', 'WOFF2') | Where-Object { $_ -like "$wordToComplete*" } | ForEach-Object { [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_) }
+        })]
+    [ValidateSet('TTF', 'OTF', 'WOFF2')]
+    [string[]]$Type = @('TTF', 'OTF', 'WOFF2'),
+
     [Parameter(Mandatory = $true, ParameterSetName = 'ByAll')]
     [switch]$All,
 
-    [Parameter(Mandatory = $false, ParameterSetName = 'ListOnly')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'ListOnly', HelpMessage = 'List available Nerd Fonts matching the specified pattern.')]
     [AllowNull()]
     [AllowEmptyString()]
     [ArgumentCompleter({
@@ -423,8 +461,16 @@ begin {
 
     if (
         $Scope -eq 'AllUsers' -and
-        $PSVersionTable.Platform -ne 'Unix' -and
-        -not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
+        (
+            (
+                $PSVersionTable.Platform -ne 'Unix' -and
+                -not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')
+            ) -or
+            (
+                $PSVersionTable.Platform -eq 'Unix' -and
+                ($(id -u) -ne '0')
+            )
+        )
     ) {
         $PSCmdlet.ThrowTerminatingError(
             [System.Management.Automation.ErrorRecord]::new(
@@ -768,7 +814,7 @@ begin {
                 # Running as a standalone script
                 exit
             }
-    }
+        }
     }
     elseif ($PSBoundParameters.Name) {
         $Name = $PSBoundParameters.Name
@@ -791,7 +837,7 @@ begin {
             # Running as a standalone script
             exit
         }
-}
+    }
 
     # Fetch releases for each unique URL
     $fontReleases = @{}
@@ -939,95 +985,86 @@ process {
                     [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $extractPath)
                 }
 
-                # Search for .otf files by default
-                $filter = '*.otf'
-
-                # Special case for font archives with multiple fonts like 'Cascadia'
-                if ($null -eq $nerdFont.imagePreviewFontSource) {
-                    $filter = "$($nerdFont.folderName)$filter"
-                }
-
-                $otfPath = [System.IO.Path]::Combine($extractPath, 'otf')
-                $ttfPath = [System.IO.Path]::Combine($extractPath, 'ttf')
-                $staticPath = [System.IO.Path]::Combine($extractPath, 'static')
-
-                # Use otf subfolder if it exists
-                if (Test-Path -Path $otfPath) {
-                    # Use static subfolder if it exists
-                    $staticPath = [System.IO.Path]::Combine($otfPath, 'static')
-                    if (Test-Path -Path $staticPath) {
-                        Write-Verbose "Using static font files from $staticPath"
-                        $extractPath = $staticPath
-                    }
-                    else {
-                        Write-Verbose "Using font files from $otfPath"
-                        $extractPath = $otfPath
-                    }
-                }
-
-                # Use ttf subfolder if it exists
-                elseif (Test-Path -Path $ttfPath) {
-                    # Use static subfolder if it exists
-                    $staticPath = [System.IO.Path]::Combine($ttfPath, 'static')
-                    if (Test-Path -Path $staticPath) {
-                        Write-Verbose "Using static font files from $staticPath"
-                        $extractPath = $staticPath
-                    }
-                    else {
-                        Write-Verbose "Using font files from $ttfPath"
-                        $extractPath = $ttfPath
-                    }
-                }
-
-                # Use static subfolder if it exists
-                elseif (Test-Path -Path $staticPath) {
-                    $otfPath = [System.IO.Path]::Combine($staticPath, 'otf')
-                    $ttfPath = [System.IO.Path]::Combine($staticPath, 'ttf')
-                    if (Test-Path -Path $otfPath) {
-                        # Use otf subfolder if it exists
-                        Write-Verbose "Using static font files from $otfPath"
-                        $extractPath = $otfPath
-                    }
-                    elseif (Test-Path -Path $ttfPath) {
-                        # Use otf subfolder if it exists
-                        Write-Verbose "Using static font files from $ttfPath"
-                        $extractPath = $ttfPath
-                    }
-                    else {
+                # Determine search paths for font files based in $Variant parameter
+                if ($Variant -eq 'Static') {
+                    $staticPath = [System.IO.Path]::Combine($extractPath, 'static')
+                    if (Test-Path -PathType Container -Path $staticPath) {
                         Write-Verbose "Using static font files from $staticPath"
                         $extractPath = $staticPath
                     }
                 }
+                foreach ($t in $Type) {
+                    $typePath = [System.IO.Path]::Combine($extractPath, $t.ToLower())
+                    if (Test-Path -PathType Container -Path $typePath) {
+                        if ($Variant -eq 'Static') {
+                            $staticPath = [System.IO.Path]::Combine($typePath, 'static')
+                            if (Test-Path -PathType Container -Path $staticPath) {
+                                Write-Verbose "Using static font files from $staticPath"
+                                $extractPath = $staticPath
+                            }
+                            else {
+                                Write-Verbose "Using font files from $typePath"
+                                $extractPath = $typePath
+                            }
+                        }
+                        else {
+                            Write-Verbose "Using font files from $typePath"
+                            $extractPath = $typePath
+                        }
+                        break
+                    }
+                }
 
-                # Get .otf files
-                $otfFiles = Get-ChildItem -Path $extractPath -Filter $filter
-
-                # Check if any .otf files were found
-                if ($otfFiles.Count -eq 0) {
-                    # No .otf files found, fall back to .ttf files
-                    $filter = "*.ttf"
+                # Search for font files in the extracted directory
+                foreach ($t in $Type) {
+                    $filter = "*.$($t.ToLower())"
 
                     # Special case for font archives with multiple fonts like 'Cascadia'
                     if ($null -eq $nerdFont.imagePreviewFontSource) {
                         $filter = "$($nerdFont.folderName)$filter"
                     }
 
-                    $fontFiles = Get-ChildItem -Path $extractPath -Filter $filter
-                    if ($fontFiles -eq 0) {
-                        Write-Error "No font files found for $($nerdFont.folderName)."
-                        continue
+                    # Get font files
+                    $fontFiles = @( Get-ChildItem -Path $extractPath -Filter $filter )
+
+                    # Check if any files were found
+                    if ($fontFiles.Count -gt 0) {
+                        break
                     }
                 }
-                else {
-                    # .otf files found, use them
-                    $fontFiles = $otfFiles
+
+                if ($fontFiles.Count -eq 0) {
+                    Write-Error "No font files found for $($nerdFont.folderName)."
+                    continue
                 }
 
                 # Install the font files
                 foreach ($fontFile in $fontFiles) {
                     try {
-                        $fontFileDestinationPath = [System.IO.Path]::Combine($fontDestinationFolderPath, $fontFile.Name)
+                        # Check if font file is already registered in user scope by another application like Windows Terminal
+                        if ($IsWindows) {
+                            $fontRegistryPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts'
+                            $fontRegistryKeys = Get-ChildItem -Path $fontRegistryPath -Recurse -ErrorAction Ignore
 
+                            foreach ($fontRegistryKey in $fontRegistryKeys) {
+                                $fontRegistryValues = $fontRegistryKey.GetValueNames() | ForEach-Object {
+                                    $value = $fontRegistryKey.GetValue($_)
+                                    $fileName = Split-Path -Path $value -Leaf
+                                    [PSCustomObject]@{
+                                        Name     = $_
+                                        FileName = $fileName
+                                    }
+                                }
+
+                                $fontRegistryValue = $fontRegistryValues | Where-Object { $_.FileName -eq $fontFile.Name }
+                                if ($fontRegistryValue) {
+                                    Write-Verbose "Font file $($fontFile.Name) already registered by application: $($fontRegistryKey.Name)"
+                                    continue
+                                }
+                            }
+                        }
+
+                        $fontFileDestinationPath = [System.IO.Path]::Combine($fontDestinationFolderPath, $fontFile.Name)
                         if (-not $Force -and (Test-Path -Path $fontFileDestinationPath)) {
                             if ($Force) {
                                 Write-Verbose "Overwriting font file: $($fontFile.Name)"
