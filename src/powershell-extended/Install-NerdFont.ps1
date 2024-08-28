@@ -737,7 +737,7 @@ begin {
             $Name = Show-Menu -Options $allNerdFonts
             if ($Name -eq 'quit') {
                 Write-Host "Selection process canceled."
-                if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '') {
+                if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
                     # Running as a script block
                     return
                 }
@@ -760,7 +760,7 @@ begin {
         }
         else {
             Write-Host 'No font selected.'
-            if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '') {
+            if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
                 # Running as a script block
                 return
             }
@@ -768,7 +768,7 @@ begin {
                 # Running as a standalone script
                 exit
             }
-        }
+    }
     }
     elseif ($PSBoundParameters.Name) {
         $Name = $PSBoundParameters.Name
@@ -783,7 +783,7 @@ begin {
 
     if ($nerdFontsToInstall.Count -eq 0) {
         Write-Error "No matching fonts found."
-        if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '') {
+        if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
             # Running as a script block
             return
         }
@@ -791,7 +791,7 @@ begin {
             # Running as a standalone script
             exit
         }
-    }
+}
 
     # Fetch releases for each unique URL
     $fontReleases = @{}
