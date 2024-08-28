@@ -1033,7 +1033,7 @@ process {
                                 Write-Verbose "Overwriting font file: $($fontFile.Name)"
                             }
                             Write-Verbose "Font file already exists: $($fontFile.Name)"
-                            Write-Host -NoNewline '  ✓ ' -ForegroundColor Green
+                            Write-Host -NoNewline '  `u{2713} ' -ForegroundColor Green
                         }
                         else {
                             if ($Force) {
@@ -1082,12 +1082,12 @@ process {
                                 $null = New-ItemProperty @params
                             }
 
-                            Write-Host -NoNewline "  $($PSStyle.Bold)✓$($PSStyle.BoldOff) " -ForegroundColor Green
+                            Write-Host -NoNewline "  $($PSStyle.Bold)`u{2713}$($PSStyle.BoldOff) " -ForegroundColor Green
                         }
                         Write-Host $fontFile.Name
                     }
                     catch {
-                        Write-Host -NoNewline '  ✗ ' -ForegroundColor Red
+                        Write-Host -NoNewline '  `u{2717} ' -ForegroundColor Red
                         Write-Host $fontFile.Name
                         throw $_
                     }
