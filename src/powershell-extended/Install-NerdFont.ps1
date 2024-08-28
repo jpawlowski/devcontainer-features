@@ -782,16 +782,8 @@ begin {
         do {
             $Name = Show-Menu -Options $allNerdFonts
             if ($Name -eq 'quit') {
-                $Name = $null
                 Write-Host "Selection process canceled."
-                if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
-                    # Running as a script block
-                    return
-                }
-                else {
-                    # Running as a standalone script
-                    exit
-                }
+                return
             }
         } while (-not $Name)
 
@@ -806,14 +798,7 @@ begin {
             }
         }
         else {
-            if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
-                # Running as a script block
-                return
-            }
-            else {
-                # Running as a standalone script
-                exit
-            }
+            return
         }
     }
     elseif ($PSBoundParameters.Name) {
@@ -829,14 +814,7 @@ begin {
 
     if ($nerdFontsToInstall.Count -eq 0) {
         Write-Error "No matching fonts found."
-        if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
-            # Running as a script block
-            return
-        }
-        else {
-            # Running as a standalone script
-            exit
-        }
+        return
     }
 
     # Fetch releases for each unique URL
@@ -906,6 +884,8 @@ begin {
 }
 
 process {
+    if ($nerdFontsToInstall.Count -eq 0) { return }
+
     try {
         Write-Verbose "Installing $($nerdFontsToInstall.Count) Nerd Fonts to $Scope scope."
 
@@ -1154,6 +1134,8 @@ process {
 }
 
 end {
+    if ($nerdFontsToInstall.Count -eq 0) { return }
+
     if ([System.IO.Directory]::Exists($tempPath)) {
         Write-Verbose "Removing temporary directory: $tempPath"
         [System.IO.Directory]::Delete($tempPath, $true)
