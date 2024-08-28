@@ -1060,6 +1060,7 @@ process {
                                 $fontRegistryValue = $fontRegistryValues | Where-Object { $_.FileName -eq $fontFile.Name }
                                 if ($fontRegistryValue) {
                                     $fontOwnedByApp = $true
+                                    Write-Verbose "Font file $($fontFile.Name) already registered by application: $(Split-Path -Path $fontRegistryKey.Name -Leaf)"
                                     continue
                                 }
                             }
