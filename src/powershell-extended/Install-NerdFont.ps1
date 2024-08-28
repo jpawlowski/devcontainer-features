@@ -1045,6 +1045,7 @@ process {
                         if ($IsWindows) {
                             $fontRegistryPath = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts'
                             $fontRegistryKeys = Get-ChildItem -Path $fontRegistryPath -Recurse -ErrorAction Ignore
+                            $fontOwnedByApp = $false
 
                             foreach ($fontRegistryKey in $fontRegistryKeys) {
                                 $fontRegistryValues = $fontRegistryKey.GetValueNames() | ForEach-Object {
@@ -1058,11 +1059,13 @@ process {
 
                                 $fontRegistryValue = $fontRegistryValues | Where-Object { $_.FileName -eq $fontFile.Name }
                                 if ($fontRegistryValue) {
-                                    Write-Verbose "Font file $($fontFile.Name) already registered by application: $($fontRegistryKey.Name)"
+                                    $fontOwnedByApp = $true
                                     continue
                                 }
                             }
                         }
+
+                        if ($fontOwnedByApp) { continue }
 
                         $fontFileDestinationPath = [System.IO.Path]::Combine($fontDestinationFolderPath, $fontFile.Name)
                         if (-not $Force -and (Test-Path -Path $fontFileDestinationPath)) {
