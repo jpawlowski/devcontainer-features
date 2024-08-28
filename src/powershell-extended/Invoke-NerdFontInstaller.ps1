@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.0
+.VERSION 1.0.1
 
 .GUID a3238c59-8a0e-4c11-a334-f071772d1255
 
@@ -10,13 +10,13 @@
 
 .COPYRIGHT © 2024 Julian Pawlowski.
 
-.TAGS nerd-fonts nerdfonts cascadia-code cascadia-mono
+.TAGS nerd-fonts nerdfonts cascadia-code cascadia-code-nerd-font cascadia-code-powerline-font cascadia-mono cascadia-mono-nerd-font cascadia-mono-powerline-font
 
 .LICENSEURI https://github.com/jpawlowski/devcontainer-features/blob/main/LICENSE.txt
 
 .PROJECTURI https://github.com/jpawlowski/devcontainer-features
 
-.ICONURI
+.ICONURI https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/src/powershell-extended/images/nerd-fonts-logo.png
 
 .EXTERNALMODULEDEPENDENCIES
 
@@ -25,7 +25,7 @@
 .EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
-    Version 1.0.0 (2024-08-28)
+    Version 1.0.1 (2024-08-28)
     - Initial release.
 #>
 
@@ -48,7 +48,8 @@
     the user's font directory, or the system font directory when using the AllUsers scope with
     elevated permissions.
 
-    You may also run this script directly from the web using the following command:
+    Besides installing the script locally, you may also run this script directly from the web
+    using the following command:
 
     ```powershell
     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer')))
@@ -56,6 +57,10 @@
     # Or alternatively without the shortened URL
     & ([scriptblock]::Create((iwr 'https://raw.githubusercontent.com/jpawlowski/devcontainer-features/main/src/powershell-extended/Invoke-NerdFontInstaller.ps1')))
     ```
+
+    > **IMPORTANT**: A code signature cannot be verified when running the script directly from the web.
+    > SSL transport layer encryption is used to protect the script during download from GitHub and during
+    > redirection from the URL shortener.
 
     Parameters may be passed just like any other PowerShell script. For example:
 
@@ -78,6 +83,8 @@
     The menu is displayed only if the script is run in an interactive environment.
 
     If the script is run in a non-interactive environment, the Name parameter is mandatory.
+
+    Possible font names are dynamically retrieved from the Nerd Font library on GitHub.
 
 .PARAMETER Variant
     Specify the font variant to install.
@@ -114,13 +121,11 @@
     This parameter does not install any fonts.
 
 .PARAMETER Scope
-    Defined the scope in which the Nerd Font should be installed on Windows.
+    Defined the scope in which the Nerd Font should be installed.
     The default value is CurrentUser.
 
-    The AllUsers scope requires elevated permissions on Windows.
+    The AllUsers scope requires elevated permissions.
     The CurrentUser scope installs the font for the current user only.
-
-    The scope parameter is ignored on macOS and Linux.
 
 .PARAMETER Force
     Overwrite existing font files instead of skipping them.
