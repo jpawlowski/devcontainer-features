@@ -786,7 +786,7 @@ begin {
                 Write-Host "Selection process canceled."
                 if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
                     # Running as a script block
-                    break
+                    return
                 }
                 else {
                     # Running as a standalone script
