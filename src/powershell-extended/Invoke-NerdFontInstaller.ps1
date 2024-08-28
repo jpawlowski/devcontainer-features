@@ -13,30 +13,10 @@
 .REQUIREDSCRIPTS
 .EXTERNALSCRIPTDEPENDENCIES
 .RELEASENOTES
-    Version 1.0.0 (2024-08-20)
+    Version 1.0.0 (2024-08-28)
     - Initial release.
-#>
-
-<#
-.SYNOPSIS
-    Install Nerd Fonts on Windows, macOS, or Linux.
-
-    You may also run this script directly from the web using the following command:
-
-    ```powershell
-    & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont')))
-    ```
-
 .DESCRIPTION
-    This PowerShell script installs Nerd Fonts on Windows, macOS, or Linux.
-    Nerd Fonts is a project that patches developer targeted fonts with a high number of glyphs (icons).
-
-    The script also supports the installation of the Cascadia Code fonts from the Microsoft repository.
-    These fonts have native Nerd Font and Powerline support since version 2404.23.
-
-    The script downloads the font archive from the GitHub release page and extracts the font files to
-    the user's font directory, or the system font directory when using the AllUsers scope on Windows
-    with elevated permissions.
+    An interactive installer for Nerd Fonts and Cascadia Code on Windows, macOS, or Linux.
 
     You may also run this script directly from the web using the following command:
 
@@ -49,6 +29,36 @@
     ```powershell
     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -Name cascadia-code, cascadia-mono
     ```
+
+    To get a lest of available Nerd Fonts, use the following command:
+
+    ```powershell
+    & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -List All
+    ```
+#>
+
+<#
+.SYNOPSIS
+    Install Nerd Fonts on Windows, macOS, or Linux.
+
+    You may also run this script directly from the web using the following command:
+
+    ```powershell
+    & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont')))
+    ```
+
+    Parameters may be passed at the end just like any other PowerShell script.
+
+.DESCRIPTION
+    This PowerShell script installs Nerd Fonts on Windows, macOS, or Linux.
+    Nerd Fonts is a project that patches developer targeted fonts with a high number of glyphs (icons).
+
+    The script also supports the installation of the Cascadia Code fonts from the Microsoft repository.
+    These fonts have native Nerd Font and Powerline support since version 2404.23.
+
+    The script downloads the font archive from the GitHub release page and extracts the font files to
+    the user's font directory, or the system font directory when using the AllUsers scope on Windows
+    with elevated permissions.
 
 .PARAMETER Name
     The name of the Nerd Font to install.
@@ -107,23 +117,23 @@
     Overwrite existing font files instead of skipping them.
 
 .EXAMPLE
-    Install-NerdFont -Name cascadia-code
+    Invoke-NerdFontInstaller -Name cascadia-code
     Install the Cascadia Code fonts from the Microsoft repository.
 
 .EXAMPLE
-    Install-NerdFont -Name cascadia-mono
+    Invoke-NerdFontInstaller -Name cascadia-mono
     Install the Cascadia Mono fonts from the Microsoft repository.
 
 .EXAMPLE
-    Install-NerdFont -Name cascadia-code, cascadia-mono
+    Invoke-NerdFontInstaller -Name cascadia-code, cascadia-mono
     Install the Cascadia Code and Cascadia Mono fonts from the Microsoft repository.
 
 .EXAMPLE
-    Install-NerdFont -All -WhatIf
+    Invoke-NerdFontInstaller -All -WhatIf
     Show what would happen if all fonts were installed.
 
 .EXAMPLE
-    Install-NerdFont -List cascadia*
+    Invoke-NerdFontInstaller -List cascadia*
     List all fonts with names starting with 'cascadia'.
 
 .NOTES
