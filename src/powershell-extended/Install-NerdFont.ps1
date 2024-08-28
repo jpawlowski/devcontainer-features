@@ -1033,7 +1033,7 @@ process {
                                 Write-Verbose "Overwriting font file: $($fontFile.Name)"
                             }
                             Write-Verbose "Font file already exists: $($fontFile.Name)"
-                            Write-Host -NoNewline '  `u{2713} ' -ForegroundColor Green
+                            Write-Host -NoNewline "  `u{2713} " -ForegroundColor Green
                         }
                         else {
                             if ($Force) {
@@ -1087,7 +1087,7 @@ process {
                         Write-Host $fontFile.Name
                     }
                     catch {
-                        Write-Host -NoNewline '  `u{2717} ' -ForegroundColor Red
+                        Write-Host -NoNewline "  `u{2717} " -ForegroundColor Red
                         Write-Host $fontFile.Name
                         throw $_
                     }
