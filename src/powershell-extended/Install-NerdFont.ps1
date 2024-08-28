@@ -782,10 +782,11 @@ begin {
         do {
             $Name = Show-Menu -Options $allNerdFonts
             if ($Name -eq 'quit') {
+                $Name = $null
                 Write-Host "Selection process canceled."
                 if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
                     # Running as a script block
-                    return
+                    break
                 }
                 else {
                     # Running as a standalone script
@@ -805,7 +806,6 @@ begin {
             }
         }
         else {
-            Write-Host 'No font selected.'
             if ($null -eq $MyInvocation.InvocationName -or $MyInvocation.InvocationName -eq '&') {
                 # Running as a script block
                 return
@@ -1058,15 +1058,15 @@ process {
                                 }
 
                                 $fontRegistryValue = $fontRegistryValues | Where-Object { $_.FileName -eq $fontFile.Name }
-                                if ($fontRegistryValue) {
+                                if ($fontRegistryValue.Count -gt 0) {
                                     $fontOwnedByApp = $true
                                     Write-Verbose "Font file $($fontFile.Name) already registered by application: $(Split-Path -Path $fontRegistryKey.Name -Leaf)"
                                     continue
                                 }
                             }
-                        }
 
-                        if ($fontOwnedByApp) { continue }
+                            if ($fontOwnedByApp) { continue }
+                        }
 
                         $fontFileDestinationPath = [System.IO.Path]::Combine($fontDestinationFolderPath, $fontFile.Name)
                         if (-not $Force -and (Test-Path -Path $fontFileDestinationPath)) {
