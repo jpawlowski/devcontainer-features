@@ -38,7 +38,7 @@ If you wish, you may also select any other font from [nerdfonts.com](https://www
    - Copy & paste the following code into the terminal window:
 
      ```powershell
-     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont'))) -Name cascadia-code, cascadia-mono
+     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer'))) -Name cascadia-code, cascadia-mono
      ```
    - Press `Enter` to run the code.
 
@@ -77,7 +77,7 @@ described below.
    - Copy & paste the following code into the terminal window:
 
      ```powershell
-     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-install-nerdfont')))
+     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer')))
      ```
    - Press `Enter` to run the code.
 
