@@ -815,48 +815,43 @@ begin {
     function Expand-FromArchiveType {
         param (
             [string]$SourceFile,
-            [string]$DestinationFolder
+            [string]$DestinationFolder,
+            [string]$FileExtension,
+            [string]$Executable
         )
 
         # Define a mapping table for command templates
         $commandTemplates = @{
-            'tar.xz'  = 'tar -xJf "{0}" -C "{1}"'
-            'tar.bz2' = 'tar -xjf "{0}" -C "{1}"'
-            'tar.gz'  = 'tar -xzf "{0}" -C "{1}"'
-            'tar'     = 'tar -xf "{0}" -C "{1}"'
-            'xz'      = 'xz -d "{0}" -C "{1}"'
-            '7z'      = '7z x "{0}" -o"{1}"'
-            'bzip2'   = 'bzip2 -d "{0}" -C "{1}"'
-            'gzip'    = 'gzip -d "{0}" -C "{1}"'
+            'tar.xz'  = '{0} -xJf "{1}" -C "{2}"'
+            'tar.bz2' = '{0} -xjf "{1}" -C "{2}"'
+            'tar.gz'  = '{0} -xzf "{1}" -C "{2}"'
+            'tar'     = '{0} -xf "{1}" -C "{2}"'
+            'xz'      = '{0} -d "{1}" -C "{2}"'
+            '7z'      = '{0} x "{1}" -o"{2}"'
+            'bzip2'   = '{0} -d "{1}" -C "{2}"'
+            'gzip'    = '{0} -d "{1}" -C "{2}"'
         }
 
-        # Extract the full extension, including multi-part extensions
-        $fileName = [System.IO.Path]::GetFileName($SourceFile)
-        $fileExtension = $commandTemplates.Keys | Where-Object { $fileName.EndsWith($_) } | Select-Object -First 1
-
-        if ($null -eq $fileExtension) {
-            if ($fileName.EndsWith('.zip')) {
-                # Use .NET functions to extract zip files
-                Add-Type -AssemblyName System.IO.Compression.FileSystem
-                [System.IO.Compression.ZipFile]::ExtractToDirectory($SourceFile, $DestinationFolder)
-                Write-Verbose "Extracted zip file using .NET functions."
-            }
-            else {
-                throw "Unsupported archive format: $fileName"
-            }
+        if ($null -eq $Executable) {
+            throw "Unsupported archive format: $FileExtension"
+        }
+        elseif ($Executable -eq 'powershell') {
+            # Use .NET functions to extract zip files
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            [System.IO.Compression.ZipFile]::ExtractToDirectory($SourceFile, $DestinationFolder)
+            Write-Verbose "Extracted zip file using .NET functions."
         }
         else {
-            $commandTemplate = $commandTemplates[$fileExtension]
-            $command = $commandTemplate -f $SourceFile, $DestinationFolder
+            $commandTemplate = $commandTemplates[$FileExtension]
+            $command = $commandTemplate -f $Executable, $SourceFile, $DestinationFolder
             Write-Verbose "Running command: $command"
 
             # Split the command into the executable and its arguments
             $commandParts = $command -split ' ', 2
-            $executable = $commandParts[0]
             $arguments = if ($commandParts.Length -gt 1) { $commandParts[1] } else { "" }
 
             # Execute the external command
-            Start-Process -FilePath $executable -ArgumentList $arguments -NoNewWindow -Wait
+            Start-Process -FilePath $Executable -ArgumentList $arguments -NoNewWindow -Wait
         }
     }
     #endregion Functions -------------------------------------------------------
@@ -978,30 +973,30 @@ begin {
     $archivePreferenceOrder = @('tar.xz', '7z', 'tar.bz2', 'tar.gz', 'zip', 'tar')
 
     # ZIP is natively supported in PowerShell
-    [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'zip'; Command = 'powershell' })
+    [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'zip'; Executable = 'powershell' })
 
     if ($IsMacOS -or $IsLinux) {
         # Prefer tar if available
         if (Get-Command tar -ErrorAction Ignore) {
-            if (Test-TarSupportsFormat 'xz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Command = 'tar' }) }
-            if (Test-TarSupportsFormat 'bzip2') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Command = 'tar' }) }
-            if (Test-TarSupportsFormat 'gz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Command = 'tar' }) }
-            [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar'; Command = 'tar' })
+            if (Test-TarSupportsFormat 'xz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Executable = 'tar' }) }
+            if (Test-TarSupportsFormat 'bzip2') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Executable = 'tar' }) }
+            if (Test-TarSupportsFormat 'gz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Executable = 'tar' }) }
+            [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar'; Executable = 'tar' })
         }
         # Check for individual tools
-        if (Get-Command xz -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Command = 'xz' }) }
-        if (Get-Command 7z -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = '7z'; Command = '7z' }) }
-        if (Get-Command bzip2 -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Command = 'bzip2' }) }
-        if (Get-Command gzip -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Command = 'gzip' }) }
+        if (Get-Command xz -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Executable = 'xz' }) }
+        if (Get-Command 7z -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = '7z'; Executable = '7z' }) }
+        if (Get-Command bzip2 -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Executable = 'bzip2' }) }
+        if (Get-Command gzip -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Executable = 'gzip' }) }
     }
     else {
         if (Get-Command tar -ErrorAction Ignore) {
-            if (Test-TarSupportsFormat 'xz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Command = 'tar' }) }
-            if (Test-TarSupportsFormat 'bzip2') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Command = 'tar' }) }
-            if (Test-TarSupportsFormat 'gz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Command = 'tar' }) }
-            [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar'; Command = 'tar' })
+            if (Test-TarSupportsFormat 'xz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Executable = 'tar' }) }
+            if (Test-TarSupportsFormat 'bzip2') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Executable = 'tar' }) }
+            if (Test-TarSupportsFormat 'gz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Executable = 'tar' }) }
+            [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar'; Executable = 'tar' })
         }
-        if (Get-Command 7z -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = '7z'; Command = '7z' }) }
+        if (Get-Command 7z -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = '7z'; Executable = '7z' }) }
     }
 
     # Sort the supportedArchiveFormats based on the preference order and remove duplicates
@@ -1057,7 +1052,7 @@ process {
 
             Write-Verbose "Font archive URL: $assetUrl"
             Write-Verbose "Font archive format: $($archiveFormat.FileExtension)"
-            Write-Verbose "Font archive extract command: $($archiveFormat.Command)"
+            Write-Verbose "Font archive extract executable: $($archiveFormat.Executable)"
 
             if (
                 $PSCmdlet.ShouldProcess(
@@ -1102,7 +1097,7 @@ process {
                 else {
                     Write-Verbose "Extracting font files to $extractPath"
                     $null = [System.IO.Directory]::CreateDirectory($extractPath)
-                    Expand-FromArchiveType -SourceFile $archivePath -DestinationFolder $extractPath
+                    Expand-FromArchiveType -SourceFile $archivePath -DestinationFolder $extractPath -FileExtension $archiveFormat.FileExtension -Executable $archiveFormat.Executable
                 }
 
                 # Determine search paths for font files based in $Variant parameter
