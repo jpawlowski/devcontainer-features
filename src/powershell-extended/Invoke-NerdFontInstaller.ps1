@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.2
+.VERSION 1.1.0
 
 .GUID a3238c59-8a0e-4c11-a334-f071772d1255
 
@@ -25,8 +25,9 @@
 .EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
-    Version 1.0.2 (2024-08-29)
-    - Fix typo in the script description
+    Version 1.1.0 (2024-08-29)
+    - Add support for multiple types of font archives
+    - Add XDG compliance for determining the target folder for fonts
 #>
 
 <#
@@ -799,6 +800,65 @@ begin {
         }
         return $allData
     }
+    function Test-TarSupportsFormat {
+        param (
+            [string]$format
+        )
+        $tarVersionOutput = & tar --version 2>&1
+        switch ($format) {
+            'xz' { return $tarVersionOutput -match 'liblzma' }
+            'bzip2' { return $tarVersionOutput -match 'bz2lib' }
+            'gz' { return $tarVersionOutput -match 'zlib' }
+            default { return $false }
+        }
+    }
+    function Expand-FromArchiveType {
+        param (
+            [string]$SourceFile,
+            [string]$DestinationFolder
+        )
+
+        # Define a mapping table for command templates
+        $commandTemplates = @{
+            'tar.xz'  = 'tar -xJf "{0}" -C "{1}"'
+            'tar.bz2' = 'tar -xjf "{0}" -C "{1}"'
+            'tar.gz'  = 'tar -xzf "{0}" -C "{1}"'
+            'tar'     = 'tar -xf "{0}" -C "{1}"'
+            'xz'      = 'xz -d "{0}" -C "{1}"'
+            '7z'      = '7z x "{0}" -o"{1}"'
+            'bzip2'   = 'bzip2 -d "{0}" -C "{1}"'
+            'gzip'    = 'gzip -d "{0}" -C "{1}"'
+        }
+
+        # Extract the full extension, including multi-part extensions
+        $fileName = [System.IO.Path]::GetFileName($SourceFile)
+        $fileExtension = $commandTemplates.Keys | Where-Object { $fileName.EndsWith($_) } | Select-Object -First 1
+
+        if ($null -eq $fileExtension) {
+            if ($fileName.EndsWith('.zip')) {
+                # Use .NET functions to extract zip files
+                Add-Type -AssemblyName System.IO.Compression.FileSystem
+                [System.IO.Compression.ZipFile]::ExtractToDirectory($SourceFile, $DestinationFolder)
+                Write-Verbose "Extracted zip file using .NET functions."
+            }
+            else {
+                throw "Unsupported archive format: $fileName"
+            }
+        }
+        else {
+            $commandTemplate = $commandTemplates[$fileExtension]
+            $command = $commandTemplate -f $SourceFile, $DestinationFolder
+            Write-Verbose "Running command: $command"
+
+            # Split the command into the executable and its arguments
+            $commandParts = $command -split ' ', 2
+            $executable = $commandParts[0]
+            $arguments = if ($commandParts.Length -gt 1) { $commandParts[1] } else { "" }
+
+            # Execute the external command
+            Start-Process -FilePath $executable -ArgumentList $arguments -NoNewWindow -Wait
+        }
+    }
     #endregion Functions -------------------------------------------------------
 
     # Provide interactive selection if no font name is specified
@@ -874,12 +934,24 @@ begin {
         }
     }
 
+    # Determine the XDG_DATA_HOME directory
+    $xdgDataHome = $env:XDG_DATA_HOME
+    if (-not $xdgDataHome) {
+        if ($IsMacOS -or $IsLinux) {
+            $xdgDataHome = "${HOME}/.local/share"
+        }
+        else {
+            $xdgDataHome = $env:LOCALAPPDATA
+        }
+    }
+
+    # Determine the font destination folder path based on the platform and scope
     if ($IsMacOS) {
         if ($Scope -eq 'AllUsers') {
             $fontDestinationFolderPath = '/Library/Fonts'
         }
         else {
-            $fontDestinationFolderPath = "${HOME}/Library/Fonts"
+            $fontDestinationFolderPath = "${xdgDataHome}/fonts"
         }
     }
     elseif ($IsLinux) {
@@ -887,17 +959,62 @@ begin {
             $fontDestinationFolderPath = '/usr/share/fonts'
         }
         else {
-            $fontDestinationFolderPath = "${HOME}/.local/share/fonts"
+            $fontDestinationFolderPath = "${xdgDataHome}/fonts"
         }
     }
-    elseif ($Scope -eq 'AllUsers') {
-        $fontDestinationFolderPath = "${env:windir}\Fonts"
-    }
     else {
-        $fontDestinationFolderPath = "$env:LOCALAPPDATA\Microsoft\Windows\Fonts"
+        if ($Scope -eq 'AllUsers') {
+            $fontDestinationFolderPath = "${env:windir}\Fonts"
+        }
+        else {
+            $fontDestinationFolderPath = "${xdgDataHome}\Microsoft\Windows\Fonts"
+        }
     }
     $null = [System.IO.Directory]::CreateDirectory($fontDestinationFolderPath)
     Write-Verbose "Font Destination directory: $fontDestinationFolderPath"
+
+    # Determine the supported archive formats based on the local machine
+    $supportedArchiveFormats = [System.Collections.Generic.List[PSCustomObject]]::new()
+    $archivePreferenceOrder = @('tar.xz', '7z', 'tar.bz2', 'tar.gz', 'zip', 'tar')
+
+    # ZIP is natively supported in PowerShell
+    [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'zip'; Command = 'powershell' })
+
+    if ($IsMacOS -or $IsLinux) {
+        # Prefer tar if available
+        if (Get-Command tar -ErrorAction Ignore) {
+            if (Test-TarSupportsFormat 'xz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Command = 'tar' }) }
+            if (Test-TarSupportsFormat 'bzip2') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Command = 'tar' }) }
+            if (Test-TarSupportsFormat 'gz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Command = 'tar' }) }
+            [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar'; Command = 'tar' })
+        }
+        # Check for individual tools
+        if (Get-Command xz -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Command = 'xz' }) }
+        if (Get-Command 7z -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = '7z'; Command = '7z' }) }
+        if (Get-Command bzip2 -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Command = 'bzip2' }) }
+        if (Get-Command gzip -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Command = 'gzip' }) }
+    }
+    else {
+        if (Get-Command tar -ErrorAction Ignore) {
+            if (Test-TarSupportsFormat 'xz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.xz'; Command = 'tar' }) }
+            if (Test-TarSupportsFormat 'bzip2') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.bz2'; Command = 'tar' }) }
+            if (Test-TarSupportsFormat 'gz') { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar.gz'; Command = 'tar' }) }
+            [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = 'tar'; Command = 'tar' })
+        }
+        if (Get-Command 7z -ErrorAction Ignore) { [void]$supportedArchiveFormats.Add([pscustomobject]@{FileExtension = '7z'; Command = '7z' }) }
+    }
+
+    # Sort the supportedArchiveFormats based on the preference order and remove duplicates
+    $sortedSupportedArchiveFormats = [System.Collections.Generic.List[PSCustomObject]]::new()
+    foreach ($FileExtension in $archivePreferenceOrder) {
+        $item = $supportedArchiveFormats | Where-Object { $_.FileExtension -eq $FileExtension } | Select-Object -First 1
+        if ($item) {
+            [void]$sortedSupportedArchiveFormats.Add($item)
+        }
+    }
+
+    $supportedArchiveFormats = $sortedSupportedArchiveFormats
+    Write-Verbose "Supported Archive Formats: $($supportedArchiveFormats.FileExtension -join ', ')"
 
     # Generate a unique temporary directory to store the font files
     $tempFile = [System.IO.Path]::GetTempFileName()
@@ -916,6 +1033,32 @@ process {
         foreach ($nerdFont in $nerdFontsToInstall) {
             $sourceName = $nerdFont.releaseUrl -replace '^https?://(?:[^/]+\.)*([^/]+\.[^/]+)/repos/([^/]+)/([^/]+).*', '$1/$2/$3'
 
+            Write-Verbose "Processing font: $($nerdFont.folderName) [$($nerdFont.caskName)] ($($nerdFont.imagePreviewFont)) from $sourceName"
+
+            foreach ($archiveFormat in $supportedArchiveFormats) {
+                if ($null -eq $nerdFont.imagePreviewFontSource) {
+                    $assetUrl = $fontReleases[$nerdFont.releaseUrl].ReleaseData.assets | Where-Object { $_.name -match "\.$($archiveFormat.FileExtension)$" } | Select-Object -ExpandProperty browser_download_url
+                }
+                else {
+                    $assetUrl = $fontReleases[$nerdFont.releaseUrl].ReleaseData.assets | Where-Object { $_.name -match "^$($nerdFont.folderName)\.$($archiveFormat.FileExtension)$" } | Select-Object -ExpandProperty browser_download_url
+                }
+                if (-not [string]::IsNullOrEmpty($assetUrl)) { break }
+            }
+
+            if ([string]::IsNullOrEmpty($assetUrl)) {
+                if ($WhatIfPreference -eq $true) {
+                    Write-Warning "Nerd Font '$($nerdFont.folderName)' not found."
+                }
+                else {
+                    Write-Error "Nerd Font '$($nerdFont.folderName)' not found."
+                }
+                continue
+            }
+
+            Write-Verbose "Font archive URL: $assetUrl"
+            Write-Verbose "Font archive format: $($archiveFormat.FileExtension)"
+            Write-Verbose "Font archive extract command: $($archiveFormat.Command)"
+
             if (
                 $PSCmdlet.ShouldProcess(
                     "Install '$($nerdFont.imagePreviewFont)' from $sourceName",
@@ -923,70 +1066,43 @@ process {
                     "Nerd Fonts Installation"
                 )
             ) {
-                Write-Verbose "Processing font: $($nerdFont.folderName) [$($nerdFont.caskName)] ($($nerdFont.imagePreviewFont)) from $sourceName"
-                if ($null -eq $nerdFont.imagePreviewFontSource) {
-                    $assetUrl = $fontReleases[$nerdFont.releaseUrl].ReleaseData.assets | Where-Object { $_.name -match "\.zip$" } | Select-Object -ExpandProperty browser_download_url
+
+                # Download the archive file if not already downloaded
+                $archiveFileName = [System.IO.Path]::GetFileName(([System.Uri]::new($assetUrl)).LocalPath)
+                $archivePath = [System.IO.Path]::Combine($tempPath, $archiveFileName)
+                if (Test-Path -Path $archivePath) {
+                    Write-Verbose "Font archive already downloaded: $archivePath"
                 }
                 else {
-                    $assetUrl = $fontReleases[$nerdFont.releaseUrl].ReleaseData.assets | Where-Object { $_.name -match "^$($nerdFont.folderName)\.zip$" } | Select-Object -ExpandProperty browser_download_url
-                }
-                if ([string]::IsNullOrEmpty($assetUrl)) {
-                    if ($WhatIfPreference -eq $true) {
-                        Write-Warning "Nerd Font '$($nerdFont.folderName)' not found."
-                    }
-                    else {
-                        Write-Error "Nerd Font '$($nerdFont.folderName)' not found."
-                    }
-                    continue
-                }
-                if ($assetUrl -notmatch '\.zip$') {
-                    if ($WhatIfPreference -eq $true) {
-                        Write-Warning "Nerd Font '$($nerdFont.folderName)' archive format is not supported."
-                    }
-                    else {
-                        Write-Error "Nerd Font '$($nerdFont.folderName)' archive format is not supported."
-                    }
-                    continue
-                }
-
-                Write-Verbose "Font archive URL: $assetUrl"
-
-                # Download the zip file if not already downloaded
-                $zipPath = [System.IO.Path]::Combine($tempPath, [System.IO.Path]::GetFileName(([System.Uri]::new($assetUrl)).LocalPath))
-                if (Test-Path -Path $zipPath) {
-                    Write-Verbose "Font archive already downloaded: $zipPath"
-                }
-                else {
-                    Write-Verbose "Downloading font archive from $assetUrl to $zipPath"
-                    Invoke-WebRequest -Uri $assetUrl -OutFile $zipPath -ErrorAction Stop -Verbose:$false -Debug:$false
+                    Write-Verbose "Downloading font archive from $assetUrl to $archivePath"
+                    Invoke-WebRequest -Uri $assetUrl -OutFile $archivePath -ErrorAction Stop -Verbose:$false -Debug:$false
                 }
 
                 # Verify the SHA-256 hash if available
                 if ($fontReleases[$nerdFont.releaseUrl].Sha256Data.Count -gt 0) {
-                    if (-not $fontReleases[$nerdFont.releaseUrl].Sha256Data.ContainsKey("$($nerdFont.folderName).zip")) {
-                        Write-Warning "SHA-256 Hash not found for $($nerdFont.folderName).zip. Skipping installation."
+                    if (-not $fontReleases[$nerdFont.releaseUrl].Sha256Data.ContainsKey($archiveFileName)) {
+                        Write-Warning "SHA-256 Hash not found for $archiveFileName. Skipping installation."
                         continue
                     }
 
-                    $expectedSha256 = $fontReleases[$nerdFont.releaseUrl].Sha256Data["$($nerdFont.folderName).zip"]
-                    $actualSha256 = Get-FileHash -Path $zipPath -Algorithm SHA256 | Select-Object -ExpandProperty Hash
+                    $expectedSha256 = $fontReleases[$nerdFont.releaseUrl].Sha256Data[$archiveFileName]
+                    $actualSha256 = Get-FileHash -Path $archivePath -Algorithm SHA256 | Select-Object -ExpandProperty Hash
                     if ($expectedSha256 -ne $actualSha256) {
-                        Write-Error "SHA-256 Hash mismatch for $($nerdFont.folderName).zip. Skipping installation."
+                        Write-Error "SHA-256 Hash mismatch for $archiveFileName. Skipping installation."
                         continue
                     }
-                    Write-Verbose "SHA-256 Hash verified for $($nerdFont.folderName).zip"
+                    Write-Verbose "SHA-256 Hash verified for $archiveFileName"
                 }
 
                 # Extract the font files if not already extracted
-                $extractPath = [System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($zipPath), [System.IO.Path]::GetFileNameWithoutExtension($zipPath))
+                $extractPath = [System.IO.Path]::Combine([System.IO.Path]::GetDirectoryName($archivePath), [System.IO.Path]::GetFileNameWithoutExtension($archivePath))
                 if (Test-Path -Path $extractPath) {
                     Write-Verbose "Font files already extracted to $extractPath"
                 }
                 else {
                     Write-Verbose "Extracting font files to $extractPath"
                     $null = [System.IO.Directory]::CreateDirectory($extractPath)
-                    Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
-                    [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $extractPath)
+                    Expand-FromArchiveType -SourceFile $archivePath -DestinationFolder $extractPath
                 }
 
                 # Determine search paths for font files based in $Variant parameter
