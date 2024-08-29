@@ -15,7 +15,7 @@ You can [change the theme](ENHANCEMENTS.md#3-change-your-oh-my-posh-powershell-p
 
 > **Note**: Most other themes require installing a [Nerd Font](https://ohmyposh.dev/docs/installation/fonts) on your
 > **host system** (not the Dev Container) and adjusting your font settings in VSCode. The Windows Terminal default font
-> [_Cascadia Mono_](https://github.com/microsoft/cascadia-code/releases/tag/v2404.23) now has a native Nerd Font variant,
+> [_Cascadia Code_](https://github.com/microsoft/cascadia-code/releases/tag/v2404.23) now has a native Nerd Font variant,
 > which can [easily be installed](ENHANCEMENTS.md#1-install-nerd-font) and looks great in VSCode as well.
 
 ### 2. Command Line Completion / IntelliSense

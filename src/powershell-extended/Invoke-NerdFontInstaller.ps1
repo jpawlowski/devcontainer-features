@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.0.1
+.VERSION 1.0.2
 
 .GUID a3238c59-8a0e-4c11-a334-f071772d1255
 
@@ -25,8 +25,8 @@
 .EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
-    Version 1.0.1 (2024-08-28)
-    - Initial release.
+    Version 1.0.2 (2024-08-29)
+    - Fix typo in the script description
 #>
 
 <#
@@ -68,7 +68,7 @@
     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer'))) -Name cascadia-code, cascadia-mono
     ```
 
-    To get a lest of available Nerd Fonts, use the following command:
+    To get a list of available Nerd Fonts, use the following command:
 
     ```powershell
     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer'))) -List All

@@ -84,42 +84,7 @@ described below.
 4. **Select Nerd Font**:
    - You will see a selection menu like this:
 
-     ```console
-                                     🤓 Nerd Fonts Installation
-     =========================================================================================
-
-      1: 0xProto               28: Go-Mono              55: Monaspice            
-      2: 3270                  29: Gohu                 56: Monofur              
-      3: Agave                 30: Hack                 57: Monoid               
-      4: AnonymicePro          31: Hasklig              58: Mononoki             
-      5: AnonymousPro          32: Hasklug              59: MPlus                
-      6: Arimo                 33: HeavyData            60: NerdFontsSymbolsOnly 
-      7: AurulentSansMono      34: Hermit               61: Noto                 
-      8: BigBlueTerminal       35: Hurmit               62: OpenDyslexic         
-      9: BitstreamVeraSansMono 36: iA-Writer            63: Overpass             
-     10: Cascadia              37: IBMPlexMono          64: ProFont              
-     11: CascadiaCode          38: iMWriting            65: ProggyClean          
-     12: CascadiaMono          39: Inconsolata          66: Recursive            
-     13: CaskaydiaCove         40: InconsolataGo        67: RobotoMono           
-     14: CaskaydiaMono         41: InconsolataLGC       68: SauceCodePro         
-     15: CodeNewRoman          42: IntelOneMono         69: ShareTechMono        
-     16: ComicShannsMono       43: IntoneMono           70: SourceCodePro        
-     17: CommitMono            44: Iosevka              71: SpaceMono            
-     18: Cousine               45: IosevkaTerm          72: SureTechMono         
-     19: D2Coding              46: IosevkaTermSlab      73: Terminess            
-     20: DaddyTimeMono         47: JetBrainsMono        74: Terminus             
-     21: DejaVuSansMono        48: Lekton               75: Tinos                
-     22: DroidSansMono         49: LiberationMono       76: Ubuntu               
-     23: EnvyCodeR             50: Lilex                77: UbuntuMono           
-     24: FantasqueSansMono     51: LiterationMono       78: UbuntuSans           
-     25: FiraCode              52: MartianMono          79: VictorMono           
-     26: FiraMono              53: Meslo                80: ZedMono              
-     27: GeistMono             54: Monaspace            
-
-     Enter 'q' to quit.
-
-     Select a number: 53
-     ```
+     ![PowerShell Nerd Fonts Installer](images/nerd-fonts-installer.gif)
 
    - Enter a number corresponding to the list of Nerd Font names. To choose your favorite,
      you may want to visit [nerdfonts.com](https://www.nerdfonts.com/) for a preview. Depending on your PowerShell version
