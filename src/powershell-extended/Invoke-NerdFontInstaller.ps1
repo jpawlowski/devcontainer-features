@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.1.1
+.VERSION 1.2.0
 
 .GUID a3238c59-8a0e-4c11-a334-f071772d1255
 
@@ -25,8 +25,8 @@
 .EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
-    Version 1.1.1 (2024-08-31)
-    - Update tag metadata to include the PSEditions and platforms supported by the script
+    Version 1.2.0 (2024-08-31)
+    - Add -Help and -Version parameters to allow help for dynamic Name parameter and when running the script directly from the web.
 #>
 
 <#
@@ -74,17 +74,36 @@
     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer'))) -List All
     ```
 
+.PARAMETER Help
+    Show help content for the script or a specific parameter.
+
+    The following values are supported:
+    - Name: Shows help for the dynamic Name parameter (which is not possible using regular Get-Help)
+    - Variant: Shows help for the Variant parameter.
+    - Type: Shows help for the Type parameter.
+    - All: Shows help for the All parameter.
+    - List: Shows help for the List parameter.
+    - Scope: Shows help for the Scope parameter.
+    - Force: Shows help for the Force parameter.
+    - Help: Shows help for the Help parameter.
+    - Version: Shows help for the Version parameter.
+    - Summary: Provides a summary of the help content. Note that the dynamic Name parameter is not included in the summary.
+    - Detailed: Provides detailed help, including parameter descriptions and examples. Note that the dynamic Name parameter is not included in the detailed help.
+    - Full: Provides full help, including detailed help, parameter descriptions, examples, and additional notes. Note that the dynamic Name parameter is not included in the full help.
+    - Examples: Shows only the examples section of the help.
+
 .PARAMETER Name
     The name of the Nerd Font to install.
     Multiple font names can be specified as an array of strings.
+
     If no font name is specified, the script provides an interactive menu to select the font to install
     (unless the All parameter is used).
 
-    The menu is displayed only if the script is run in an interactive environment.
-
-    If the script is run in a non-interactive environment, the Name parameter is mandatory.
+    The menu is displayed only if the script is run in an interactive session.
+    If the script is run in a non-interactive environment, the Name parameter is mandatory and must be specified.
 
     Possible font names are dynamically retrieved from the Nerd Font library on GitHub.
+    To see a list of available fonts, use the parameter '-List All'.
 
 .PARAMETER Variant
     Specify the font variant to install.
@@ -130,17 +149,20 @@
 .PARAMETER Force
     Overwrite existing font files instead of skipping them.
 
+.PARAMETER Version
+    Display the version of the script.
+
 .EXAMPLE
     Invoke-NerdFontInstaller -Name cascadia-code
-    Install the Cascadia Code fonts from the Microsoft repository.
+    Install the Cascadia Code Font Family from the Microsoft repository.
 
 .EXAMPLE
     Invoke-NerdFontInstaller -Name cascadia-mono
-    Install the Cascadia Mono fonts from the Microsoft repository.
+    Install the Cascadia Mono Font Family from the Microsoft repository.
 
 .EXAMPLE
     Invoke-NerdFontInstaller -Name cascadia-code, cascadia-mono
-    Install the Cascadia Code and Cascadia Mono fonts from the Microsoft repository.
+    Install the Cascadia Code and Cascadia Mono Font Families from the Microsoft repository.
 
 .EXAMPLE
     Invoke-NerdFontInstaller -All -WhatIf
@@ -149,6 +171,14 @@
 .EXAMPLE
     Invoke-NerdFontInstaller -List cascadia*
     List all fonts with names starting with 'cascadia'.
+
+.EXAMPLE
+    Invoke-NerdFontInstaller -Help Name
+    Get help for the dynamic Name parameter.
+
+.EXAMPLE
+    Invoke-NerdFontInstaller -Help ?
+    Get explanation of the available help options.
 
 .NOTES
     This script must be run on your local machine, not in a container.
@@ -195,9 +225,31 @@ param(
     [Parameter(Mandatory = $false, ParameterSetName = 'ByName')]
     [switch]$Force,
 
-    # Hidde commands to help when used as a script block only
-    [Parameter(Mandatory = $true, ParameterSetName = 'Help')]
-    [switch]$Help,
+    [Parameter(Mandatory = $true, ParameterSetName = 'Help', HelpMessage = "What kind of help would you like to see?")]
+    [AllowEmptyString()]
+    [AllowNull()]
+    [ArgumentCompleter({
+            param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+            $helpOptions = @{
+                Name     = "Shows help for the dynamic Name parameter."
+                Variant  = "Shows help for the Variant parameter."
+                Type     = "Shows help for the Type parameter."
+                All      = "Shows help for the All parameter."
+                List     = "Shows help for the List parameter."
+                Scope    = "Shows help for the Scope parameter."
+                Force    = "Shows help for the Force parameter."
+                Help     = "Shows help for the Help parameter."
+                Version  = "Shows help for the Version parameter."
+                Summary  = "Provides a summary of the help content. Note that the dynamic Name parameter is not included in the summary."
+                Detailed = "Provides detailed help, including parameter descriptions and examples. Note that the dynamic Name parameter is not included in the detailed help."
+                Full     = "Provides full help, including detailed help, parameter descriptions, examples, and additional notes. Note that the dynamic Name parameter is not included in the full help."
+                Examples = "Shows only the examples section of the help."
+            }
+            $helpOptions.GetEnumerator() | Where-Object { $_.Key -like "$wordToComplete*" } | ForEach-Object {
+                [System.Management.Automation.CompletionResult]::new($_.Key, $_.Key, 'ParameterValue', $_.Value)
+            }
+        })]
+    [string]$Help = 'Summary',
 
     [Parameter(Mandatory = $true, ParameterSetName = 'Version')]
     [switch]$Version
@@ -447,42 +499,105 @@ param(`$commandName, `$parameterName, `$wordToComplete, `$commandAst, `$fakeBoun
 }
 
 begin {
-    if ($Help) {
-        $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
-        $helpContent = @()
-        $inHelpBlock = $false
-        $helpBlockFound = $false
+    if ($PSBoundParameters.ContainsKey('Help')) {
+        try {
+            if ($null -eq $PSCommandPath -or $PSCommandPath -eq '') {
+                $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
+                $tempFilePath = [System.IO.Path]::GetTempFileName()
+                $tempPs1FilePath = $tempFilePath + '.ps1'
+                Write-Verbose "Creating temporary file: $tempPs1FilePath"
+                Set-Content -Path $tempPs1FilePath -Value $scriptContent
+            }
+            else {
+                $tempFilePath = $PSCommandPath
+                $tempPs1FilePath = $tempFilePath
+            }
 
-        foreach ($line in $scriptContent -split "`n") {
-            if ($line -match '^\s*<#' -and -not $helpBlockFound) {
-                if ($line -notmatch '^\s*<#PSScriptInfo') {
-                    $inHelpBlock = $true
+            # Use Get-Help to render the help content
+            $params = @{ Name = $tempPs1FilePath }
+            if ([string]::IsNullOrEmpty($Help)) {
+                $params.Parameter = 'Help'
+            }
+            elseif ($Help -ne 'Summary') {
+                if (@('Detailed', 'Full', 'Examples') -contains $Help) {
+                    $params.$Help = $true
+                }
+                elseif (@('Variant', 'Type', 'All', 'List', 'Scope', 'Force', 'Help', 'Version') -contains $Help) {
+                    $params.Parameter = $Help
+                }
+                elseif ($Help -eq 'Name') {
+                    $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
+                    $helpContent = @()
+                    $inHelpBlock = $false
+                    $helpBlockFound = $false
+                    $inParameterNameSection = $false
+
+                    foreach ($line in $scriptContent -split "`n") {
+                        if ($line -match '^\s*<#' -and -not $helpBlockFound) {
+                            if ($line -notmatch '^\s*<#PSScriptInfo') {
+                                $inHelpBlock = $true
+                            }
+                        }
+                        if ($inHelpBlock) {
+                            if ($line -match '^\s*\.PARAMETER\s+Name\s*$') {
+                                $inParameterNameSection = $true
+                            }
+                            elseif ($line -match '^\s*\.PARAMETER\s+' -and $inParameterNameSection) {
+                                $inParameterNameSection = $false
+                            }
+
+                            if ($inParameterNameSection) {
+                                $helpContent += $line
+                            }
+                        }
+                        if ($line -match '#>\s*$' -and $inHelpBlock) {
+                            $inHelpBlock = $false
+                            $helpBlockFound = $true
+                        }
+                        if ($helpBlockFound -and -not $inHelpBlock) {
+                            break
+                        }
+                    }
+
+                    if ($helpContent) {
+                        Write-Output ''
+                        $helpContent[0] = '-Name <String[]>'
+                        $helpText = $helpContent -join "`n"
+                        Write-Output $helpText
+                        Write-Output ''
+                        Write-Output '    Required?                    true (unless running in an interactive session to display the selection menu)'
+                        Write-Output '    Position?                    0'
+                        Write-Output '    Default value'
+                        Write-Output '    Accept pipeline input?       true (ByValue, ByPropertyName)'
+                        Write-Output '    Accept wildcard characters?  false'
+                        Write-Output ''
+                        Write-Output ''
+                        Write-Output ''
+                    }
+                    else {
+                        Write-Output "No .PARAMETER Name content found."
+                    }
+                    return
+                }
+                else {
+                    $params.Parameter = 'Help'
                 }
             }
-            if ($inHelpBlock) {
-                $helpContent += $line
-            }
-            if ($line -match '#>\s*$' -and $inHelpBlock) {
-                $inHelpBlock = $false
-                $helpBlockFound = $true
-            }
-            if ($helpBlockFound -and -not $inHelpBlock) {
-                break
-            }
+            Get-Help @params
         }
-
-        if ($helpContent) {
-            $helpText = $helpContent -join "`n"
-            Write-Output $helpText
-        } else {
-            Write-Output "No help content found."
+        finally {
+            if ($null -eq $PSCommandPath -or $PSCommandPath -eq '') {
+                Write-Verbose "Removing temporary files: $tempFilePath, $tempPs1FilePath"
+                Remove-Item -Path $tempFilePath -Force
+                Remove-Item -Path $tempPs1FilePath -Force
+            }
         }
         return
     }
 
     if ($Version) {
         $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
-        $helpContent = @()
+        $versionNumber = $null
         $inHelpBlock = $false
         $helpBlockFound = $false
 
@@ -491,22 +606,22 @@ begin {
                 $inHelpBlock = $true
             }
             if ($inHelpBlock) {
-                $helpContent += $line
+                if ($line -match '^\s*\.VERSION\s+(.+)$') {
+                    $versionNumber = $matches[1].Trim()
+                    break
+                }
             }
             if ($line -match '#>\s*$' -and $inHelpBlock) {
                 $inHelpBlock = $false
                 $helpBlockFound = $true
             }
-            if ($helpBlockFound -and -not $inHelpBlock) {
-                break
-            }
         }
 
-        if ($helpContent) {
-            $helpText = $helpContent -join "`n"
-            Write-Output $helpText
-        } else {
-            Write-Output "No help content found."
+        if ($versionNumber) {
+            Write-Output $versionNumber
+        }
+        else {
+            Write-Output "No version information found."
         }
         return
     }
