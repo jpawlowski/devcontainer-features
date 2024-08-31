@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.2.0
+.VERSION 1.2.1
 
 .GUID a3238c59-8a0e-4c11-a334-f071772d1255
 
@@ -25,8 +25,10 @@
 .EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
-    Version 1.2.0 (2024-08-31)
+    Version 1.2.1 (2024-08-31)
     - Add -Help and -Version parameters to allow help for dynamic Name parameter and when running the script directly from the web.
+    - Add alias for -Help parameter to allow using '?', 'help', and '--help' as special Name parameter values.
+    - Add alias for -Version parameter to allow using 'version', 'ver', and '--version' as special Name parameter values.
 #>
 
 <#
@@ -249,7 +251,7 @@ param(
                 [System.Management.Automation.CompletionResult]::new($_.Key, $_.Key, 'ParameterValue', $_.Value)
             }
         })]
-    [string]$Help = 'Summary',
+    [string]$Help = 'Help',
 
     [Parameter(Mandatory = $true, ParameterSetName = 'Version')]
     [switch]$Version
@@ -499,7 +501,13 @@ param(`$commandName, `$parameterName, `$wordToComplete, `$commandAst, `$fakeBoun
 }
 
 begin {
-    if ($PSBoundParameters.ContainsKey('Help')) {
+    if (
+        $PSBoundParameters.ContainsKey('Help') -or
+        (
+            $PSBoundParameters.Name.Count -eq 1 -and
+            @('help', '--help', '?') -contains $PSBoundParameters.Name[0]
+        )
+    ) {
         try {
             if ($null -eq $PSCommandPath -or $PSCommandPath -eq '') {
                 $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
@@ -595,7 +603,13 @@ begin {
         return
     }
 
-    if ($Version) {
+    if (
+        $Version -or
+        (
+            $PSBoundParameters.Name.Count -eq 1 -and
+            @('version', '--version', 'ver') -eq $PSBoundParameters.Name[0]
+        )
+    ) {
         $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
         $versionNumber = $null
         $inHelpBlock = $false
