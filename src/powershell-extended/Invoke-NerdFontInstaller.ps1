@@ -2,7 +2,7 @@
 
 <#PSScriptInfo
 
-.VERSION 1.1.0
+.VERSION 1.1.1
 
 .GUID a3238c59-8a0e-4c11-a334-f071772d1255
 
@@ -10,7 +10,7 @@
 
 .COPYRIGHT © 2024 Julian Pawlowski.
 
-.TAGS nerd-fonts nerdfonts cascadia-code cascadia-code-nerd-font cascadia-code-powerline-font cascadia-mono cascadia-mono-nerd-font cascadia-mono-powerline-font
+.TAGS fonts nerdfonts cascadia-code cascadia-code-nerd-font cascadia-code-powerline-font cascadia-mono cascadia-mono-nerd-font cascadia-mono-powerline-font powershell powershell-script Windows MacOS Linux PSEdition_Core PSEdition_Desktop
 
 .LICENSEURI https://github.com/jpawlowski/devcontainer-features/blob/main/LICENSE.txt
 
@@ -25,9 +25,8 @@
 .EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
-    Version 1.1.0 (2024-08-29)
-    - Add support for multiple types of font archives
-    - Add XDG compliance for determining the target folder for fonts
+    Version 1.1.1 (2024-08-31)
+    - Update tag metadata to include the PSEditions and platforms supported by the script
 #>
 
 <#
@@ -192,7 +191,16 @@ param(
     [ValidateSet('AllUsers', 'CurrentUser')]
     [string]$Scope = 'CurrentUser',
 
-    [switch]$Force
+    [Parameter(Mandatory = $false, ParameterSetName = 'ByAll')]
+    [Parameter(Mandatory = $false, ParameterSetName = 'ByName')]
+    [switch]$Force,
+
+    # Hidde commands to help when used as a script block only
+    [Parameter(Mandatory = $true, ParameterSetName = 'Help')]
+    [switch]$Help,
+
+    [Parameter(Mandatory = $true, ParameterSetName = 'Version')]
+    [switch]$Version
 )
 
 dynamicparam {
@@ -439,6 +447,70 @@ param(`$commandName, `$parameterName, `$wordToComplete, `$commandAst, `$fakeBoun
 }
 
 begin {
+    if ($Help) {
+        $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
+        $helpContent = @()
+        $inHelpBlock = $false
+        $helpBlockFound = $false
+
+        foreach ($line in $scriptContent -split "`n") {
+            if ($line -match '^\s*<#' -and -not $helpBlockFound) {
+                if ($line -notmatch '^\s*<#PSScriptInfo') {
+                    $inHelpBlock = $true
+                }
+            }
+            if ($inHelpBlock) {
+                $helpContent += $line
+            }
+            if ($line -match '#>\s*$' -and $inHelpBlock) {
+                $inHelpBlock = $false
+                $helpBlockFound = $true
+            }
+            if ($helpBlockFound -and -not $inHelpBlock) {
+                break
+            }
+        }
+
+        if ($helpContent) {
+            $helpText = $helpContent -join "`n"
+            Write-Output $helpText
+        } else {
+            Write-Output "No help content found."
+        }
+        return
+    }
+
+    if ($Version) {
+        $scriptContent = $MyInvocation.MyCommand.ScriptBlock.ToString()
+        $helpContent = @()
+        $inHelpBlock = $false
+        $helpBlockFound = $false
+
+        foreach ($line in $scriptContent -split "`n") {
+            if ($line -match '^\s*<#PSScriptInfo' -and -not $helpBlockFound) {
+                $inHelpBlock = $true
+            }
+            if ($inHelpBlock) {
+                $helpContent += $line
+            }
+            if ($line -match '#>\s*$' -and $inHelpBlock) {
+                $inHelpBlock = $false
+                $helpBlockFound = $true
+            }
+            if ($helpBlockFound -and -not $inHelpBlock) {
+                break
+            }
+        }
+
+        if ($helpContent) {
+            $helpText = $helpContent -join "`n"
+            Write-Output $helpText
+        } else {
+            Write-Output "No help content found."
+        }
+        return
+    }
+
     if ($PSBoundParameters.ContainsKey('List')) {
         # Set default value if List is null or empty
         if ([string]::IsNullOrEmpty($List)) {
