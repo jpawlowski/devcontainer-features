@@ -34,11 +34,11 @@ If you wish, you may also select any other font from [nerdfonts.com](https://www
      Windows PowerShell 5.1 (`powershell.exe`). PowerShell 7 is the cross-platform version that is actively maintained
      and updated, whereas Windows PowerShell is the legacy version built into Windows.
 
-3. **Run the Nerd Font installer script in direct install mode**:
+3. **Run the [Nerd Font installer script](https://github.com/jpawlowski/nerd-fonts-installer-PS) in direct install mode**:
    - Copy & paste the following code into the terminal window:
 
      ```powershell
-     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer'))) -Name cascadia-code, cascadia-mono
+     & ([scriptblock]::Create((iwr 'https://to.loredo.me/Install-NerdFont.ps1'))) -Name cascadia-code, cascadia-mono
      ```
    - Press `Enter` to run the code.
 
@@ -73,18 +73,18 @@ described below.
      Windows PowerShell 5.1 (`powershell.exe`). PowerShell 7 is the cross-platform version that is actively maintained
      and updated, whereas Windows PowerShell is the legacy version built into Windows.
 
-3. **Run the Nerd Font installer script in interactive mode**:
+3. **Run the [Nerd Font installer script](https://github.com/jpawlowski/nerd-fonts-installer-PS) in interactive mode**:
    - Copy & paste the following code into the terminal window:
 
      ```powershell
-     & ([scriptblock]::Create((iwr 'https://bit.ly/ps-nerdfont-installer')))
+     & ([scriptblock]::Create((iwr 'https://to.loredo.me/Install-NerdFont.ps1')))
      ```
    - Press `Enter` to run the code.
 
 4. **Select Nerd Font**:
    - You will see a selection menu like this:
 
-     ![PowerShell Nerd Fonts Installer](images/nerd-fonts-installer.gif)
+     ![PowerShell Nerd Fonts Installer](https://raw.githubusercontent.com/jpawlowski/nerd-fonts-installer-PS/main/images/nerd-fonts-installer.gif)
 
    - Enter a number corresponding to the list of Nerd Font names. To choose your favorite,
      you may want to visit [nerdfonts.com](https://www.nerdfonts.com/) for a preview. Depending on your PowerShell version
