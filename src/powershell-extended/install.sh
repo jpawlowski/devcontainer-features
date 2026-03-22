@@ -164,6 +164,12 @@ else
     fi
 fi
 
+# Initialize PSResourceGet repository store for non-root user if needed.
+# Set-PSResourceRepository fails if PSResourceRepository.xml does not exist yet.
+if [ "${USERNAME}" != 'root' ]; then
+    sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "Get-PSResourceRepository | Out-Null" 2>/dev/null || true
+fi
+
 # Get existing repositories
 IFS=';' read -r -a repos <<<"$("$(command -v pwsh)" -NoLogo -NoProfile -Command "(Get-PSResourceRepository).Uri.OriginalString -join ';'")"
 
