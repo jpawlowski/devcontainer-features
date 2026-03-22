@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 PSPNP_VERSION="${VERSION:-"latest"}"
 

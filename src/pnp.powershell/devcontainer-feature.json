@@ -1,7 +1,7 @@
 {
   "name": "PnP PowerShell",
   "id": "pnp.powershell",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PnP PowerShell is a cross-platform PowerShell module that allows users on any platform to manage various configuration settings of Microsoft 365.",
   "documentationURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/src/pnp.powershell",
   "licenseURL": "https://github.com/jpawlowski/devcontainer-features/tree/main/LICENSE.txt",
