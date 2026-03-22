@@ -421,11 +421,11 @@ fi
 if [ "$POWERSHELL_UPDATE_MODULESHELP" = 'true' ]; then
     echo "Updating PowerShell Modules Help"
     if [ "${USERNAME}" = 'root' ]; then
-        "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope AllUsers -UICulture en-US -ErrorAction Stop -ProgressAction Ignore"
+        "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope AllUsers -UICulture en-US -ErrorAction SilentlyContinue -ProgressAction Ignore"
         touch "/root/.local/state/powershell/.updateHelpMarker"
     else
         # shellcheck disable=SC2140
-        sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope CurrentUser -UICulture en-US -ErrorAction Stop -ProgressAction Ignore; New-Item -Path "\${HOME}/.local/state/powershell/.updateHelpMarker" -ItemType File -Force"
+        sudo -H -u "${USERNAME}" "$(command -v pwsh)" -NoLogo -NoProfile -Command "$prefs; Update-Help -Scope CurrentUser -UICulture en-US -ErrorAction SilentlyContinue -ProgressAction Ignore; New-Item -Path "\${HOME}/.local/state/powershell/.updateHelpMarker" -ItemType File -Force"
     fi
 fi
 
